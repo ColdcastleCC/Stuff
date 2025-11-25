@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JK's Periodisk system – Hay 7. og 8.</title>
+<style>
+*,*:before,*:after{box-sizing:border-box}
+body{margin:0;padding:1rem;font-family:system-ui,sans-serif;background:#111;color:#eee;line-height:1.4}
+h1{font-size:clamp(1.5rem,5vw,2.5rem);text-align:center;margin-bottom:.5rem}
+#periodic-table{
+  display:grid;
+  grid-template-columns:minmax(3.5rem,1fr) repeat(18,minmax(2.5rem,1fr));
+  gap:3px;
+  max-width:100vw;
+  overflow-x:auto;
+  padding:1rem 0;
+  -webkit-overflow-scrolling:touch;
+}
+.element{
+  background:var(--cat,#333);
+  border:1px solid #555;
+  padding:.3rem;
+  min-height:3.5rem;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  position:relative;
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.element:active{filter:brightness(1.3)}
+.number{position:absolute;top:2px;left:3px;font-size:clamp(.55rem,2.2vw,.85rem);font-weight:bold;color:#fff;background:rgba(0,0,0,.6);padding:1px 4px;border-radius:3px;z-index:2}
+.symbol{font-weight:bold;font-size:clamp(.85rem,3.5vw,1.2rem);color:#fff;margin-top:1.1rem}
+.mass{font-size:clamp(.45rem,1.9vw,.7rem);align-self:flex-end;color:#ddd}
+.orbitals{font-size:clamp(.4rem,1.7vw,.65rem);display:flex;flex-direction:column;align-items:flex-start;color:#fffa}
+.label{background:#444;color:#fff;font-weight:bold;padding:.3rem;font-size:clamp(.65rem,2.2vw,.9rem);text-align:center}
+.large-element{background:var(--cat,#333);border:1px solid #555;padding:1rem;min-height:7rem;max-width:90vw;margin:1rem auto;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 4px 12px rgba(0,0,0,.8);position:relative}
+.large-element .number{position:absolute;top:8px;left:8px;font-size:clamp(1.2rem,4vw,1.8rem);background:rgba(0,0,0,.6);padding:4px 8px;border-radius:4px;z-index:2}
+.large-element .symbol{font-size:clamp(2.2rem,7vw,3.2rem);color:#fff;margin-top:2.8rem}
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);align-items:flex-start;justify-content:center;overflow-y:auto;padding:1rem;z-index:1000}
+#modal-content{background:#222;padding:1.5rem;border-radius:1rem;width:95%;max-width:44rem;max-height:95vh;overflow-y:auto;display:flex;flex-direction:column;gap:1rem;position:relative;border:1px solid #555}
+#close{position:absolute;top:.5rem;right:.5rem;font-size:2.5rem;color:#fff;z-index:10;background:rgba(0,0,0,.6);width:2.2rem;height:2.2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#close:active{background:#c33}
+#atom-canvas{display:none;width:100%;max-width:28rem;aspect-ratio:1;background:#000;margin:2rem auto;border:3px solid #444;border-radius:1rem;box-shadow:0 0 20px #0ff}
+button{background:#036;color:#fff;border:none;padding:.8rem 1.4rem;border-radius:.6rem;cursor:pointer;font-size:clamp(.9rem,3vw,1.1rem);margin:.4rem 0;touch-action:manipulation}
+button:active{background:#048}
+#close-animation{background:#c33}
+#close-animation:active{background:#e44}
+#element-details{font-size:clamp(.9rem,2.8vw,1rem);line-height:1.6}
+#element-details a{color:#6cf;text-decoration:underline}
+#error{color:#f66;background:#300;padding:1rem;border-radius:8px;margin:1rem 0;display:none}
+</style>
+</head>
+<body>
+<h1>JK's Periodisk system – Hay 7. og 8.</h1>
+<div id="error"></div>
+<div id="periodic-table"></div>
+<button id="lang">English</button>
+
+<div id="modal">
+  <div id="modal-content">
+    <span id="close">X</span>
+    <div id="modal-text">
+      <div id="large" class="large-element"></div>
+      <h2 id="name"></h2>
+      <p id="details"></p>
+      <button id="anim">Vis Atom</button>
+      <button id="close-anim">Luk</button>
+    </div>
+    <canvas id="atom-canvas"></canvas>
+  </div>
+</div>
+
+<script>
+const colors={'diatomic nonmetal':'#74c0fc','noble gas':'#ffcc99','alkali metal':'#ff6b6b','alkaline earth metal':'#ffd93d','metalloid':'#95e1a8','polyatomic nonmetal':'#91a7ff','post-transition metal':'#c4a4ff','transition metal':'#ff9cee','lanthanide':'#66d9c2','actinide':'#a0e67f','unknown':'#999'};
+const daNames={Hydrogen:'Brint',Helium:'Helium',Lithium:'Lithium',Beryllium:'Beryllium',Boron:'Bor',Carbon:'Kulstof',Nitrogen:'Kvælstof',Oxygen:'Ilt',Fluorine:'Fluor',Neon:'Neon',Sodium:'Natrium',Magnesium:'Magnesium',Aluminium:'Aluminium',Silicon:'Silicium',Phosphorus:'Fosfor',Sulfur:'Svovl',Chlorine:'Chlor',Argon:'Argon',Potassium:'Kalium',Calcium:'Calcium',Scandium:'Scandium',Titanium:'Titan',Vanadium:'Vanadium',Chromium:'Chrom',Manganese:'Mangan',Iron:'Jern',Cobalt:'Kobolt',Nickel:'Nikkel',Copper:'Kobber',Zinc:'Zink',Gallium:'Gallium',Germanium:'Germanium',Arsenic:'Arsen',Selenium:'Selen',Bromine:'Brom',Krypton:'Krypton',Rubidium:'Rubidium',Strontium:'Strontium',Yttrium:'Yttrium',Zirconium:'Zirconium',Niobium:'Niob',Molybdenum:'Molybdæn',Technetium:'Technetium',Ruthenium:'Ruthenium',Rhodium:'Rhodium',Palladium:'Palladium',Silver:'Sølv',Cadmium:'Cadmium',Indium:'Indium',Tin:'Tin',Antimony:'Antimon',Tellurium:'Tellur',Iodine:'Iod',Xenon:'Xenon',Caesium:'Cæsium',Barium:'Barium',Lanthanum:'Lanthan',Cerium:'Cerium',Praseodymium:'Praseodym',Neodymium:'Neodym',Promethium:'Promethium',Samarium:'Samarium',Europium:'Europium',Gadolinium:'Gadolinium',Terbium:'Terbium',Dysprosium:'Dysprosium',Holmium:'Holmium',Erbium:'Erbium',Thulium:'Thulium',Ytterbium:'Ytterbium',Lutetium:'Lutetium',Hafnium:'Hafnium',Tantalum:'Tantal',Tungsten:'Wolfram',Rhenium:'Rhenium',Osmium:'Osmium',Iridium:'Iridium',Platinum:'Platin',Gold:'Guld',Mercury:'Kviksølv',Thallium:'Thallium',Lead:'Bly',Bismuth:'Bismuth',Polonium:'Polonium',Astatine:'Astat',Radon:'Radon',Francium:'Francium',Radium:'Radium',Actinium:'Actinium',Thorium:'Thorium',Protactinium:'Protactinium',Uranium:'Uran',Neptunium:'Neptunium',Plutonium:'Plutonium',Americium:'Americium',Curium:'Curium',Berkelium:'Berkelium',Californium:'Californium',Einsteinium:'Einsteinium',Fermium:'Fermium',Mendelevium:'Mendelevium',Nobelium:'Nobelium',Lawrencium:'Lawrencium',Rutherfordium:'Rutherfordium',Dubnium:'Dubnium',Seaborgium:'Seaborgium',Bohrium:'Bohrium',Hassium:'Hassium',Meitnerium:'Meitnerium',Darmstadtium:'Darmstadtium',Roentgenium:'Roentgenium',Copernicium:'Copernicium',Nihonium:'Nihonium',Flerovium:'Flerovium',Moscovium:'Moscovium',Livermorium:'Livermorium',Tennessine:'Tennessine',Oganesson:'Oganesson'};
+
+let lang='da',cur=null,anim=null;
+
+function showError(msg){
+  document.getElementById('error').textContent='FEJL: '+msg;
+  document.getElementById('error').style.display='block';
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  let data;
+  try {
+    const r = await fetch('https://raw.githubusercontent.com/Bowserinator/Periodic-Table-JSON/master/PeriodicTableJSON.json');
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    data = await r.json();
+  } catch(e) {
+    showError('Kunne ikke hente data: '+e.message+' (Prøv med internet eller anden browser)');
+    return;
+  }
+
+  const t=document.getElementById('periodic-table');
+  for(let g=1;g<=18;g++){
+    const d=document.createElement('div');d.className='label';d.textContent=g;d.style.gridColumn=g+1;d.style.gridRow=1;t.appendChild(d);
+  }
+  for(let p=1;p<=7;p++){
+    const d=document.createElement('div');d.className='label';d.textContent=p;d.style.gridRow=p+1;d.style.gridColumn=1;t.appendChild(d);
+  }
+  data.elements.forEach(e=>{
+    const row=e.ypos>7?e.ypos+2:e.ypos+1;
+    const el=document.createElement('div');el.className='element';
+    el.style.setProperty('--cat',colors[e.category]||'#555');
+    el.innerHTML=`<div class="number">${e.number}</div><div class="symbol">${e.symbol}</div><div class="mass">${e.atomic_mass.toFixed(2)}</div><div class="orbitals">${e.shells.map(n=>`<div>${n}</div>`).join('')}</div>`;
+    el.style.gridColumn=e.xpos+1;el.style.gridRow=row;
+    el.onclick=el.ontouchend=(ev)=>{if(ev)ev.preventDefault();show(e);};
+    t.appendChild(el);
+  });
+});
+
+function show(e){
+  cur=e;
+  const large=document.getElementById('large');
+  large.style.setProperty('--cat',colors[e.category]||'#555');
+  large.innerHTML=`<div class="number">${e.number}</div><div class="symbol">${e.symbol}</div><div class="mass">${e.atomic_mass.toFixed(2)}</div><div class="orbitals">${e.shells.map(n=>`<div>${n}</div>`).join('')}</div>`;
+  document.getElementById('name').textContent=lang==='da'?daNames[e.name]||e.name:e.name;
+  const p=e.number,n=Math.round(e.atomic_mass)-p;
+  const wikiLang=lang==='da'?'da':'en';
+  const name=lang==='da'?daNames[e.name]||e.name:e.name;
+  document.getElementById('details').innerHTML=
+    `<strong>Symbol:</strong> ${e.symbol}<br>
+     <strong>Atommasse:</strong> ${e.atomic_mass.toFixed(4)}<br>
+     <strong>Protoner:</strong> ${p}<br>
+     <strong>Neutroner (ca.):</strong> ${n}<br>
+     <strong>Elektroner pr. skal:</strong> ${e.shells.join(', ')}<br>
+     <strong>Elektronkonfiguration:</strong> ${e.electron_configuration}<br>
+     <strong>Fase:</strong> ${e.phase}<br>
+     <a href="https://${wikiLang}.wikipedia.org/wiki/${encodeURIComponent(name)}" target="_blank">Wikipedia (${wikiLang==='da'?'dansk':'english'})</a><br>`+
+    (e.spectral_img?`<img src="${e.spectral_img}" style="max-width:100%;margin-top:1rem">`:
+     e.image?.url?`<img src="${e.image.url}" style="max-width:100%;margin-top:1rem">`:'');
+  document.getElementById('modal').style.display='flex';
+}
+
+function closeAll(){
+  document.getElementById('modal').style.display='none';
+  if(anim){cancelAnimationFrame(anim);anim=null;}
+  document.getElementById('atom-canvas').style.display='none';
+}
+
+document.getElementById('close').onclick=closeAll;
+document.getElementById('close-anim').onclick=closeAll;
+document.getElementById('anim').onclick=()=>{if(cur)startAnim(cur);};
+
+document.getElementById('lang').onclick=()=>{
+  lang=lang==='da'?'en':'da';
+  document.querySelector('h1').textContent=lang==='da'?'JK\'s Periodisk system – Hay 7. og 8.':'JK\'s Periodic Table – Year 7 & 8';
+  document.getElementById('lang').textContent=lang==='da'?'English':'Dansk';
+  document.getElementById('anim').textContent=lang==='da'?'Vis Atom':'Atom Animation';
+  document.getElementById('close-anim').textContent=lang==='da'?'Luk':'Close';
+};
+
+function startAnim(e){
+  const c=document.getElementById('atom-canvas');c.style.display='block';
+  const ctx=c.getContext('2d');
+  const s=Math.min(innerWidth*0.85,380);c.width=c.height=s;
+  const shells=e.shells;let a=0;
+  const center=s/2,nR=22,base=38,space=shells.length>1?(s/2-base-nR-30)/(shells.length-1):0;
+  (function draw(){
+    ctx.fillStyle='#000';ctx.fillRect(0,0,s,s);
+    ctx.fillStyle='#ff3366';ctx.beginPath();ctx.arc(center,center,nR,0,Math.PI*2);ctx.fill();
+    shells.forEach((n,i)=>{
+      const r=base+i*space;
+      ctx.strokeStyle='#00ffff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(center,center,r,0,Math.PI*2);ctx.stroke();
+      const step=n?2*Math.PI/n:0;
+      for(let j=0;j<n;j++){
+        const ang=a+j*step;
+        ctx.fillStyle='#00aaff';ctx.beginPath();ctx.arc(center+r*Math.cos(ang),center+r*Math.sin(ang),7,0,Math.PI*2);ctx.fill();
+      }
+    });
+    a+=0.018;anim=requestAnimationFrame(draw);
+  })();
+}
+</script>
+</body>
+</html>
