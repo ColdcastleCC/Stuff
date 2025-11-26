@@ -6,7 +6,6 @@ Maematik og fysik
 
 ### Matematik & brøker
 - [Brøker – Addition](https://coldcastlecc.github.io/Stuff/Brøker_addition_Kun.png)
-- [Brøker – Subtraktion](https://coldcastlecc.github.io/Stuff/Brøker_Subtraktion.png)
 - [Brøker – Subtraktion](https://coldcastlecc.github.io/Stuff/Brøker_subtraktion_KUN.png)
 - [Brøker – Multiplikation](https://coldcastlecc.github.io/Stuff/Brøker_multiplikation.png)
 - [Brøker – Division](https://coldcastlecc.github.io/Stuff/Brøker_division.jpg)
