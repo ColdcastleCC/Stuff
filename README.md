@@ -12,7 +12,7 @@ Maematik og fysik
 - [Brøker – Forlængelse/Forkortelse](https://coldcastlecc.github.io/Stuff/Brøker_forlængelse_forkortelse.png)
 
 ### Pizzabrøker og andet
-- [DELING AF PIZZA](https://coldcastlecc.github.io/Stuff/DEJLIG_AF_PIZZA.jpg) 🍕
+- [DELING AF PIZZA](https://coldcastlecc.github.io/Stuff/DELLING_AF_PIZZA.jpg) 🍕
 - [Simpel ligning](https://coldcastlecc.github.io/Stuff/Simpel%20ligning.png)
 - [Almindelig ligning](https://coldcastlecc.github.io/Stuff/almindeligliggning.png)
 - [Division CC](https://coldcastlecc.github.io/Stuff/division_CC.png)
