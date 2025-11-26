@@ -13,7 +13,7 @@ Maematik og fysik
 
 ### Pizzabrøker og andet
 - [DELING AF PIZZA](https://coldcastlecc.github.io/Stuff/DELLING_AF_PIZZA.jpg) 🍕
-- [Simpel ligning](https://coldcastlecc.github.io/Stuff/Simpel%20ligning.png)
+- [Simpel ligning](https://coldcastlecc.github.io/Stuff/Simpel_ligning.png)
 - [Almindelig ligning](https://coldcastlecc.github.io/Stuff/almindeligliggning.png)
 - [Division CC](https://coldcastlecc.github.io/Stuff/division_CC.png)
 - [Procentregning](https://coldcastlecc.github.io/Stuff/procentregning.png)
