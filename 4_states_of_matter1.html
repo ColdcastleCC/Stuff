@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Four States of Matter – Clean & Readable</title>
+    <title>Fire tilstandsformer</title>
     <style>
         body {margin:0;background:#000;color:#0ff;font-family:Arial;text-align:center;}
         h1 {margin:40px;font-size:36px;}
@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-<h1>The Four States of Matter – Molecular Behavior</h1>
+<h1>Fire tilstandsformer – Molekylebevægelser</h1>
 <div class="controls">
     <button onclick="state=0">SOLID</button>
     <button onclick="state=1">LIQUID</button>
@@ -22,7 +22,7 @@
 <!-- Title text now far above the molecules -->
 <div style="margin:40px 0 20px 0;">
     <div id="titleText" style="color:#0ff;font-size:52px;font-weight:bold;letter-spacing:2px;">
-        SOLID – Fixed positions, vibrate only
+        SOLID – Faste positioner, vibrerer kun
     </div>
 </div>
 
@@ -36,10 +36,10 @@ let state = 0;
 let t = 0;
 
 const titles = [
-    'SOLID – Fixed positions, vibrate only',
-    'LIQUID – Flow together, stay close',
-    'GAS – Fast random motion, fill container',
-    'PLASMA – Ions + free electrons, glowing!'
+    'FAST – Faste positioner, vibrerer kun',
+    'VÆSKE – Flyder sammen, forbliver tætte',
+    'GAS – Hurtig bevægelse i tilfældige retninger, fylder en beholder',
+    'PLASMA – Ioner + frie electroner, lyser!'
 ];
 
 class Molecule {
@@ -51,11 +51,11 @@ class Molecule {
         this.phase = Math.random()*6;
     }
     update() {
-        if (state === 0) { // SOLID
+        if (state === 0) { // Fast
             this.x = this.homeX + Math.sin(t*0.2 + this.phase)*10;
             this.y = this.homeY + Math.cos(t*0.15 + this.phase)*10;
         }
-        if (state === 1) { // LIQUID
+        if (state === 1) { // Væske
             this.x += this.vx*0.35 + Math.sin(t*0.08)*0.6;
             this.y += this.vy*0.35 + Math.cos(t*0.08)*0.6;
         }
@@ -143,4 +143,5 @@ function animate() {
 animate();
 </script>
 </body>
+
 </html>
