@@ -6,7 +6,7 @@ Matematik og fysik
 - [4_states_of_matter1.html](https://coldcastlecc.github.io/Stuff/4_states_of_matter1.html)- Fire tilstandsformer
 - [NaCL_bond.html](https://coldcastlecc.github.io/Stuff/NaCl_bond.html) Natriumklorid- Ionbinding
 - [MgO_bond.html](https://coldcastlecc.github.io/Stuff/MgO_bond.html) Magnesiumoxid - Ionbinding
-- [CaF2_bond.html](https://coldcastlecc.github.io/Stuff/CaF2_bond.html) Calciumflourid - Ionbinding
+- [CaF2_binding.html](https://coldcastlecc.github.io/Stuff/CaF2_bond.html) Calciumflourid - Ionbinding
 - [Al2O3_bond.html](https://coldcastlecc.github.io/Stuff/Al2O3_bond.html) Aluminiumoxid - Ionbinding
 
 ### Fotosyntese mv.
@@ -20,7 +20,7 @@ Matematik og fysik
 - [Brøker – Forlængelse/Forkortelse](https://coldcastlecc.github.io/Stuff/Brøker_forlængelse_forkortelse.png)
 - [DELING AF PIZZA](https://coldcastlecc.github.io/Stuff/DELING_AF_PIZZA.jpg) 🍕
 - [Simpel ligning](https://coldcastlecc.github.io/Stuff/Simpel_ligning.png)
-- [almindelig ligning](https://coldcastlecc.github.io/Stuff/almindeligliggning.png)
+- [Almindelig ligning](https://coldcastlecc.github.io/Stuff/almindeligligning.png)
 - [Division CC](https://coldcastlecc.github.io/Stuff/division_CC.png)
 - [Procentregning](https://coldcastlecc.github.io/Stuff/procentregning.png)
 - [Pythagoras](https://coldcastlecc.github.io/Stuff/Pythagoras.png)
