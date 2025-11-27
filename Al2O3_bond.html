@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Al₂O₃ Ionic Bond – Perfect Spacing (No Overlap At All)</title>
+    <title>Al₂O₃ Ionbinding</title>
     <style>
         body {margin:0; background:#000; color:#0ff; font-family:Arial; text-align:center;}
         h1 {margin:20px; font-size:28px;}
@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-<h1>Al₂O₃ Formation – 2Al + 3O → 2Al³⁺ + 3O²⁻  (6 electrons transferred)</h1>
+<h1>Al₂O₃ Dannelse – 2Al + 3O → 2Al³⁺ + 3O²⁻  (6 electroner overført)</h1>
 <div class="controls">
     <button id="pauseBtn">Pause</button>
     <button id="resetBtn">Reset</button>
@@ -107,7 +107,7 @@ function animate() {
         }
     });
 
-    // === 6 ELECTRON TRANSFERS (long graceful paths) ===
+    // === 6 ELECTRON TRANSFERS (long graceful paths---well about as good as I bother) ===
     const transfers = [
         {start:300, end:600,   from:Al1X, fromY:Al1Y, to:O1X, toY:O1Y},
         {start:500, end:800,   from:Al1X, fromY:Al1Y, to:O2X, toY:O2Y},
@@ -174,4 +174,5 @@ resetBtn.addEventListener('click', () => {
 animate();
 </script>
 </body>
+
 </html>
