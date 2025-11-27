@@ -4,10 +4,10 @@ Matematik og fysik
 ### Periodiske system
 - [OrbitalCC.html](https://coldcastlecc.github.io/Stuff/OrbitalCC.html) – Det fede orbitale periodiske system
 - [4_states_of_matter1.html](https://coldcastlecc.github.io/Stuff/4_states_of_matter1.html)- Fire tilstandsformer
-- [NaCL_bond.html](https://coldcastlecc.github.io/Stuff/NaCl_bond.html) Natriumklorid- Ionbinding
-- [MgO_bond.html](https://coldcastlecc.github.io/Stuff/MgO_bond.html) Magnesiumoxid - Ionbinding
+- [NaCL_binding.html](https://coldcastlecc.github.io/Stuff/NaCl_bond.html) Natriumklorid- Ionbinding
+- [MgO_binding.html](https://coldcastlecc.github.io/Stuff/MgO_bond.html) Magnesiumoxid - Ionbinding
 - [CaF2_binding.html](https://coldcastlecc.github.io/Stuff/CaF2_bond.html) Calciumflourid - Ionbinding
-- [Al2O3_bond.html](https://coldcastlecc.github.io/Stuff/Al2O3_bond.html) Aluminiumoxid - Ionbinding
+- [Al2O3_binding.html](https://coldcastlecc.github.io/Stuff/Al2O3_bond.html) Aluminiumoxid - Ionbinding
 
 ### Fotosyntese mv.
 - [Photosynthesis.html](https://coldcastlecc.github.io/Stuff/Photosynthesis.html) Fotosyntesen
