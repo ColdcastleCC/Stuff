@@ -1,9 +1,13 @@
 # Coldcastle Links
-Maematik og fysik
+Matematik og fysik
 
-### Periodiske systemer
-- [OrbitalCC.html](https://coldcastlecc.github.io/Stuff/OrbitalCC.html) – Det fede orbitale periodiske system  
-
+### Periodiske system
+- [OrbitalCC.html](https://coldcastlecc.github.io/Stuff/OrbitalCC.html) – Det fede orbitale periodiske system
+- [4_states_of_matter1.html](https://coldcastlecc.github.io/Stuff/4_states_of_matter1.html)- Fire tilstandsformer
+- [NaCL_bond.html](https://coldcastlecc.github.io/Stuff/NaCl_bond.html) Natriumklorid- Ionbinding
+- [MgO_bond.html](https://coldcastlecc.github.io/Stuff/MgO_bond.html) Magnesiumoxid - Ionbinding
+- [CaF2_bond.html](https://coldcastlecc.github.io/Stuff/CaF2_bond.html) Calciumflourid - Ionbinding
+- [Al2O3_bond.html](https://coldcastlecc.github.io/Stuff/Al2O3_bond.html) Aluminiumoxid - Ionbinding
 ### Matematik & brøker
 - [Brøker – Addition](https://coldcastlecc.github.io/Stuff/Brøker_addition_Kun.png)
 - [Brøker – Subtraktion](https://coldcastlecc.github.io/Stuff/Brøker_subtraktion_KUN.png)
