@@ -10,7 +10,7 @@ Matematik og fysik
 - [Al2O3_bond.html](https://coldcastlecc.github.io/Stuff/Al2O3_bond.html) Aluminiumoxid - Ionbinding
 
 ### Fotosyntese mv.
-- [Photosyntesis.html](https://coldcastlecc.github.io/Stuff/Photosynthesis.html) Fotosyntesen
+- [Photosynthesis.html](https://coldcastlecc.github.io/Stuff/Photosynthesis.html) Fotosyntesen
 
 ### Matematik & brøker
 - [Brøker – Addition](https://coldcastlecc.github.io/Stuff/Brøker_addition_Kun.png)
