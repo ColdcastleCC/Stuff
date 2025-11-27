@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Photosynthesis – Perfect Balance & Timing</title>
+    <style>
+        body {margin:0;background:#001a00;color:#0f0;font-family:Arial;text-align:center;}
+        h1 {margin:40px 0 20px 0;font-size:38px;color:#00ff00;text-shadow:0 0 15px #0f0;}
+        .equation {margin:30px 0;font-size:52px;font-weight:bold;color:#00ff88;letter-spacing:3px;}
+        .controls button {margin:10px;padding:14px 36px;font-size:22px;background:#00ff00;color:#000;border:none;border-radius:12px;cursor:pointer;}
+        button:hover {background:#00cc00;}
+        canvas {border:3px solid #00ff00;border-radius:18px;background:#002200;margin:30px auto;display:block;box-shadow:0 0 30px #00ff00;}
+    </style>
+</head>
+<body>
+<h1>Photosynthesis</h1>
+<div class="equation">
+    6CO₂ + 6H₂O  + light energy  →  C₆H₁₂O₆ + 6O₂
+</div>
+
+<div class="controls">
+    <button onclick="paused=!paused;this.textContent=paused?'Play':'Pause'">Pause</button>
+    <button onclick="resetAll()">Reset</button>
+</div>
+
+<canvas id="c" width="1200" height="620"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let t = 0;
+let paused = false;
+let waterMolecules = [];
+let co2Molecules = [];
+let o2Molecules = [];
+
+// Vein paths
+const veins = [
+    {path: [[600,650],[600,600],[610,550],[605,500],[600,450],[595,400],[600,350],[600,300],[600,250]]},
+    {path: [[520,650],[540,600],[560,550],[580,500],[595,450],[600,400],[600,350],[600,300],[600,250]]},
+    {path: [[680,650],[660,600],[640,550],[620,500],[605,450],[600,400],[600,350],[600,300],[600,250]]},
+    {path: [[440,650],[480,600],[520,550],[560,500],[585,450],[600,400],[600,350],[600,300],[600,250]]},
+    {path: [[760,650],[720,600],[680,550],[640,500],[615,450],[600,400],[600,350],[600,300],[600,250]]}
+];
+
+function resetAll() {
+    t = 0;
+    waterMolecules = [];
+    co2Molecules = [];
+    o2Molecules = [];
+
+    // CO₂ starts immediately and continuously
+    for(let i = 0; i < 20; i++) {
+        co2Molecules.push({
+            x: i % 2 === 0 ? -80 : canvas.width + 80,
+            y: 80 + (i * 35) % 250,
+            targetX: 600 + (Math.random()-0.5)*340,
+            targetY: 300 + (Math.random()-0.5)*220,
+            speed: 0.7 + Math.random()*0.4,
+            absorbed: false
+        });
+    }
+
+    // Much fewer H₂O – only 3–4 per vein, spaced nicely
+    for(let vi = 0; vi < veins.length; vi++) {
+        for(let j = 0; j < 4; j++) {  // only 4 per vein
+            waterMolecules.push({
+                vein: vi,
+                progress: j * 0.25,
+                speed: 0.0016
+            });
+        }
+    }
+}
+
+// Draw sun
+function drawSun() {
+    ctx.fillStyle = '#ffff00';
+    ctx.shadowBlur = 100;
+    ctx.shadowColor = '#ffff00';
+    ctx.beginPath();
+    ctx.arc(600, 100, 80 + Math.sin(t*0.06)*10, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+}
+
+// Draw leaf with internal veins
+function drawLeaf() {
+    ctx.fillStyle = '#004400';
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.moveTo(600, 200);
+    ctx.bezierCurveTo(350, 280, 350, 580, 600, 650);
+    ctx.bezierCurveTo(850, 580, 850, 280, 600, 200);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 7;
+    veins.forEach(vein => {
+        ctx.beginPath();
+        vein.path.forEach((p,i) => i===0 ? ctx.moveTo(p[0],p[1]) : ctx.lineTo(p[0],p[1]));
+        ctx.stroke();
+    });
+}
+
+function animate() {
+    ctx.fillStyle = 'rgba(0,26,0,0.18)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    drawSun();
+    drawLeaf();
+
+    // H₂O – clean, few, flowing smoothly along veins
+    waterMolecules.forEach(w => {
+        if (!paused) w.progress += w.speed;
+        if (w.progress > 1) w.progress = 0;
+
+        const path = veins[w.vein].path;
+        const i = Math.min(Math.floor(w.progress * (path.length-1)), path.length-2);
+        const frac = (w.progress * (path.length-1)) % 1;
+        const x = path[i][0] + (path[i+1][0] - path[i][0]) * frac;
+        const y = path[i][1] + (path[i+1][1] - path[i][1]) * frac;
+
+        ctx.fillStyle = '#00ccff';
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#00ccff';
+        ctx.font = 'bold 36px Arial';
+        ctx.fillText('H₂O', x-32, y+12);
+        ctx.shadowBlur = 0;
+    });
+
+    // CO₂ – starts immediately, gets absorbed
+    co2Molecules.forEach((c, idx) => {
+        if (!c.absorbed && !paused) {
+            const dx = c.targetX - c.x;
+            const dy = c.targetY - c.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 35) {
+                c.absorbed = true;
+            } else {
+                c.x += (dx/dist) * c.speed;
+                c.y += (dy/dist) * c.speed;
+            }
+        }
+
+        ctx.fillStyle = c.absorbed ? '#008800' : '#ffffff';
+        ctx.shadowBlur = c.absorbed ? 40 : 20;
+        ctx.shadowColor = c.absorbed ? '#00ff00' : '#ffffff';
+        ctx.font = 'bold 42px Arial';
+        ctx.fillText('CO₂', c.x-35, c.y+14);
+        ctx.shadowBlur = 0;
+    });
+
+    // Add new CO₂ every 90 frames so it never runs out
+    if (!paused && t % 90 === 0) {
+        co2Molecules.push({
+            x: Math.random() > 0.5 ? -80 : canvas.width + 80,
+            y: 80 + Math.random()*250,
+            targetX: 600 + (Math.random()-0.5)*340,
+            targetY: 300 + (Math.random()-0.5)*220,
+            speed: 0.7 + Math.random()*0.4,
+            absorbed: false
+        });
+    }
+
+    // O₂ gently flowing out
+    if (!paused && t % 110 < 2) {
+        const x = 600 + (Math.random()-0.5)*340;
+        const y = 300 + (Math.random()-0.5)*200;
+        o2Molecules.push({x, y, vx:(Math.random()-0.5)*1.4, vy:-2-Math.random()*2});
+    }
+
+    o2Molecules.forEach((o,i) => {
+        if (!paused) {
+            o.x += o.vx;
+            o.y += o.vy;
+            o.vy += 0.02;
+        }
+        if (o.y > canvas.height + 100) {
+            o2Molecules.splice(i,1);
+            return;
+        }
+        ctx.fillStyle = '#ff44ff';
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#ff44ff';
+        ctx.font = 'bold 42px Arial';
+        ctx.fillText('O₂', o.x-32, o.y+14);
+        ctx.shadowBlur = 0;
+    });
+
+    if (!paused) t++;
+    requestAnimationFrame(animate);
+}
+
+resetAll();
+animate();
+</script>
+</body>
+</html>
