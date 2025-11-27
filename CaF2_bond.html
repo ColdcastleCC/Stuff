@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calcium Fluoride Ionic Bond – Fixed Spacing</title>
+    <style>
+        body {margin:0; background:#000; color:#0ff; font-family:Arial; text-align:center;}
+        h1 {margin:30px; font-size:30px;}
+        .controls {margin:15px;}
+        button {margin:10px; padding:12px 32px; font-size:20px; background:#00ffff; color:#000; border:none; border-radius:8px; cursor:pointer;}
+        button:hover {background:#00cccc;}
+    </style>
+</head>
+<body>
+<h1>Calcium Fluoride Formation – Ca + 2F → Ca²⁺ 2F⁻</h1>
+<div class="controls">
+    <button id="pauseBtn">Pause</button>
+    <button id="resetBtn">Reset</button>
+</div>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+canvas.width = 1300;  // wider canvas
+canvas.height = 700;
+
+let t = 0;
+let animating = true;
+let requestId = null;
+
+function drawOrbit(cx, cy, r, show = true) {
+    if (!show) return;
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.stroke();
+}
+
+function drawElectron(cx, cy, r, angle, red = false) {
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    ctx.fillStyle = red ? '#ff0066' : '#00ffff';
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function animate() {
+    if (!animating) return;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const CaX = 650, CaY = 300;        // center
+    const F1X = 250, F1Y = 260;        // much further left
+    const F2X = 1050, F2Y = 260;       // much further right
+    const labelY = 620;
+
+    const firstStart = 200, firstEnd = 550;
+    const secondStart = 700, secondEnd = 1050;
+    const complete = t > secondEnd;
+
+    // CALCIUM
+    ctx.fillStyle = '#ff8800';
+    ctx.beginPath(); ctx.arc(CaX, CaY, 45, 0, Math.PI*2); ctx.fill();
+
+    drawOrbit(CaX, CaY, 80);
+    drawOrbit(CaX, CaY, 130);
+    drawOrbit(CaX, CaY, 180);
+    drawOrbit(CaX, CaY, 230, !complete);
+
+    for(let i=0;i<2;i++) drawElectron(CaX,CaY,80, i/2*6.28 + t*0.01);
+    for(let i=0;i<8;i++) drawElectron(CaX,CaY,130,i/8*6.28 + t*0.008);
+    for(let i=0;i<8;i++) drawElectron(CaX,CaY,180,i/8*6.28 + t*0.006);
+
+    if (t < secondEnd) {
+        drawElectron(CaX, CaY, 230, t*0.009, true);
+        drawElectron(CaX, CaY, 230, t*0.009 + Math.PI, t < firstEnd);
+    }
+
+    // FLUORINE 1 (left)
+    ctx.fillStyle = '#00ffcc';
+    ctx.beginPath(); ctx.arc(F1X, F1Y, 38, 0, Math.PI*2); ctx.fill();
+    drawOrbit(F1X, F1Y, 80);
+    drawOrbit(F1X, F1Y, 150);
+
+    for(let i=0;i<2;i++) drawElectron(F1X,F1Y,80, i/2*6.28 - t*0.007);
+    const f1outer = complete || t > firstEnd ? 8 : 7;
+    for(let i=0; i<f1outer; i++) {
+        const angle = i/8*6.28 - t*0.004;
+        const isRed = (complete || t > firstEnd) && i===0;
+        drawElectron(F1X, F1Y, 150, angle, isRed);
+    }
+
+    // FLUORINE 2 (right)
+    ctx.fillStyle = '#00ffcc';
+    ctx.beginPath(); ctx.arc(F2X, F2Y, 38, 0, Math.PI*2); ctx.fill();
+    drawOrbit(F2X, F2Y, 80);
+    drawOrbit(F2X, F2Y, 150);
+
+    for(let i=0;i<2;i++) drawElectron(F2X,F2Y,80, i/2*6.28 + t*0.007);
+    const f2outer = complete || t > secondEnd ? 8 : 7;
+    for(let i=0; i<f2outer; i++) {
+        const angle = i/8*6.28 + t*0.004;
+        const isRed = (complete || t > secondEnd) && i===0;
+        drawElectron(F2X, F2Y, 150, angle, isRed);
+    }
+
+    // Electron transfers (longer paths)
+    if (t >= firstStart && t <= firstEnd) {
+        const p = (t-firstStart)/(firstEnd-firstStart);
+        const sx = CaX + 230*Math.cos(firstStart*0.009);
+        const sy = CaY + 230*Math.sin(firstStart*0.009);
+        const x = sx + p*(F1X-sx);
+        const y = sy + p*(F1Y-sy) - 160*Math.sin(p*Math.PI);
+        drawElectron(x, y, 0, 0, true);
+    }
+    if (t >= secondStart && t <= secondEnd) {
+        const p = (t-secondStart)/(secondEnd-secondStart);
+        const sx = CaX + 230*Math.cos(firstStart*0.009 + Math.PI);
+        const sy = CaY + 230*Math.sin(firstStart*0.009 + Math.PI);
+        const x = sx + p*(F2X-sx);
+        const y = sy + p*(F2Y-sy) - 160*Math.sin(p*Math.PI);
+        drawElectron(x, y, 0, 0, true);
+    }
+
+    // Labels
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 48px Arial';
+    ctx.fillText(complete ? 'Ca²⁺' : 'Ca', CaX-70, labelY);
+    ctx.fillText(complete ? 'F⁻' : 'F', F1X-40, labelY);
+    ctx.fillText(complete ? 'F⁻' : 'F', F2X-40, labelY);
+
+    // Ionic bonds
+    if (complete) {
+        ctx.strokeStyle = '#ff8800';
+        ctx.lineWidth = 10;
+        ctx.setLineDash([25, 18]);
+        ctx.beginPath();
+        ctx.moveTo(CaX-120, CaY); ctx.lineTo(F1X+100, F1Y);
+        ctx.moveTo(CaX+120, CaY); ctx.lineTo(F2X-100, F2Y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    t += 0.8;
+    requestId = requestAnimationFrame(animate);
+}
+
+pauseBtn.addEventListener('click', () => {
+    animating = !animating;
+    pauseBtn.textContent = animating ? 'Pause' : 'Resume';
+    if (animating) animate();
+});
+
+resetBtn.addEventListener('click', () => {
+    if (requestId) cancelAnimationFrame(requestId);
+    t = 0;
+    animating = true;
+    pauseBtn.textContent = 'Pause';
+    animate();
+});
+
+animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ionic Bond Formation – With Pause & Reset</title>
+    <style>
+        body {margin:0; background:#000; color:#0ff; font-family:Arial; text-align:center;}
+        h1 {margin:30px; font-size:32px;}
+        .controls {margin:15px;}
+        button {margin:10px; padding:12px 32px; font-size:20px; background:#00ffff; color:#000; border:none; border-radius:8px; cursor:pointer;}
+        button:hover {background:#00cccc;}
+        button:active {background:#009999;}
+    </style>
+</head>
+<body>
+<h1>Ionic Bonding – Electron Transfer (Na + Cl → Na⁺ Cl⁻)</h1>
+<div class="controls">
+    <button id="pauseBtn">Pause</button>
+    <button id="resetBtn">Reset</button>
+</div>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+canvas.width = 1100;
+canvas.height = 650;
+
+let t = 0;
+let animating = true;
+let requestId = null;
+
+function drawOrbit(cx, cy, r, show = true) {
+    if (!show) return;
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.stroke();
+}
+
+function drawElectron(cx, cy, r, angle, red = false) {
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    ctx.fillStyle = red ? '#ff0066' : '#00ffff';
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function animate() {
+    if (!animating) return;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const NaX = 220, ClX = 880, atomY = 280, labelY = 560;
+    const transferStart = 200;
+    const transferEnd   = 600;
+    const complete = t > transferEnd;
+
+    // Sodium
+    ctx.fillStyle = '#ff00ff';
+    ctx.beginPath(); ctx.arc(NaX, atomY, 38, 0, Math.PI*2); ctx.fill();
+    drawOrbit(NaX, atomY, 80);
+    drawOrbit(NaX, atomY, 135);
+    drawOrbit(NaX, atomY, 190, !complete);
+
+    for(let i=0;i<2;i++) drawElectron(NaX, atomY, 80, i/2*6.28 + t*0.008);
+    for(let i=0;i<8;i++) drawElectron(NaX, atomY, 135, i/8*6.28 + t*0.006);
+    if (!complete) drawElectron(NaX, atomY, 190, t*0.01, true);
+
+    // Chlorine
+    ctx.fillStyle = '#00ff00';
+    ctx.beginPath(); ctx.arc(ClX, atomY, 38, 0, Math.PI*2); ctx.fill();
+    drawOrbit(ClX, atomY, 80);
+    drawOrbit(ClX, atomY, 135);
+    drawOrbit(ClX, atomY, 190);
+
+    for(let i=0;i<2;i++) drawElectron(ClX, atomY, 80, i/2*6.28 - t*0.007);
+    for(let i=0;i<8;i++) drawElectron(ClX, atomY, 135, i/8*6.28 - t*0.005);
+
+    const outerCount = complete ? 8 : 7;
+    for(let i=0; i<outerCount; i++) {
+        const angle = i/8*6.28 - t*0.004;
+        const isRed = complete && i===0;
+        drawElectron(ClX, atomY, 190, angle, isRed);
+    }
+
+    // Flying electron
+    if (t >= transferStart && t <= transferEnd) {
+        const p = (t - transferStart) / (transferEnd - transferStart);
+        const leaveAngle = transferStart * 0.01;
+        const startX = NaX + 190 * Math.cos(leaveAngle);
+        const startY = atomY + 190 * Math.sin(leaveAngle);
+        const x = startX + p * (ClX - startX);
+        const y = startY + p * (atomY - startY) - 130 * Math.sin(p * Math.PI);
+        drawElectron(x, y, 0, 0, true);
+    }
+
+    // Labels
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 52px Arial';
+    ctx.fillText(complete ? 'Na⁺' : 'Na', NaX-45, labelY);
+    ctx.fillText(complete ? 'Cl⁻' : 'Cl', ClX-50, labelY);
+
+    // Ionic bond line
+    if (complete) {
+        ctx.strokeStyle = '#ff00ff';
+        ctx.lineWidth = 10;
+        ctx.setLineDash([25, 20]);
+        ctx.beginPath();
+        ctx.moveTo(NaX + 120, atomY);
+        ctx.lineTo(ClX - 120, atomY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    t += 0.8;
+    requestId = requestAnimationFrame(animate);
+}
+
+// Pause / Resume
+pauseBtn.addEventListener('click', () => {
+    animating = !animating;
+    pauseBtn.textContent = animating ? 'Pause' : 'Resume';
+    if (animating) animate();
+});
+
+// Reset
+resetBtn.addEventListener('click', () => {
+    if (requestId) cancelAnimationFrame(requestId);
+    t = 0;
+    animating = true;
+    pauseBtn.textContent = 'Pause';
+    animate();
+});
+
+// Start
+animate();
+</script>
+</body>
+</html>

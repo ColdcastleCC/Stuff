@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Four States of Matter – Clean & Readable</title>
+    <style>
+        body {margin:0;background:#000;color:#0ff;font-family:Arial;text-align:center;}
+        h1 {margin:40px;font-size:36px;}
+        .controls button {margin:10px;padding:14px 34px;font-size:22px;background:#00ffff;color:#000;border:none;border-radius:10px;cursor:pointer;}
+        button:hover {background:#00cccc;}
+        canvas {border:2px solid #0ff;border-radius:12px;margin-top:20px;}
+    </style>
+</head>
+<body>
+<h1>The Four States of Matter – Molecular Behavior</h1>
+<div class="controls">
+    <button onclick="state=0">SOLID</button>
+    <button onclick="state=1">LIQUID</button>
+    <button onclick="state=2">GAS</button>
+    <button onclick="state=3">PLASMA</button>
+</div>
+
+<!-- Title text now far above the molecules -->
+<div style="margin:40px 0 20px 0;">
+    <div id="titleText" style="color:#0ff;font-size:52px;font-weight:bold;letter-spacing:2px;">
+        SOLID – Fixed positions, vibrate only
+    </div>
+</div>
+
+<canvas id="c" width="1200" height="580"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const titleText = document.getElementById('titleText');
+let state = 0;
+let t = 0;
+
+const titles = [
+    'SOLID – Fixed positions, vibrate only',
+    'LIQUID – Flow together, stay close',
+    'GAS – Fast random motion, fill container',
+    'PLASMA – Ions + free electrons, glowing!'
+];
+
+class Molecule {
+    constructor(x,y,vx,vy,r=20) {
+        this.x = x; this.y = y;
+        this.vx = vx; this.vy = vy;
+        this.r = r;
+        this.homeX = x; this.homeY = y;
+        this.phase = Math.random()*6;
+    }
+    update() {
+        if (state === 0) { // SOLID
+            this.x = this.homeX + Math.sin(t*0.2 + this.phase)*10;
+            this.y = this.homeY + Math.cos(t*0.15 + this.phase)*10;
+        }
+        if (state === 1) { // LIQUID
+            this.x += this.vx*0.35 + Math.sin(t*0.08)*0.6;
+            this.y += this.vy*0.35 + Math.cos(t*0.08)*0.6;
+        }
+        if (state >= 2) { // GAS & PLASMA
+            this.x += this.vx;
+            this.y += this.vy;
+        }
+        // Wall bounce
+        if (this.x < this.r || this.x > canvas.width-this.r) this.vx *= -1;
+        if (this.y < this.r || this.y > canvas.height-this.r) this.vy *= -1;
+        this.x = Math.max(this.r, Math.min(canvas.width-this.r, this.x));
+        this.y = Math.max(this.r, Math.min(canvas.height-this.r, this.y));
+    }
+    draw() {
+        // Molecule body
+        ctx.fillStyle = state===3 ? '#ff00ff' : '#00ffff';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+        ctx.fill();
+
+        // Nucleus
+        ctx.fillStyle = '#ff00ff';
+        ctx.beginPath(); ctx.arc(this.x-7, this.y-5, 7, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ff8800';
+        ctx.beginPath(); ctx.arc(this.x+7, this.y+5, 7, 0, Math.PI*2); ctx.fill();
+
+        // Orbiting electrons
+        const speed = state===3 ? 0.25 : 0.08;
+        const eR = this.r + 12;
+        for(let i=0;i<3;i++) {
+            const ang = t*speed + i*2.094;
+            const ex = this.x + eR*Math.cos(ang);
+            const ey = this.y + eR*Math.sin(ang);
+            ctx.fillStyle = state===3 ? '#ffff00' : '#00ff00';
+            ctx.beginPath();
+            ctx.arc(ex, ey, 6, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
+}
+
+// Create 80 molecules in neat grid
+const molecules = [];
+for(let i=0;i<80;i++) {
+    const m = new Molecule(
+        120 + (i%10)*100,
+        120 + Math.floor(i/10)*85,
+        (Math.random()-0.5)*5,
+        (Math.random()-0.5)*5
+    );
+    molecules.push(m);
+}
+
+function animate() {
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Update title text
+    titleText.textContent = titles[state];
+
+    molecules.forEach(m => {
+        m.update();
+        m.draw();
+    });
+
+    // Plasma lightning
+    if (state===3) {
+        ctx.strokeStyle = `rgba(255,100,255,${0.2+0.4*Math.sin(t*0.15)})`;
+        ctx.lineWidth = 4;
+        for(let i=0;i<25;i++) {
+            ctx.beginPath();
+            const x1 = Math.random()*canvas.width;
+            const y1 = Math.random()*canvas.height;
+            const x2 = x1 + (Math.random()-0.5)*200;
+            const y2 = y1 + (Math.random()-0.5)*200;
+            ctx.moveTo(x1,y1);
+            ctx.lineTo(x2,y2);
+            ctx.stroke();
+        }
+    }
+
+    t += 0.8;
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>

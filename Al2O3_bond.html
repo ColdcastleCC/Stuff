@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Al₂O₃ Ionic Bond – Perfect Spacing (No Overlap At All)</title>
+    <style>
+        body {margin:0; background:#000; color:#0ff; font-family:Arial; text-align:center;}
+        h1 {margin:20px; font-size:28px;}
+        .controls {margin:15px;}
+        button {margin:10px; padding:12px 32px; font-size:20px; background:#00ffff; color:#000; border:none; border-radius:8px; cursor:pointer;}
+        button:hover {background:#00cccc;}
+    </style>
+</head>
+<body>
+<h1>Al₂O₃ Formation – 2Al + 3O → 2Al³⁺ + 3O²⁻  (6 electrons transferred)</h1>
+<div class="controls">
+    <button id="pauseBtn">Pause</button>
+    <button id="resetBtn">Reset</button>
+</div>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+canvas.width = 1700;
+canvas.height = 950;
+
+let t = 0;
+let animating = true;
+let requestId = null;
+
+function drawOrbit(cx, cy, r, show = true) {
+    if (!show) return;
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.stroke();
+}
+
+function drawElectron(cx, cy, r, angle, red = false) {
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    ctx.fillStyle = red ? '#ff0066' : '#00ffff';
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function animate() {
+    if (!animating) return;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // FINAL SPACING – absolutely no orbital overlap
+    const Al1X = 250,   Al1Y = 350;
+    const Al2X = 1450,  Al2Y = 350;
+    const O1X  = 550,   O1Y = 650;   // bottom left
+    const O2X  = 850,   O2Y = 450;   // top center
+    const O3X  = 1150,  O3Y = 650;   // bottom right
+    const labelY = 900;
+
+    const complete = t > 1800;
+
+    // === ALUMINIUM 1 & 2 ===
+    [Al1X, Al2X].forEach((ax, idx) => {
+        const offset = idx * 0.3;
+        ctx.fillStyle = '#ffaa00';
+        ctx.beginPath(); ctx.arc(ax, Al1Y, 42, 0, Math.PI*2); ctx.fill();
+
+        drawOrbit(ax, Al1Y, 80);
+        drawOrbit(ax, Al1Y, 140);
+        drawOrbit(ax, Al1Y, 200, !complete);
+
+        for(let i=0;i<2;i++) drawElectron(ax,Al1Y,80, i/2*6.28 + t*0.009 + offset);
+        for(let i=0;i<8;i++) drawElectron(ax,Al1Y,140,i/8*6.28 + t*0.007 + offset);
+
+        if (!complete) {
+            const baseAngle = t*0.008 + offset;
+            drawElectron(ax, Al1Y, 200, baseAngle, true);
+            drawElectron(ax, Al1Y, 200, baseAngle + 2.094, true);
+            drawElectron(ax, Al1Y, 200, baseAngle + 4.189, t > 300);
+        }
+    });
+
+    // === OXYGEN 1,2,3 – now very far apart ===
+    const oxygenPos = [[O1X,O1Y],[O2X,O2Y],[O3X,O3Y]];
+    oxygenPos.forEach(([ox, oy], idx) => {
+        const offset = idx * 0.25;
+        ctx.fillStyle = '#ff4444';
+        ctx.beginPath(); ctx.arc(ox, oy, 40, 0, Math.PI*2); ctx.fill();
+
+        drawOrbit(ox, oy, 80);
+        drawOrbit(ox, oy, 160);
+
+        for(let i=0;i<2;i++) drawElectron(ox,oy,80, i/2*6.28 - t*0.007 - offset);
+
+        const gained = (t > 600 && idx===0) || (t > 1100 && idx===1) || (t > 1600 && idx===2) ? 2 : 
+                       (t > 300 && idx===0) || (t > 900 && idx===1) || (t > 1400 && idx===2) ? 1 : 0;
+        const outerCount = 6 + gained;
+        for(let i=0; i<outerCount; i++) {
+            const angle = i/8*6.28 - t*0.004 + offset;
+            const isRed = gained >= (i<4 ? 1 : 2);
+            drawElectron(ox, oy, 160, angle, isRed);
+        }
+    });
+
+    // === 6 ELECTRON TRANSFERS (long graceful paths) ===
+    const transfers = [
+        {start:300, end:600,   from:Al1X, fromY:Al1Y, to:O1X, toY:O1Y},
+        {start:500, end:800,   from:Al1X, fromY:Al1Y, to:O2X, toY:O2Y},
+        {start:700, end:1000,  from:Al2X, fromY:Al2Y, to:O1X, toY:O1Y},
+        {start:900, end:1200,  from:Al2X, fromY:Al2Y, to:O2X, toY:O2Y},
+        {start:1100,end:1400,  from:Al1X, fromY:Al1Y, to:O3X, toY:O3Y},
+        {start:1300,end:1600,  from:Al2X, fromY:Al2Y, to:O3X, toY:O3Y}
+    ];
+
+    transfers.forEach(tr => {
+        if (t >= tr.start && t <= tr.end) {
+            const p = (t - tr.start)/(tr.end - tr.start);
+            const angle = tr.start*0.008 + (tr.from === Al2X ? 0.3 : 0);
+            const sx = tr.from + 200*Math.cos(angle);
+            const sy = tr.fromY + 200*Math.sin(angle);
+            const x = sx + p*(tr.to - sx);
+            const y = sy + p*(tr.toY - sy) - 250*Math.sin(p*Math.PI);
+            drawElectron(x, y, 0, 0, true);
+        }
+    });
+
+    // Labels (very bottom)
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 48px Arial';
+    ctx.fillText(complete ? 'Al³⁺' : 'Al', 180, labelY);
+    ctx.fillText(complete ? 'Al³⁺' : 'Al', 1380, labelY);
+    ctx.fillText(complete ? 'O²⁻' : 'O', 500, labelY);
+    ctx.fillText(complete ? 'O²⁻' : 'O', 800, labelY);
+    ctx.fillText(complete ? 'O²⁻' : 'O', 1100, labelY);
+
+    // Final ionic lattice lines
+    if (complete) {
+        ctx.strokeStyle = '#ffaa00';
+        ctx.lineWidth = 12;
+        ctx.setLineDash([40, 30]);
+        ctx.beginPath();
+        [[Al1X,O1X,O1Y],[Al1X,O2X,O2Y],[Al1X,O3X,O3Y],
+         [Al2X,O1X,O1Y],[Al2X,O2X,O2Y],[Al2X,O3X,O3Y]].forEach(([ax,ox,oy]) => {
+            ctx.moveTo(ax+140, Al1Y);
+            ctx.lineTo(ox-110, oy);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    t += 0.8;
+    requestId = requestAnimationFrame(animate);
+}
+
+pauseBtn.addEventListener('click', () => {
+    animating = !animating;
+    pauseBtn.textContent = animating ? 'Pause' : 'Resume';
+    if (animating) animate();
+});
+
+resetBtn.addEventListener('click', () => {
+    if (requestId) cancelAnimationFrame(requestId);
+    t = 0;
+    animating = true;
+    pauseBtn.textContent = 'Pause';
+    animate();
+});
+
+animate();
+</script>
+</body>
+</html>

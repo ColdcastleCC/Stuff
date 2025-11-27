@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Magnesium Oxide Ionic Bond – Mg + O → Mg²⁺ O²⁻</title>
+    <style>
+        body {margin:0; background:#000; color:#0ff; font-family:Arial; text-align:center;}
+        h1 {margin:30px; font-size:32px;}
+        .controls {margin:15px;}
+        button {margin:10px; padding:12px 32px; font-size:20px; background:#00ffff; color:#000; border:none; border-radius:8px; cursor:pointer;}
+        button:hover {background:#00cccc;}
+    </style>
+</head>
+<body>
+<h1>Magnesium Oxide Formation – Mg + O → Mg²⁺ O²⁻</h1>
+<div class="controls">
+    <button id="pauseBtn">Pause</button>
+    <button id="resetBtn">Reset</button>
+</div>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+canvas.width = 1100;
+canvas.height = 650;
+
+let t = 0;
+let animating = true;
+let requestId = null;
+
+function drawOrbit(cx, cy, r, show = true) {
+    if (!show) return;
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.stroke();
+}
+
+function drawElectron(cx, cy, r, angle, red = false) {
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    ctx.fillStyle = red ? '#ff0066' : '#00ffff';
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function animate() {
+    if (!animating) return;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const MgX = 300, OX = 800, Y = 280, labelY = 560;
+    const firstStart = 200, firstEnd = 500;
+    const secondStart = 650, secondEnd = 950;
+    const complete = t > secondEnd;
+
+    // === MAGNESIUM (2-8-2 → Mg²⁺) ===
+    ctx.fillStyle = '#ff00ff';
+    ctx.beginPath(); ctx.arc(MgX, Y, 40, 0, Math.PI*2); ctx.fill();
+
+    drawOrbit(MgX, Y, 80);
+    drawOrbit(MgX, Y, 140);
+    drawOrbit(MgX, Y, 200, !complete);
+
+    // Inner shells
+    for(let i=0;i<2;i++) drawElectron(MgX,Y,80, i/2*6.28 + t*0.008);
+    for(let i=0;i<8;i++) drawElectron(MgX,Y,140,i/8*6.28 + t*0.006);
+
+    // Two outer electrons (both red)
+    if (t < secondEnd) {
+        drawElectron(MgX, Y, 200, t*0.009, true);                    // first
+        drawElectron(MgX, Y, 200, t*0.009 + Math.PI, t < firstEnd); // second (opposite)
+    }
+
+    // === OXYGEN (2-6 → O²⁻) ===
+    ctx.fillStyle = '#00ff88';
+    ctx.beginPath(); ctx.arc(OX, Y, 40, 0, Math.PI*2); ctx.fill();
+
+    drawOrbit(OX, Y, 80);
+    drawOrbit(OX, Y, 160);
+
+    for(let i=0;i<2;i++) drawElectron(OX,Y,80, i/2*6.28 - t*0.007);
+
+    const outerCount = complete ? 8 : (t > firstEnd ? 7 : 6);
+    for(let i=0; i<outerCount; i++) {
+        const angle = i/8*6.28 - t*0.004;
+        const isRed = complete && (i===0 || i===4);
+        drawElectron(OX, Y, 160, angle, isRed);
+    }
+
+    // === FIRST ELECTRON TRANSFER ===
+    if (t >= firstStart && t <= firstEnd) {
+        const p = (t-firstStart)/(firstEnd-firstStart);
+        const leaveAngle = firstStart*0.009;
+        const sx = MgX + 200*Math.cos(leaveAngle);
+        const sy = Y + 200*Math.sin(leaveAngle);
+        const x = sx + p*(OX-sx);
+        const y = sy + p*(Y-sy) - 140*Math.sin(p*Math.PI);
+        drawElectron(x, y, 0, 0, true);
+    }
+
+    // === SECOND ELECTRON TRANSFER ===
+    if (t >= secondStart && t <= secondEnd) {
+        const p = (t-secondStart)/(secondEnd-secondStart);
+        const leaveAngle = firstStart*0.009 + Math.PI;
+        const sx = MgX + 200*Math.cos(leaveAngle);
+        const sy = Y + 200*Math.sin(leaveAngle);
+        const x = sx + p*(OX-sx);
+        const y = sy + p*(Y-sy) - 140*Math.sin(p*Math.PI);
+        drawElectron(x, y, 0, 0, true);
+    }
+
+    // Labels
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 52px Arial';
+    ctx.fillText(complete ? 'Mg²⁺' : 'Mg', MgX-70, labelY);
+    ctx.fillText(complete ? 'O²⁻'  : 'O',  OX-50, labelY);
+
+    // Ionic bond line
+    if (complete) {
+        ctx.strokeStyle = '#ff00ff';
+        ctx.lineWidth = 12;
+        ctx.setLineDash([30, 20]);
+        ctx.beginPath();
+        ctx.moveTo(MgX+130, Y);
+        ctx.lineTo(OX-130, Y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    t += 0.8;
+    requestId = requestAnimationFrame(animate);
+}
+
+// Controls
+pauseBtn.addEventListener('click', () => {
+    animating = !animating;
+    pauseBtn.textContent = animating ? 'Pause' : 'Resume';
+    if (animating) animate();
+});
+
+resetBtn.addEventListener('click', () => {
+    if (requestId) cancelAnimationFrame(requestId);
+    t = 0;
+    animating = true;
+    pauseBtn.textContent = 'Pause';
+    animate();
+});
+
+animate();
+</script>
+</body>
+</html>
