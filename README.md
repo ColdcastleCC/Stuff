@@ -20,7 +20,7 @@ Matematik og fysik
 - [Brøker – Forlængelse/Forkortelse](https://coldcastlecc.github.io/Stuff/Brøker_forlængelse_forkortelse.png)
 - [DELING AF PIZZA](https://coldcastlecc.github.io/Stuff/DELING_AF_PIZZA.jpg) 🍕
 - [Simpel ligning](https://coldcastlecc.github.io/Stuff/Simpel_ligning.png)
-- [Almindelig ligning](https://coldcastlecc.github.io/Stuff/almindeligliggning.png)
+- [almindelig ligning](https://coldcastlecc.github.io/Stuff/almindeligliggning.png)
 - [Division CC](https://coldcastlecc.github.io/Stuff/division_CC.png)
 - [Procentregning](https://coldcastlecc.github.io/Stuff/procentregning.png)
 - [Pythagoras](https://coldcastlecc.github.io/Stuff/Pythagoras.png)
