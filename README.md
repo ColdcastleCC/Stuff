@@ -8,14 +8,16 @@ Matematik og fysik
 - [MgO_bond.html](https://coldcastlecc.github.io/Stuff/MgO_bond.html) Magnesiumoxid - Ionbinding
 - [CaF2_bond.html](https://coldcastlecc.github.io/Stuff/CaF2_bond.html) Calciumflourid - Ionbinding
 - [Al2O3_bond.html](https://coldcastlecc.github.io/Stuff/Al2O3_bond.html) Aluminiumoxid - Ionbinding
+
+### Fotosyntese mv.
+- [Photosyntesis.html](https://coldcastlecc.github.io/Stuff/Photosynthesis.html) Fotosyntesen
+
 ### Matematik & brøker
 - [Brøker – Addition](https://coldcastlecc.github.io/Stuff/Brøker_addition_Kun.png)
 - [Brøker – Subtraktion](https://coldcastlecc.github.io/Stuff/Brøker_subtraktion_KUN.png)
 - [Brøker – Multiplikation](https://coldcastlecc.github.io/Stuff/Brøker_multiplikation.png)
 - [Brøker – Division](https://coldcastlecc.github.io/Stuff/Brøker_division.jpg)
 - [Brøker – Forlængelse/Forkortelse](https://coldcastlecc.github.io/Stuff/Brøker_forlængelse_forkortelse.png)
-
-### Pizzabrøker og andet
 - [DELING AF PIZZA](https://coldcastlecc.github.io/Stuff/DELING_AF_PIZZA.jpg) 🍕
 - [Simpel ligning](https://coldcastlecc.github.io/Stuff/Simpel_ligning.png)
 - [Almindelig ligning](https://coldcastlecc.github.io/Stuff/almindeligliggning.png)
