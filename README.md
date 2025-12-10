@@ -23,7 +23,7 @@ Matematik og fysik
 - [Almindelig ligning](https://coldcastlecc.github.io/Stuff/almindeligligning.png)
 - [Division CC](https://coldcastlecc.github.io/Stuff/division_CC.png)
 - [Procentregning](https://coldcastlecc.github.io/Stuff/procentregning.png)
-- [Procentregning](https://coldcastlecc.github.io/Stuff/Pythagoras1.png)
+- [Pythagoras](https://coldcastlecc.github.io/Stuff/Pythagoras1.png)
 
 
 ---
