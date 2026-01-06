@@ -11,6 +11,8 @@ Matematik og fysik
 
 ### Fotosyntese mv.
 - [Photosynthesis.html](https://coldcastlecc.github.io/Stuff/Photosynthesis.html) Fotosyntesen
+- [BatteriQE.mp4](https://coldcastlecc.github.io/Stuff/BatteriQE.mp4) Hvordan et batteri virker
+
 
 ### Matematik & brøker
 - [Brøker – Addition](https://coldcastlecc.github.io/Stuff/Brøker_addition_Kun.png)
