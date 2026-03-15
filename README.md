@@ -28,7 +28,7 @@ Matematik og fysik
 - [Pythagoras](https://coldcastlecc.github.io/Stuff/Pythagoras1.png)
 
 ---
-### Quizpil
+### Quiz-spil
 
 - [rumrejsen.html](https://coldcastlecc.github.io/Stuff/rumrejsen.html) – Astronomispil for 7.klasse HAY
 
