@@ -35,3 +35,7 @@ Matematik og fysik
 - [ordmesteren.html](https://coldcastlecc.github.io/Stuff/ordmesteren.html) – Spil om ordklasser til 6.klasse HAY
 
 - [komma-spillet.html](https://coldcastlecc.github.io/Stuff/komma-spillet.html) – Spil om kommaer til 6.klasse HAY
+
+
+---------------------
+ColdcastleCC – 2025
