@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kommakongen – Det Danske Komma-Spil</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky:#0d0b26; --panel:#181444; --panel2:#201c54; --border:#3d3590;
+    --accent:#ff6b9d; --accent2:#ffaa3b; --blue:#52d8ff; --green:#5af5a0;
+    --red:#ff5070; --yellow:#ffe566; --purple:#c87aff; --white:#eeeaff; --muted:#9b91cc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--sky);font-family:'Nunito Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow-x:hidden;color:var(--white);}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 25%,rgba(120,60,255,.22) 0%,transparent 55%),radial-gradient(ellipse at 85% 75%,rgba(255,107,157,.14) 0%,transparent 50%),radial-gradient(ellipse at 50% 5%,rgba(82,216,255,.1) 0%,transparent 45%);pointer-events:none;z-index:0;animation:bgPulse 9s ease-in-out infinite alternate;}
+  @keyframes bgPulse{from{opacity:.7}to{opacity:1}}
+  .star{position:fixed;border-radius:50%;background:white;pointer-events:none;z-index:0;animation:twinkle var(--d,3s) ease-in-out infinite alternate;}
+  @keyframes twinkle{from{opacity:var(--o,.6);transform:scale(1)}to{opacity:.05;transform:scale(1.8)}}
+  .screen{display:none;position:relative;z-index:1;width:min(680px,96vw);animation:popIn .35s cubic-bezier(.175,.885,.32,1.275);}
+  .screen.active{display:block;}
+  @keyframes popIn{from{opacity:0;transform:scale(.88) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .card{background:linear-gradient(155deg,var(--panel) 0%,var(--panel2) 100%);border-radius:26px;padding:40px 44px;box-shadow:0 0 0 2px var(--border),0 0 50px rgba(60,50,160,.55),0 22px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);position:relative;overflow:hidden;}
+  .card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),var(--accent),var(--purple),transparent);opacity:.75;}
+  h1{font-family:'Nunito',sans-serif;font-size:clamp(2.3rem,7vw,3.5rem);font-weight:900;color:var(--white);text-align:center;line-height:1.05;text-shadow:0 0 35px rgba(255,107,157,.6),0 4px 0 rgba(0,0,0,.4);}
+  h1 em{font-style:normal;color:var(--accent);}
+  .mascot{text-align:center;font-size:4.5rem;display:block;margin:4px 0;animation:mascotFloat 3s ease-in-out infinite;filter:drop-shadow(0 6px 18px rgba(255,107,157,.45));}
+  @keyframes mascotFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+  h2{font-family:'Nunito',sans-serif;font-size:1.65rem;font-weight:900;color:var(--white);text-align:center;margin-bottom:20px;text-shadow:0 0 20px rgba(82,216,255,.35);}
+  p{color:var(--muted);line-height:1.7;font-size:.97rem;}
+  .subtitle{display:block;text-align:center;font-size:.78rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:6px;opacity:.85;}
+  .divider{height:2px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:20px 0;border-radius:1px;}
+  .btn{display:inline-block;padding:13px 30px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:.94rem;font-weight:800;cursor:pointer;border:none;transition:all .15s cubic-bezier(.175,.885,.32,1.275);letter-spacing:.04em;text-transform:uppercase;position:relative;}
+  .btn:active{transform:scale(.93)!important;}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#d0437a);color:#fff;box-shadow:0 6px 22px rgba(255,107,157,.45),0 0 0 2px rgba(255,107,157,.18);}
+  .btn-primary:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 10px 28px rgba(255,107,157,.55);}
+  .btn-secondary{background:rgba(255,255,255,.06);color:var(--blue);border:2px solid var(--blue);}
+  .btn-secondary:hover{background:rgba(82,216,255,.12);transform:translateY(-2px);}
+  .btn-gold{background:linear-gradient(135deg,var(--accent2),#d0820e);color:#fff;box-shadow:0 6px 20px rgba(255,170,59,.4);}
+  .btn-gold:hover{transform:translateY(-3px) scale(1.04);}
+  .input-group{margin:18px 0;}
+  .input-group label{display:block;font-size:.78rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;}
+  .input-group input{width:100%;padding:13px 18px;border:2px solid var(--border);border-radius:14px;background:rgba(255,255,255,.05);font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:700;color:var(--white);outline:none;transition:all .2s;}
+  .input-group input::placeholder{color:rgba(155,145,204,.45);}
+  .input-group input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,157,.2);}
+
+  /* SENTENCE */
+  .sentence-box{background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:18px;padding:26px 28px;font-size:clamp(1.05rem,2.8vw,1.26rem);line-height:2.3;color:var(--white);font-family:'Nunito Sans',sans-serif;font-weight:600;min-height:100px;text-align:center;position:relative;margin:14px 0;box-shadow:inset 0 2px 12px rgba(0,0,0,.2);}
+
+  /* COMMA SLOT
+   * Slots are surrounded by normal spaces in HTML so words never smash together.
+   * The slot element itself is zero-width and fully invisible when empty —
+   * only the normal inter-word space remains, giving no positional hint.
+   * The comma floats absolutely on top when filled/revealed.
+   */
+  .comma-slot{display:inline-block;width:0;height:1.4em;vertical-align:bottom;cursor:pointer;position:relative;overflow:visible;}
+  .comma-slot::before{content:'';position:absolute;top:0;bottom:0;left:-14px;right:-14px;border-radius:4px;background:transparent;transition:background .12s;}
+  .comma-slot:hover::before{background:rgba(255,230,102,.07);}
+  /* All states share the same comma glyph, positioned above the space */
+  .comma-slot.filled::after,
+  .comma-slot.correct::after,
+  .comma-slot.wrong::after,
+  .comma-slot.missed::after{
+    position:absolute;bottom:1px;left:50%;
+    transform:translateX(-50%);
+    font-size:1.3rem;font-weight:900;line-height:1;
+    pointer-events:none;
+  }
+  .comma-slot.filled::after{content:',';color:var(--yellow);text-shadow:0 0 10px rgba(255,230,102,.85);animation:commaPop .18s cubic-bezier(.175,.885,.32,1.275);}
+  @keyframes commaPop{from{transform:translateX(-50%) scale(0)}to{transform:translateX(-50%) scale(1)}}
+  .comma-slot.correct::after{content:',';color:var(--green);text-shadow:0 0 10px rgba(90,245,160,.9);}
+  .comma-slot.wrong::after{content:',';color:var(--red);text-shadow:0 0 10px rgba(255,80,112,.9);}
+  .comma-slot.missed::after{content:',';color:var(--red);opacity:.55;text-shadow:0 0 8px rgba(255,80,112,.7);}
+
+  /* HUD */
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .hud-item{text-align:center;}
+  .hud-label{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;}
+  .hud-value{font-family:'Nunito',sans-serif;font-size:1.7rem;font-weight:900;color:var(--white);line-height:1;}
+  .hud-value.accent{color:var(--accent);text-shadow:0 0 16px rgba(255,107,157,.5);}
+  .timer-bar-wrap{width:100%;height:8px;background:rgba(255,255,255,.08);border-radius:4px;margin-bottom:14px;overflow:hidden;}
+  .timer-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:4px;transition:width .1s linear;box-shadow:0 0 8px rgba(82,216,255,.5);}
+  .timer-bar.urgent{background:linear-gradient(90deg,var(--red),var(--accent));box-shadow:0 0 8px rgba(255,80,112,.8);animation:timerPulse .4s ease infinite alternate;}
+  @keyframes timerPulse{from{opacity:1}to{opacity:.55}}
+  .level-badge{display:inline-block;background:rgba(82,216,255,.1);color:var(--blue);font-family:'Nunito',sans-serif;font-size:.74rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:50px;border:1.5px solid rgba(82,216,255,.3);}
+  .rule-hint{background:rgba(255,230,102,.07);border-left:3px solid var(--yellow);padding:9px 14px;border-radius:0 10px 10px 0;font-size:.86rem;color:rgba(255,230,102,.85);font-style:italic;margin-bottom:12px;}
+  .cat-tag{display:inline-block;background:rgba(90,245,160,.09);color:var(--green);font-size:.7rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;padding:4px 12px;border-radius:50px;border:1.5px solid rgba(90,245,160,.28);margin-bottom:10px;}
+  .feedback{text-align:center;font-family:'Nunito',sans-serif;font-size:1.22rem;font-weight:900;padding:13px;border-radius:14px;margin:12px 0;opacity:0;transition:opacity .2s;}
+  .feedback.show{opacity:1;}
+  .feedback.correct{color:var(--green);background:rgba(90,245,160,.1);border:1.5px solid rgba(90,245,160,.22);animation:correctPop .3s cubic-bezier(.175,.885,.32,1.275);}
+  .feedback.wrong{color:var(--red);background:rgba(255,80,112,.1);border:1.5px solid rgba(255,80,112,.22);}
+  @keyframes correctPop{0%{transform:scale(.88)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+  .explanation{background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:12px;padding:13px 17px;font-size:.87rem;color:var(--muted);display:none;line-height:1.6;}
+  .explanation.show{display:block;}
+  .explanation strong{color:var(--white);}
+  .progress-dots{display:flex;justify-content:center;gap:8px;margin:10px 0;}
+  .dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.1);transition:all .3s cubic-bezier(.175,.885,.32,1.275);border:2px solid rgba(255,255,255,.06);}
+  .dot.done{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(90,245,160,.6);}
+  .dot.wrong-dot{background:var(--red);border-color:var(--red);box-shadow:0 0 8px rgba(255,80,112,.6);}
+  .dot.current{background:var(--yellow);border-color:var(--yellow);transform:scale(1.35);box-shadow:0 0 10px rgba(255,230,102,.7);}
+  .lives{display:flex;gap:5px;align-items:center;}
+  .heart{font-size:1.3rem;transition:all .3s;display:inline-block;}
+  .heart.lost{opacity:.18;filter:grayscale(1);transform:scale(.72);}
+  .streak-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Nunito',sans-serif;font-size:.78rem;padding:4px 12px;border-radius:50px;font-weight:800;opacity:0;transition:opacity .3s;box-shadow:0 3px 12px rgba(255,107,157,.4);}
+  .streak-badge.show{opacity:1;animation:streakBounce .4s cubic-bezier(.175,.885,.32,1.275);}
+  @keyframes streakBounce{0%{transform:scale(.55)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .action-row{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+  .score-list{list-style:none;margin:14px 0;}
+  .score-list li{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(61,53,144,.3);font-size:.93rem;border-radius:8px;transition:background .15s;}
+  .score-list li:hover{background:rgba(255,255,255,.04);}
+  .score-list li:first-child{background:rgba(255,230,102,.07);border:1px solid rgba(255,230,102,.18);margin-bottom:4px;}
+  .score-list .rank{font-family:'Nunito',sans-serif;font-weight:900;color:var(--yellow);width:28px;font-size:1.1rem;}
+  .score-list .name{flex:1;font-weight:700;color:var(--white);}
+  .score-list .pts{font-family:'Nunito',sans-serif;font-weight:900;color:var(--accent);}
+  .score-list .lvl{font-size:.74rem;color:var(--muted);margin-left:10px;}
+  .empty-state{text-align:center;color:var(--muted);padding:24px;font-style:italic;}
+  .big-score{font-family:'Nunito',sans-serif;font-size:4.2rem;font-weight:900;color:var(--accent);text-align:center;line-height:1;margin:8px 0;text-shadow:0 0 30px rgba(255,107,157,.6),0 4px 0 rgba(0,0,0,.3);}
+  .score-details{display:flex;justify-content:center;gap:28px;margin:14px 0;flex-wrap:wrap;}
+  .score-detail{text-align:center;}
+  .score-detail .lbl{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+  .score-detail .val{font-family:'Nunito',sans-serif;font-size:1.44rem;font-weight:900;color:var(--white);}
+  @keyframes shake{0%,100%{transform:translateX(0) rotate(0)}20%{transform:translateX(-8px) rotate(-1deg)}40%{transform:translateX(8px) rotate(1deg)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  .shake{animation:shake .4s ease;}
+  .confetti-piece{position:fixed;pointer-events:none;z-index:9999;animation:confettiFall var(--dur,1.2s) ease-in forwards;}
+  @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0) scale(1);opacity:1}80%{opacity:1}100%{transform:translateY(100vh) rotate(720deg) scale(.4);opacity:0}}
+  .starburst{position:fixed;pointer-events:none;z-index:9999;font-size:1.6rem;animation:burstFly .7s ease-out forwards;}
+  @keyframes burstFly{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1.2);opacity:0}}
+  @media(max-width:500px){.card{padding:26px 20px}.sentence-box{padding:18px 12px}h1{font-size:2rem}}
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="screen-welcome" class="screen active">
+  <div class="card">
+    <span class="mascot">👑</span>
+    <span class="subtitle">Det Officielle Komma-Mesterskab</span>
+    <h1><em>Komma</em>kongen</h1>
+    <p style="text-align:center;margin:14px 0 6px;font-size:1rem;">Bevis at du behersker det danske komma!</p>
+    <div class="divider"></div>
+    <div class="input-group">
+      <label>Dit navn</label>
+      <input type="text" id="player-name" placeholder="Skriv dit navn…" maxlength="20" autocomplete="off">
+    </div>
+    <div id="saved-profiles" style="margin:0 0 18px;"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="startGame()">✨ Spil nu</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-highscore')">🏆 Topscorer</button>
+    </div>
+    <div class="divider"></div>
+    <p style="font-size:.85rem;text-align:center;line-height:1.65;">Klik på de mulige kommapladser i sætningen for at sætte komma.<br>Vanskeligheden øges for hvert niveau — op til 5 niveauer!</p>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="card">
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-label">Point</span>
+        <span class="hud-value accent" id="hud-score">0</span>
+      </div>
+      <div style="text-align:center;">
+        <div id="level-badge" class="level-badge">Niveau 1</div>
+        <div style="margin-top:6px;"><span id="streak-badge" class="streak-badge">🔥 Streak ×2</span></div>
+      </div>
+      <div class="hud-item" style="text-align:right;">
+        <span class="hud-label">Liv</span>
+        <div class="lives" id="lives-display"></div>
+      </div>
+    </div>
+    <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+    <div class="progress-dots" id="progress-dots"></div>
+    <div><span id="cat-tag" class="cat-tag">Regel</span></div>
+    <div id="rule-hint" class="rule-hint">Hint…</div>
+    <div class="sentence-box" id="sentence-display"></div>
+    <div id="feedback" class="feedback"></div>
+    <div id="explanation" class="explanation"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="checkAnswer()">Tjek svar ✔</button>
+      <button class="btn btn-secondary" onclick="clearSlots()">Ryd</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL COMPLETE -->
+<div id="screen-level" class="screen">
+  <div class="card" style="text-align:center;">
+    <span class="mascot">🌟</span>
+    <h2 id="level-complete-title">Godt klaret!</h2>
+    <div class="big-score" id="level-score">+500</div>
+    <p id="level-msg" style="margin:10px 0 20px;"></p>
+    <div class="score-details" id="level-details"></div>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="nextLevel()">Næste niveau →</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="screen-gameover" class="screen">
+  <div class="card" style="text-align:center;">
+    <span class="mascot">💫</span>
+    <h2>Spillet er slut</h2>
+    <p id="go-player" style="margin-bottom:6px;"></p>
+    <div class="big-score" id="go-score">0</div>
+    <p style="font-size:.85rem;margin-bottom:14px;">point</p>
+    <div class="score-details" id="go-details"></div>
+    <div id="go-record" style="margin:12px 0;font-family:'Nunito',sans-serif;font-size:1rem;color:var(--yellow);font-weight:900;"></div>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="startGame()">Spil igen</button>
+      <button class="btn btn-gold" onclick="showScreen('screen-highscore')">🏆 Topscorer</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-welcome')">Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIGHSCORE -->
+<div id="screen-highscore" class="screen">
+  <div class="card">
+    <span class="mascot">🏆</span>
+    <h2>Resultattavlen</h2>
+    <ul class="score-list" id="score-list"></ul>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="showScreen('screen-welcome')">← Tilbage</button>
+      <button class="btn btn-secondary" onclick="clearHighscores()">Nulstil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LEVELS=[
+  {name:"Begynder",timeLimit:40,pointsPerCorrect:100,questions:[
+    {text:"Jeg vil gerne have en kage{0}men jeg er på slankekur.",commas:[0],rule:"Helst-komma (men)",hint:"Sæt komma foran koordinerende konjunktioner som 'men', 'og', 'eller', 'for', 'så'.",explanation:"Foran 'men' sætter vi komma, fordi det forbinder to ligestillede helsætninger."},
+    {text:"Hun køber æbler{0}pærer og bananer i butikken.",commas:[0],rule:"Opregning",hint:"Ved opregning sættes komma mellem hvert led — men aldrig foran den afsluttende konjunktion ('og', 'eller', 'men').",explanation:"I en opregning sættes komma mellem hvert led undtagen det sidste. Der sættes aldrig komma foran den afsluttende konjunktion — så 'æbler, pærer og bananer' er korrekt."},
+    {text:"Peter{0}som er min ven{1}bor i Aarhus.",commas:[0,1],rule:"Indskudt ledsætning",hint:"En ledsætning der er indskudt i en helsætning, afgrænses med komma på begge sider.",explanation:"Relativsætningen 'som er min ven' er indskudt og afgrænses med komma på begge sider."},
+    {text:"Jeg ved ikke{0}hvornår toget afgår.",commas:[0],rule:"Indirekte spørgsmål",hint:"Foran en ledsætning der indledes med et spørgeord, sættes komma.",explanation:"Foran ledsætningen 'hvornår toget afgår' (indirekte spørgsmål) sættes komma."},
+    {text:"Han kom hjem{0}satte tasken ned{1}og slog sig ned i sofaen.",commas:[0],rule:"Opregning af handlinger",hint:"Komma mellem ligestillede verbalsyntagmer — men ikke foran det afsluttende 'og'.",explanation:"Komma efter 'hjem' da vi opregner handlinger. Foran det afsluttende 'og' er der ikke komma."}
+  ]},
+  {name:"Øvet",timeLimit:32,pointsPerCorrect:150,questions:[
+    {text:"Da hun hørte nyheden{0}begyndte hun at græde.",commas:[0],rule:"Foranstillet tidsledsætning",hint:"Når en ledsætning står foran helsætningen, adskilles de med komma.",explanation:"Tidsledsætningen 'Da hun hørte nyheden' er foranstillet og afsluttes med komma."},
+    {text:"Bogen{0}der lå på bordet{1}var meget interessant.",commas:[0,1],rule:"Relativsætning",hint:"En indskudt relativsætning afgrænses med komma på begge sider.",explanation:"Relativsætningen 'der lå på bordet' er indskudt og afgrænses med komma på begge sider."},
+    {text:"Selvom det regnede{0}gik de en lang tur.",commas:[0],rule:"Indrømmelsessætning",hint:"Foranstillede ledsætninger med 'selvom' efterfølges af komma.",explanation:"Indrømmelsessætningen 'Selvom det regnede' er foranstillet og efterfølges af komma."},
+    {text:"Han sagde{0}at han ville komme{1}men han dukkede ikke op.",commas:[0,1],rule:"Indholdssætning + men",hint:"Komma foran 'at' (ledsætning) og komma foran 'men' (konjunktion).",explanation:"Komma foran 'at' (indholdssætning) og foran 'men' (koordinerende konjunktion)."},
+    {text:"Træt af ventetiden{0}besluttede hun at gå hjem.",commas:[0],rule:"Participalkonstruktion",hint:"En foranstillet participalkonstruktion afgrænses med komma.",explanation:"Den foranstillede participalkonstruktion 'Træt af ventetiden' afgrænses fra helsætningen med komma."}
+  ]},
+  {name:"Avanceret",timeLimit:26,pointsPerCorrect:200,questions:[
+    {text:"Jeg tror{0}at han mener{1}at det er rigtigt.",commas:[0,1],rule:"Indlejrede ledsætninger",hint:"Komma foran hvert 'at' der indleder en ny ledsætning.",explanation:"Begge 'at' indleder indholdssætninger og kræver komma foran sig."},
+    {text:"Enten tager du toget{0}eller du kører selv.",commas:[0],rule:"Enten…eller",hint:"Foran 'eller' i en enten-eller-konstruktion med to fuldstændige helsætninger sættes komma.",explanation:"Da begge led er fuldstændige helsætninger, adskilles de med komma."},
+    {text:"Den mand{0}jeg mødte i går{1}er professor.",commas:[0,1],rule:"Underforstået 'som'",hint:"Selv uden 'som' afgrænses den indskudte relativsætning med komma på begge sider.",explanation:"Relativsætningen 'jeg mødte i går' (med underforstået 'som') er indskudt og afgrænses med komma."},
+    {text:"Jo mere hun arbejdede{0}jo mere træt blev hun.",commas:[0],rule:"Jo…jo-konstruktion",hint:"I jo-jo-konstruktioner adskilles de to led med komma.",explanation:"De to parallelle led i jo-jo-konstruktionen adskilles med komma."},
+    {text:"Han løb hurtigt{0}slog ikke på nogen{1}men nåede alligevel ikke frem i tide.",commas:[0,1],rule:"Opregning + men",hint:"Komma efter hvert led i opregningen og komma foran 'men'.",explanation:"Komma afgrænser de koordinerede verballed og foran 'men'."}
+  ]},
+  {name:"Ekspert",timeLimit:20,pointsPerCorrect:300,questions:[
+    {text:"Det er ikke til at vide{0}om han kommer{1}eller om han bliver hjemme.",commas:[0,1],rule:"Valgspørgsmål som ledsætning",hint:"Komma foran begge 'om' der indleder et indirekte valgspørgsmål.",explanation:"Det indirekte valgspørgsmål har to 'om'-ledsætninger der begge kræver komma foran sig."},
+    {text:"Forudsat at vejret holder{0}starter vi kl. 10.",commas:[0],rule:"Betingelsessætning foranstillet",hint:"Betingelsessætninger foranstillet helsætningen afgrænses med komma.",explanation:"'Forudsat at vejret holder' er en foranstillet betingelsessætning og afgrænses med komma."},
+    {text:"Drengen{0}der løb{1}og som råbte højt{2}faldt.",commas:[0,1,2],rule:"Koordinerede relativsætninger",hint:"Begge indskudte relativsætninger afgrænses med komma, også ved 'og som'.",explanation:"De koordinerede relativsætninger er indskudte og afgrænses med komma på ydersiden og internt."},
+    {text:"Jo hurtigere man kører{0}jo farligere er det.",commas:[0],rule:"Jo…jo (avanceret)",hint:"Komma mellem de to led i jo-jo-konstruktionen.",explanation:"Jo-jo-konstruktionen kræver komma til at adskille de to parallelle led."},
+    {text:"Havde hun vidst{0}hvad hun ved nu{1}ville hun have handlet anderledes.",commas:[0,1],rule:"Konditionalis med ledsætning",hint:"Komma foran spørgsordsledsætningen og ved afslutningen af den foranstillede konstruktion.",explanation:"Den foranstillede betingelseskonstruktion med indlejret spørgsordsledsætning afgrænses med komma."}
+  ]},
+  {name:"Mester",timeLimit:16,pointsPerCorrect:450,questions:[
+    {text:"Det er ikke sikkert{0}at han{1}som sagt{2}dukker op.",commas:[0,2],rule:"Indskud og ledsætning",hint:"Komma foran 'at' og komma på begge sider af indskuddet 'som sagt'.",explanation:"Komma foran 'at' (ledsætning) og komma på begge sider af indskuddet 'som sagt'."},
+    {text:"Han spurgte{0}om ikke vi kunne mødes{1}når han kom hjem.",commas:[0,1],rule:"Indlejret ledsætning i ledsætning",hint:"Komma foran 'om' og foran 'når'.",explanation:"Komma foran 'om' (indirekte spørgsmål) og foran 'når' (tidsledsætning inde i 'om'-sætningen)."},
+    {text:"Vel vidende{0}at hun tog fejl{1}sagde hun ingenting.",commas:[0,1],rule:"Participialkonstruktion med ledsætning",hint:"Komma internt foran 'at' og ved afslutningen af hele konstruktionen.",explanation:"Internt komma foran 'at'-ledsætningen og komma der afgrænser hele den foranstillede konstruktion."},
+    {text:"Ikke alene var hun træt{0}men hun var også sulten.",commas:[0],rule:"Ikke alene…men også",hint:"I 'ikke alene…men (også)' sættes komma foran 'men'.",explanation:"Koordinationen 'ikke alene…men også' adskilles med komma foran 'men'."},
+    {text:"De besluttede{0}at de{1}når lejlighed bød sig{2}ville rejse til Japan.",commas:[0,1,2],rule:"Indskudt ledsætning i ledsætning",hint:"Komma foran 'at' og komma på begge sider af den indskudte tidsledsætning.",explanation:"Komma foran 'at', og den indskudte tidsledsætning 'når lejlighed bød sig' afgrænses med komma."}
+  ]}
+];
+
+let state={playerName:'',score:0,level:0,qIndex:0,lives:3,streak:0,timer:null,timeLeft:40,levelScore:0,levelCorrect:0,answered:false,slotStates:{},correctTotal:0,wrongTotal:0};
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-highscore')renderHighscores();
+  if(id==='screen-welcome')renderProfiles();
+}
+
+function getHighscores(){try{return JSON.parse(localStorage.getItem('kkhs')||'[]');}catch(e){return[];}}
+function saveHighscores(hs){localStorage.setItem('kkhs',JSON.stringify(hs));}
+function addHighscore(name,score,level){const hs=getHighscores();hs.push({name,score,level,date:new Date().toLocaleDateString('da-DK')});hs.sort((a,b)=>b.score-a.score);saveHighscores(hs.slice(0,10));}
+function clearHighscores(){if(confirm('Er du sikker på, at du vil nulstille resultattavlen?')){localStorage.removeItem('kkhs');renderHighscores();}}
+function renderHighscores(){
+  const hs=getHighscores();const list=document.getElementById('score-list');
+  if(!hs.length){list.innerHTML='<li><div class="empty-state">Ingen scores endnu – bliv den første!</div></li>';return;}
+  const m=['🥇','🥈','🥉'];
+  list.innerHTML=hs.map((h,i)=>`<li><span class="rank">${m[i]||(i+1)+'.'}</span><span class="name">${h.name}</span><span class="lvl">${LEVELS[Math.min(h.level,LEVELS.length-1)].name}</span><span class="pts">${h.score.toLocaleString('da')}</span></li>`).join('');
+}
+
+function getSavedProfiles(){try{return JSON.parse(localStorage.getItem('kkprofiles')||'[]');}catch(e){return[];}}
+function saveProfile(name){let ps=getSavedProfiles();ps=[name,...ps.filter(p=>p!==name)].slice(0,5);localStorage.setItem('kkprofiles',JSON.stringify(ps));}
+function renderProfiles(){
+  const ps=getSavedProfiles();const el=document.getElementById('saved-profiles');
+  if(!ps.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="font-size:.76rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Tidligere spillere</div>'+
+    ps.map(p=>`<button onclick="selectProfile('${p}')" style="margin:3px;padding:6px 14px;border:1.5px solid var(--border);background:transparent;border-radius:50px;cursor:pointer;font-family:Nunito,sans-serif;font-size:.88rem;color:var(--white);font-weight:700;transition:all .15s;" onmouseover="this.style.background='rgba(82,216,255,.1)'" onmouseout="this.style.background='transparent'">${p}</button>`).join('');
+}
+function selectProfile(name){document.getElementById('player-name').value=name;}
+
+function startGame(){
+  const n=document.getElementById('player-name').value.trim();
+  if(!n){const inp=document.getElementById('player-name');inp.focus();inp.style.borderColor='var(--accent)';setTimeout(()=>inp.style.borderColor='var(--border)',1500);return;}
+  state.playerName=n;saveProfile(n);
+  state.score=0;state.level=0;state.lives=3;state.streak=0;state.correctTotal=0;state.wrongTotal=0;
+  startLevel();
+}
+
+function startLevel(){state.qIndex=0;state.levelScore=0;state.levelCorrect=0;renderProgressDots();showScreen('screen-game');loadQuestion();}
+function nextLevel(){state.level++;if(state.level>=LEVELS.length){gameOver(true);return;}startLevel();}
+
+function loadQuestion(){
+  clearInterval(state.timer);state.answered=false;
+  const lvl=LEVELS[state.level];const q=lvl.questions[state.qIndex];
+  document.getElementById('level-badge').textContent=`Niveau ${state.level+1}: ${lvl.name}`;
+  document.getElementById('hud-score').textContent=state.score.toLocaleString('da');
+  document.getElementById('cat-tag').textContent=q.rule;
+  document.getElementById('rule-hint').textContent=q.hint;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('explanation').className='explanation';
+  renderLives();renderProgressDots();renderSentence(q);updateStreakBadge();
+  state.timeLeft=lvl.timeLimit;updateTimerBar();
+  state.timer=setInterval(()=>{state.timeLeft-=.1;updateTimerBar();if(state.timeLeft<=0){clearInterval(state.timer);timeOut();}},100);
+}
+
+function renderSentence(q){
+  const parts=q.text.split(/\{(\d+)\}/);let html='';
+  state.slotStates={};
+  q.text.replace(/\{(\d+)\}/g,(_,i)=>{state.slotStates[i]='empty';});
+  parts.forEach(part=>{
+    const m=part.match(/^(\d+)$/);
+    if(m){const idx=m[1];html+=` <span class="comma-slot" id="slot-${idx}" onclick="toggleSlot('${idx}')"></span> `;}
+    else html+=part;
+  });
+  document.getElementById('sentence-display').innerHTML=html;
+}
+
+function toggleSlot(idx){
+  if(state.answered)return;
+  state.slotStates[idx]=state.slotStates[idx]==='filled'?'empty':'filled';
+  document.getElementById(`slot-${idx}`).className='comma-slot'+(state.slotStates[idx]==='filled'?' filled':'');
+}
+function clearSlots(){
+  if(state.answered)return;
+  Object.keys(state.slotStates).forEach(idx=>{state.slotStates[idx]='empty';const el=document.getElementById(`slot-${idx}`);if(el)el.className='comma-slot';});
+}
+
+function checkAnswer(){
+  if(state.answered)return;
+  clearInterval(state.timer);state.answered=true;
+  const lvl=LEVELS[state.level];const q=lvl.questions[state.qIndex];
+  const filled=Object.keys(state.slotStates).filter(i=>state.slotStates[i]==='filled').map(Number);
+  const correct=q.commas.map(Number);
+  const isOK=arraysEqual(filled.slice().sort((a,b)=>a-b),correct.slice().sort((a,b)=>a-b));
+
+  Object.keys(state.slotStates).forEach(idx=>{
+    const el=document.getElementById(`slot-${idx}`);if(!el)return;
+    const filled2=state.slotStates[idx]==='filled';
+    const shouldBe=correct.includes(Number(idx));
+    if(filled2&&shouldBe)el.className='comma-slot correct';
+    else if(filled2&&!shouldBe)el.className='comma-slot wrong';
+    else if(!filled2&&shouldBe)el.className='comma-slot missed';
+  });
+
+  const fb=document.getElementById('feedback');
+  document.getElementById('explanation').className='explanation show';
+  document.getElementById('explanation').innerHTML=`<strong>Forklaring:</strong> ${q.explanation}`;
+
+  if(isOK){
+    state.streak++;state.correctTotal++;
+    const mult=Math.min(Math.floor(state.streak/3)+1,5);
+    const pts=lvl.pointsPerCorrect*mult+Math.floor(state.timeLeft*2);
+    state.score+=pts;state.levelScore+=pts;state.levelCorrect++;
+    fb.className='feedback correct show';fb.textContent=getCorrectMessage(state.streak);
+    confetti();starBurst();updateStreakBadge();
+  }else{
+    state.streak=0;state.wrongTotal++;state.lives--;
+    fb.className='feedback wrong show';fb.textContent=getWrongMessage();
+    document.getElementById('sentence-display').classList.add('shake');
+    setTimeout(()=>document.getElementById('sentence-display').classList.remove('shake'),400);
+    updateStreakBadge();renderLives();
+  }
+  document.getElementById('hud-score').textContent=state.score.toLocaleString('da');
+  if(state.lives<=0){setTimeout(()=>gameOver(false),2100);return;}
+  const dots=document.getElementById('progress-dots').children;
+  if(dots[state.qIndex])dots[state.qIndex].className='dot '+(isOK?'done':'wrong-dot');
+  setTimeout(()=>{state.qIndex++;if(state.qIndex>=lvl.questions.length)showLevelComplete();else loadQuestion();},2300);
+}
+
+function timeOut(){
+  if(state.answered)return;state.answered=true;state.streak=0;state.lives--;
+  document.getElementById('feedback').className='feedback wrong show';
+  document.getElementById('feedback').textContent='⏰ Tiden er gået!';
+  renderLives();updateStreakBadge();
+  const q=LEVELS[state.level].questions[state.qIndex];
+  q.commas.forEach(idx=>{const el=document.getElementById(`slot-${idx}`);if(el)el.className='comma-slot missed';});
+  document.getElementById('explanation').className='explanation show';
+  document.getElementById('explanation').innerHTML=`<strong>Forklaring:</strong> ${q.explanation}`;
+  if(state.lives<=0){setTimeout(()=>gameOver(false),2100);return;}
+  const dots=document.getElementById('progress-dots').children;
+  if(dots[state.qIndex])dots[state.qIndex].className='dot wrong-dot';
+  setTimeout(()=>{state.qIndex++;if(state.qIndex>=LEVELS[state.level].questions.length)showLevelComplete();else loadQuestion();},2300);
+}
+
+function showLevelComplete(){
+  clearInterval(state.timer);const lvl=LEVELS[state.level];
+  document.getElementById('level-complete-title').textContent=`${lvl.name} gennemført! 🎉`;
+  document.getElementById('level-score').textContent='+'+state.levelScore.toLocaleString('da');
+  document.getElementById('level-msg').textContent=state.level+1<LEVELS.length?`Næste niveau: ${LEVELS[state.level+1].name} — sværere og hurtigere!`:'Du har gennemført alle niveauer! Fantastisk!';
+  document.getElementById('level-details').innerHTML=`<div class="score-detail"><div class="lbl">Rigtige</div><div class="val">${state.levelCorrect}/${lvl.questions.length}</div></div><div class="score-detail"><div class="lbl">Total</div><div class="val">${state.score.toLocaleString('da')}</div></div><div class="score-detail"><div class="lbl">Niveaupoint</div><div class="val">${state.levelScore.toLocaleString('da')}</div></div>`;
+  confetti(true);showScreen('screen-level');
+}
+
+function gameOver(won){
+  clearInterval(state.timer);addHighscore(state.playerName,state.score,state.level);
+  document.getElementById('go-player').textContent=state.playerName+(won?' — Du er en komma-mester!':'');
+  document.getElementById('go-score').textContent=state.score.toLocaleString('da');
+  document.getElementById('go-details').innerHTML=`<div class="score-detail"><div class="lbl">Niveau nået</div><div class="val">${state.level+1}/${LEVELS.length}</div></div><div class="score-detail"><div class="lbl">Rigtige</div><div class="val">${state.correctTotal}</div></div><div class="score-detail"><div class="lbl">Forkerte</div><div class="val">${state.wrongTotal}</div></div>`;
+  const hs=getHighscores();const rank=hs.findIndex(h=>h.score===state.score&&h.name===state.playerName);
+  document.getElementById('go-record').textContent=rank===0?'🏆 Ny rekord!':rank>0?`#${rank+1} på resultattavlen`:'';
+  if(won)confetti(true);showScreen('screen-gameover');
+}
+
+function renderLives(){document.getElementById('lives-display').innerHTML=[1,2,3].map(i=>`<span class="heart${i>state.lives?' lost':''}">❤️</span>`).join('');}
+function renderProgressDots(){const lvl=LEVELS[state.level];document.getElementById('progress-dots').innerHTML=lvl.questions.map((_,i)=>{let c='dot';if(i<state.qIndex)c+=' done';else if(i===state.qIndex)c+=' current';return`<div class="${c}"></div>`;}).join('');}
+function updateTimerBar(){const pct=Math.max(0,(state.timeLeft/LEVELS[state.level].timeLimit)*100);const bar=document.getElementById('timer-bar');bar.style.width=pct+'%';bar.className='timer-bar'+(pct<25?' urgent':'');}
+function updateStreakBadge(){const el=document.getElementById('streak-badge');if(state.streak>=3){const m=Math.min(Math.floor(state.streak/3)+1,5);el.textContent=`🔥 Streak ×${m}`;el.className='streak-badge show';}else{el.className='streak-badge';}}
+function arraysEqual(a,b){return a.length===b.length&&a.every((v,i)=>v===b[i]);}
+function getCorrectMessage(s){
+  if(s>=9)return'🌟 Umuligt godt! Hattrick af hattricks!';
+  if(s>=6)return'💥 Ustoppelig! Du er komma-geniet!';
+  if(s>=3)return'⚡ Fantastisk! Du er for sej!';
+  return['✅ Korrekt!','✅ Rigtigt sat!','✅ Perfekt kommatering!','✅ Bravo! Præcis rigtigt!'][Math.floor(Math.random()*4)];
+}
+function getWrongMessage(){return['❌ Ikke helt rigtigt.','❌ Det var desværre forkert.','❌ Prøv igen næste gang!','❌ Næsten — men ikke helt!'][Math.floor(Math.random()*4)];}
+
+function confetti(big=false){
+  const cols=['#ff6b9d','#ffaa3b','#52d8ff','#5af5a0','#c87aff','#ffe566'];
+  const n=big?70:25;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.cssText=`left:${10+Math.random()*80}vw;top:-20px;background:${cols[Math.floor(Math.random()*cols.length)]};width:${7+Math.random()*9}px;height:${7+Math.random()*9}px;border-radius:${Math.random()>.5?'50%':'3px'};--dur:${.8+Math.random()*.9}s;animation-delay:${Math.random()*.7}s;`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),2200);
+  }
+}
+function starBurst(){
+  const emojis=['⭐','✨','💫','🌟','⚡'];
+  for(let i=0;i<6;i++){
+    const el=document.createElement('div');el.className='starburst';
+    const angle=(i/6)*Math.PI*2;const dist=80+Math.random()*60;
+    el.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.cssText=`left:50vw;top:50vh;--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;animation-delay:${i*.04}s;`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),900);
+  }
+}
+function makeStars(){
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*2.5+.5;
+    s.style.cssText=`left:${Math.random()*100}vw;top:${Math.random()*100}vh;width:${sz}px;height:${sz}px;--d:${2+Math.random()*4}s;--o:${.15+Math.random()*.6};animation-delay:${Math.random()*4}s;`;
+    document.body.appendChild(s);
+  }
+}
+
+window.addEventListener('load',()=>{
+  makeStars();renderProfiles();renderHighscores();
+  document.getElementById('player-name').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+});
+</script>
+</body>
+</html>

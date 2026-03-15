@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordmesteren – Dansk Grammatikspil</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky:#0d0b26; --panel:#181444; --panel2:#201c54; --border:#3d3590;
+  --white:#eeeaff; --muted:#9b91cc;
+  /* category accents */
+  --noun:#ff6b9d;  --noun2:#ff9dbf;
+  --verb:#5af5a0;  --verb2:#a0ffd0;
+  --adj:#ffe566;   --adj2:#fff3a0;
+  --pron:#52d8ff;  --pron2:#a8ecff;
+  /* globals */
+  --green:#5af5a0; --red:#ff5070; --gold:#ffaa3b; --purple:#c87aff; --blue:#52d8ff;
+  /* active category – overridden per level */
+  --cat:#ff6b9d; --cat2:#ff9dbf; --cat-glow:rgba(255,107,157,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--sky);font-family:'Nunito Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow-x:hidden;color:var(--white);}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 25%,rgba(120,60,255,.22) 0%,transparent 55%),radial-gradient(ellipse at 85% 75%,rgba(255,107,157,.14) 0%,transparent 50%),radial-gradient(ellipse at 50% 5%,rgba(82,216,255,.1) 0%,transparent 45%);pointer-events:none;z-index:0;animation:bgPulse 9s ease-in-out infinite alternate;}
+@keyframes bgPulse{from{opacity:.7}to{opacity:1}}
+.star{position:fixed;border-radius:50%;background:white;pointer-events:none;z-index:0;animation:twinkle var(--d,3s) ease-in-out infinite alternate;}
+@keyframes twinkle{from{opacity:var(--o,.6);transform:scale(1)}to{opacity:.04;transform:scale(1.9)}}
+
+.screen{display:none;position:relative;z-index:1;width:min(680px,96vw);animation:popIn .35s cubic-bezier(.175,.885,.32,1.275);}
+.screen.active{display:block;}
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+.card{background:linear-gradient(155deg,var(--panel) 0%,var(--panel2) 100%);border-radius:26px;padding:38px 42px;box-shadow:0 0 0 2px var(--border),0 0 50px rgba(60,50,160,.55),0 22px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);position:relative;overflow:hidden;}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--noun),var(--verb),var(--adj),var(--pron),transparent);opacity:.8;}
+
+/* MASCOT */
+.mascot{text-align:center;font-size:4.5rem;display:block;margin:4px 0;animation:mascotFloat 3s ease-in-out infinite;filter:drop-shadow(0 6px 18px var(--cat-glow));}
+@keyframes mascotFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+
+h1{font-family:'Nunito',sans-serif;font-size:clamp(2.3rem,7vw,3.4rem);font-weight:900;color:var(--white);text-align:center;line-height:1.05;text-shadow:0 0 35px var(--cat-glow),0 4px 0 rgba(0,0,0,.4);}
+h1 em{font-style:normal;color:var(--cat);}
+h2{font-family:'Nunito',sans-serif;font-size:1.65rem;font-weight:900;color:var(--white);text-align:center;margin-bottom:18px;text-shadow:0 0 20px rgba(82,216,255,.35);}
+p{color:var(--muted);line-height:1.7;font-size:.97rem;}
+.subtitle{display:block;text-align:center;font-size:.78rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:6px;opacity:.85;}
+.divider{height:2px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:20px 0;}
+
+/* BUTTONS */
+.btn{display:inline-block;padding:13px 28px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:.93rem;font-weight:800;cursor:pointer;border:none;transition:all .15s cubic-bezier(.175,.885,.32,1.275);letter-spacing:.04em;text-transform:uppercase;}
+.btn:active{transform:scale(.93)!important;}
+.btn-primary{background:linear-gradient(135deg,var(--cat),color-mix(in srgb,var(--cat) 60%,black));color:#fff;box-shadow:0 6px 22px var(--cat-glow),0 0 0 2px rgba(255,255,255,.08);}
+.btn-primary:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 10px 28px var(--cat-glow);}
+.btn-secondary{background:rgba(255,255,255,.06);color:var(--blue);border:2px solid var(--blue);}
+.btn-secondary:hover{background:rgba(82,216,255,.12);transform:translateY(-2px);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#d0820e);color:#fff;box-shadow:0 5px 18px rgba(255,170,59,.38);}
+.btn-gold:hover{transform:translateY(-3px) scale(1.04);}
+
+/* INPUT */
+.input-group{margin:16px 0;}
+.input-group label{display:block;font-size:.78rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;}
+.input-group input{width:100%;padding:13px 18px;border:2px solid var(--border);border-radius:14px;background:rgba(255,255,255,.05);font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:700;color:var(--white);outline:none;transition:all .2s;}
+.input-group input::placeholder{color:rgba(155,145,204,.4);}
+.input-group input:focus{border-color:var(--cat);box-shadow:0 0 0 3px var(--cat-glow);}
+
+/* CATEGORY INTRO */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+.cat-card{border-radius:16px;padding:14px 16px;border:1.5px solid;text-align:center;background:rgba(255,255,255,.04);}
+.cat-card .icon{font-size:1.8rem;display:block;margin-bottom:4px;}
+.cat-card .cname{font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:900;}
+.cat-card .cdesc{font-size:.74rem;font-weight:600;color:var(--muted);margin-top:2px;}
+
+/* HUD */
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.hud-chip{background:rgba(255,255,255,.05);border:1.5px solid var(--border);border-radius:50px;padding:6px 16px;text-align:center;}
+.hud-chip .lbl{font-size:.66rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);display:block;}
+.hud-chip .val{font-family:'Nunito',sans-serif;font-size:1.6rem;font-weight:900;color:var(--white);line-height:1.1;}
+.hud-chip .val.accent{color:var(--cat);text-shadow:0 0 14px var(--cat-glow);}
+
+/* TIMER */
+.timer-wrap{width:100%;height:8px;background:rgba(255,255,255,.08);border-radius:4px;margin-bottom:14px;overflow:hidden;}
+.timer-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--cat));border-radius:4px;transition:width .12s linear;box-shadow:0 0 8px rgba(82,216,255,.5);}
+.timer-bar.urgent{background:linear-gradient(90deg,var(--red),var(--gold));box-shadow:0 0 8px rgba(255,80,112,.8);animation:timerPulse .38s ease infinite alternate;}
+@keyframes timerPulse{from{opacity:1}to{opacity:.5}}
+
+/* LEVEL BADGE */
+.level-badge{display:inline-block;background:rgba(255,255,255,.07);color:var(--cat);font-family:'Nunito',sans-serif;font-size:.74rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:50px;border:1.5px solid var(--cat);text-shadow:0 0 8px var(--cat-glow);}
+
+/* CATEGORY PILL */
+.cat-pill{display:inline-block;background:rgba(255,255,255,.06);color:var(--cat2);font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:4px 13px;border-radius:50px;border:1.5px solid var(--cat);margin-bottom:10px;text-shadow:0 0 8px var(--cat-glow);}
+
+/* RULE HINT */
+.rule-hint{background:rgba(255,230,102,.07);border-left:3px solid var(--adj);padding:9px 14px;border-radius:0 10px 10px 0;font-size:.86rem;color:rgba(255,230,102,.85);font-style:italic;margin-bottom:12px;}
+
+/* QUESTION BOX */
+.question-box{background:rgba(255,255,255,.04);border:2px solid var(--cat);border-radius:18px;padding:22px 26px;margin:12px 0;box-shadow:0 0 20px var(--cat-glow), inset 0 1px 0 rgba(255,255,255,.06);}
+.q-prompt{font-size:.8rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--cat2);margin-bottom:10px;}
+.q-sentence{font-size:clamp(1.05rem,2.8vw,1.26rem);font-weight:600;line-height:1.9;color:var(--white);}
+.q-sentence .baseword{display:inline-block;background:rgba(255,255,255,.08);border:1.5px dashed var(--cat);border-radius:8px;padding:2px 10px;font-family:'Nunito',sans-serif;font-weight:900;color:var(--cat2);margin:0 3px;font-size:1.05em;}
+
+/* LIVES */
+.lives{display:flex;gap:4px;}
+.heart{font-size:1.25rem;transition:all .25s;display:inline-block;}
+.heart.lost{opacity:.16;filter:grayscale(1);transform:scale(.75);}
+
+/* PROGRESS DOTS */
+.progress-dots{display:flex;justify-content:center;gap:8px;margin:8px 0 14px;}
+.dot{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.1);transition:all .3s cubic-bezier(.175,.885,.32,1.275);border:2px solid rgba(255,255,255,.05);}
+.dot.done{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(90,245,160,.6);}
+.dot.wrong-dot{background:var(--red);border-color:var(--red);box-shadow:0 0 8px rgba(255,80,112,.6);}
+.dot.current{background:var(--adj);border-color:var(--adj);transform:scale(1.4);box-shadow:0 0 10px rgba(255,230,102,.7);}
+
+/* STREAK */
+.streak-pill{display:inline-block;background:linear-gradient(135deg,var(--cat),var(--gold));color:#fff;font-family:'Nunito',sans-serif;font-size:.78rem;padding:4px 12px;border-radius:50px;font-weight:800;opacity:0;transition:opacity .25s;box-shadow:0 3px 12px var(--cat-glow);}
+.streak-pill.show{opacity:1;animation:streakPop .38s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes streakPop{0%{transform:scale(.5)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+/* MC BUTTONS */
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;}
+.mc-btn{padding:15px 12px;border-radius:14px;border:2px solid var(--border);background:rgba(255,255,255,.04);font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:var(--white);cursor:pointer;transition:all .15s cubic-bezier(.175,.885,.32,1.275);text-align:center;}
+.mc-btn:hover:not(:disabled){border-color:var(--cat);background:rgba(255,255,255,.08);transform:translateY(-2px);box-shadow:0 4px 14px var(--cat-glow);}
+.mc-btn.correct-ans{border-color:var(--green);background:rgba(90,245,160,.1);color:var(--green);box-shadow:0 0 0 2px rgba(90,245,160,.25);}
+.mc-btn.wrong-ans{border-color:var(--red);background:rgba(255,80,112,.1);color:var(--red);}
+.mc-btn:disabled{cursor:default;}
+
+/* FRITEKST INPUT */
+.ft-input{width:100%;padding:15px 20px;border:2px solid var(--border);border-radius:14px;background:rgba(255,255,255,.05);font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:700;color:var(--white);outline:none;transition:all .2s;margin:12px 0;text-align:center;}
+.ft-input::placeholder{color:rgba(155,145,204,.4);}
+.ft-input:focus{border-color:var(--cat);box-shadow:0 0 0 3px var(--cat-glow);background:rgba(255,255,255,.07);}
+.ft-input.correct-border{border-color:var(--green);background:rgba(90,245,160,.08);color:var(--green);}
+.ft-input.wrong-border{border-color:var(--red);background:rgba(255,80,112,.08);color:var(--red);}
+
+/* FEEDBACK */
+.feedback{text-align:center;font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:900;padding:13px;border-radius:14px;margin:10px 0;opacity:0;transition:opacity .18s;}
+.feedback.show{opacity:1;}
+.feedback.correct{color:var(--green);background:rgba(90,245,160,.1);border:1.5px solid rgba(90,245,160,.22);animation:correctPop .3s cubic-bezier(.175,.885,.32,1.275);}
+.feedback.wrong{color:var(--red);background:rgba(255,80,112,.1);border:1.5px solid rgba(255,80,112,.22);}
+@keyframes correctPop{0%{transform:scale(.88)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+
+/* EXPLANATION */
+.explanation{background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:12px;padding:13px 17px;font-size:.87rem;color:var(--muted);display:none;line-height:1.6;margin-top:8px;}
+.explanation.show{display:block;}
+.explanation strong{color:var(--white);}
+
+.action-row{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+
+/* HIGHSCORE */
+.score-list{list-style:none;margin:12px 0;}
+.score-list li{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(61,53,144,.3);font-size:.92rem;border-radius:8px;transition:background .14s;}
+.score-list li:hover{background:rgba(255,255,255,.04);}
+.score-list li:first-child{background:rgba(255,230,102,.07);border:1px solid rgba(255,230,102,.18);margin-bottom:4px;}
+.score-list .rank{font-family:'Nunito',sans-serif;font-weight:900;color:var(--adj);width:28px;font-size:1.1rem;}
+.score-list .name{flex:1;font-weight:700;color:var(--white);}
+.score-list .pts{font-family:'Nunito',sans-serif;font-weight:900;color:var(--cat);}
+.score-list .lvl{font-size:.74rem;color:var(--muted);margin-left:8px;}
+.empty-state{text-align:center;color:var(--muted);padding:22px;font-style:italic;}
+
+.big-score{font-family:'Nunito',sans-serif;font-size:4.2rem;font-weight:900;color:var(--cat);text-align:center;line-height:1;margin:8px 0;text-shadow:0 0 30px var(--cat-glow),0 4px 0 rgba(0,0,0,.3);}
+.score-details{display:flex;justify-content:center;gap:26px;margin:14px 0;flex-wrap:wrap;}
+.score-detail{text-align:center;}
+.score-detail .lbl{font-size:.67rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);}
+.score-detail .val{font-family:'Nunito',sans-serif;font-size:1.44rem;font-weight:900;color:var(--white);}
+
+#saved-profiles{margin:0 0 14px;}
+
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .38s ease;}
+
+.confetti-piece{position:fixed;pointer-events:none;z-index:9999;border-radius:3px;animation:confettiFall var(--dur,1.1s) ease-in forwards;}
+@keyframes confettiFall{0%{transform:translateY(-10px) rotate(0) scale(1);opacity:1}100%{transform:translateY(100vh) rotate(560deg) scale(.4);opacity:0}}
+.starburst{position:fixed;pointer-events:none;z-index:9999;font-size:1.5rem;animation:burstFly .65s ease-out forwards;}
+@keyframes burstFly{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1.1);opacity:0}}
+
+@media(max-width:500px){.card{padding:26px 18px;}.mc-grid{grid-template-columns:1fr;}.cat-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="screen-welcome" class="screen active">
+  <div class="card">
+    <span class="mascot">🦉</span>
+    <span class="subtitle">Dansk Grammatikspil</span>
+    <h1><em>Ord</em>mesteren</h1>
+    <p style="text-align:center;margin:12px 0 6px;">Bøj ord, find den rigtige form, bliv grammatikmester!</p>
+    <div class="cat-grid">
+      <div class="cat-card" style="border-color:var(--noun);">
+        <span class="icon">🏷️</span>
+        <div class="cname" style="color:var(--noun);">Substantiver</div>
+        <div class="cdesc">Flertal · bestemthed</div>
+      </div>
+      <div class="cat-card" style="border-color:var(--verb);">
+        <span class="icon">⚡</span>
+        <div class="cname" style="color:var(--verb);">Verber</div>
+        <div class="cdesc">Tider · bøjning</div>
+      </div>
+      <div class="cat-card" style="border-color:var(--adj);">
+        <span class="icon">🌈</span>
+        <div class="cname" style="color:var(--adj);">Adjektiver</div>
+        <div class="cdesc">Bøjning · gradbøjning</div>
+      </div>
+      <div class="cat-card" style="border-color:var(--pron);">
+        <span class="icon">👤</span>
+        <div class="cname" style="color:var(--pron);">Pronominer</div>
+        <div class="cdesc">Kasus · possessiv · refleksiv</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="input-group">
+      <label>Dit navn</label>
+      <input type="text" id="player-name" placeholder="Skriv dit navn…" maxlength="20" autocomplete="off">
+    </div>
+    <div id="saved-profiles"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="startGame()">✨ Spil nu</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-highscore')">🏆 Topscorer</button>
+    </div>
+    <p style="font-size:.83rem;text-align:center;margin-top:14px;line-height:1.6;">5 niveauer · Multiple choice i starten · Fritekst på højere niveauer</p>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="card">
+    <div class="hud">
+      <div class="hud-chip">
+        <span class="lbl">Point</span>
+        <span class="val accent" id="hud-score">0</span>
+      </div>
+      <div style="text-align:center;">
+        <div id="level-badge" class="level-badge">Niveau 1</div>
+        <div style="margin-top:6px;"><span id="streak-pill" class="streak-pill">🔥 ×2</span></div>
+      </div>
+      <div class="hud-chip" style="text-align:right;">
+        <span class="lbl">Liv</span>
+        <div class="lives" id="lives-display"></div>
+      </div>
+    </div>
+    <div class="timer-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+    <div class="progress-dots" id="progress-dots"></div>
+    <div><span id="cat-pill" class="cat-pill">🏷️ Substantiv</span></div>
+    <div id="rule-hint" class="rule-hint">Hint…</div>
+    <div class="question-box" id="question-box">
+      <div class="q-prompt" id="q-prompt">Prompt…</div>
+      <div class="q-sentence" id="q-sentence"></div>
+    </div>
+    <div id="mc-area" class="mc-grid"></div>
+    <div id="ft-area" style="display:none;">
+      <input type="text" class="ft-input" id="ft-input" placeholder="Skriv dit svar…" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="feedback" class="feedback"></div>
+    <div id="explanation" class="explanation"></div>
+    <div class="action-row" id="action-row">
+      <button class="btn btn-secondary" onclick="skipQuestion()">Spring over</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL COMPLETE -->
+<div id="screen-level" class="screen">
+  <div class="card" style="text-align:center;">
+    <span class="mascot">🌟</span>
+    <h2 id="level-title">Niveau klaret!</h2>
+    <div class="big-score" id="level-pts">+400</div>
+    <p id="level-msg" style="margin:8px 0 18px;"></p>
+    <div class="score-details" id="level-details"></div>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="nextLevel()">Næste niveau →</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="screen-gameover" class="screen">
+  <div class="card" style="text-align:center;">
+    <span class="mascot">💫</span>
+    <h2>Spillet er slut</h2>
+    <p id="go-player" style="margin-bottom:4px;color:var(--muted);font-weight:700;"></p>
+    <div class="big-score" id="go-score">0</div>
+    <p style="font-size:.85rem;margin-bottom:12px;">point</p>
+    <div class="score-details" id="go-details"></div>
+    <div id="go-record" style="font-family:'Nunito',sans-serif;font-size:1rem;color:var(--adj);font-weight:900;margin:10px 0;"></div>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="startGame()">Spil igen</button>
+      <button class="btn btn-gold" onclick="showScreen('screen-highscore')">🏆 Topscorer</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-welcome')">Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIGHSCORE -->
+<div id="screen-highscore" class="screen">
+  <div class="card">
+    <span class="mascot">🏆</span>
+    <h2>Resultattavlen</h2>
+    <ul class="score-list" id="score-list"></ul>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="showScreen('screen-welcome')">← Tilbage</button>
+      <button class="btn btn-secondary" onclick="clearHighscores()">Nulstil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── LEVELS ────────────────────────────────────────────────────────────────
+// type:'mc' = multiple choice (auto-submit on click)
+// type:'ft' = fritekst (Enter or button)
+// accept: array of accepted lowercase answers
+const LEVELS = [
+{
+  name:'Begynder', cat:'noun', timeLimit:38, pts:80,
+  label:'🏷️ Substantiver – flertal', mascot:'🏷️',
+  hint:'Substantiver bøjes i flertal. De fleste navneord får endelsen -er, -e eller forbliver uændrede.',
+  questions:[
+    {type:'mc',prompt:'Hvad er flertalsformen?',sentence:'En <span class="baseword">hund</span> → mange ___',answer:'hunde',options:['hunde','hunder','hundes','hunds'],explanation:'<strong>Hund → hunde.</strong> Flertal dannes med -e.'},
+    {type:'mc',prompt:'Hvad er flertalsformen?',sentence:'En <span class="baseword">bil</span> → mange ___',answer:'biler',options:['bilen','bils','biler','bile'],explanation:'<strong>Bil → biler.</strong> Enstavelsesord får ofte -er i flertal.'},
+    {type:'mc',prompt:'Hvad er flertalsformen?',sentence:'Et <span class="baseword">barn</span> → mange ___',answer:'børn',options:['barner','barne','børn','barns'],explanation:'<strong>Barn → børn.</strong> Uregelmæssigt flertal med vokalskifte a→ø.'},
+    {type:'mc',prompt:'Hvad er flertalsformen?',sentence:'En <span class="baseword">dreng</span> → mange ___',answer:'drenge',options:['drengs','drengene','drenge','drenges'],explanation:'<strong>Dreng → drenge.</strong> Flertal dannes med -e.'},
+    {type:'mc',prompt:'Hvad er flertalsformen?',sentence:'Et <span class="baseword">hus</span> → mange ___',answer:'huse',options:['husser','husene','huse','hus'],explanation:'<strong>Hus → huse.</strong> Flertal dannes med -e.'},
+    {type:'mc',prompt:'Hvad er flertalsformen?',sentence:'En <span class="baseword">bog</span> → mange ___',answer:'bøger',options:['boge','boger','bøger','bogs'],explanation:'<strong>Bog → bøger.</strong> Vokalskifte o→ø og endelse -er.'},
+    {type:'mc',prompt:'Hvad er flertalsformen?',sentence:'En <span class="baseword">mand</span> → mange ___',answer:'mænd',options:['mande','mander','mænd','mands'],explanation:'<strong>Mand → mænd.</strong> Uregelmæssigt flertal med vokalskifte a→æ.'},
+  ]
+},
+{
+  name:'Let øvet', cat:'verb', timeLimit:34, pts:105,
+  label:'⚡ Verber – nutid og datid', mascot:'⚡',
+  hint:'Verber bøjes i tid. Nutid: grundform + -r. Svage verbers datid: -ede eller -te. Stærke verber har vokalskifte.',
+  questions:[
+    {type:'mc',prompt:'Sæt verbet i nutid (han/hun):',sentence:'Han ___ hurtigt. <span class="baseword">løbe</span>',answer:'løber',options:['løber','løb','løbet','løbes'],explanation:'<strong>Løbe → løber.</strong> Nutid dannes ved at tilføje -r.'},
+    {type:'mc',prompt:'Sæt verbet i datid:',sentence:'I går ___ hun meget. <span class="baseword">spise</span>',answer:'spiste',options:['spiste','spisede','spiser','spist'],explanation:'<strong>Spise → spiste.</strong> Svagt verbum der ender på -se/-ste får -te i datid.'},
+    {type:'mc',prompt:'Sæt verbet i datid:',sentence:'Han ___ til byen. <span class="baseword">køre</span>',answer:'kørte',options:['kørte','kørde','kørede','kørset'],explanation:'<strong>Køre → kørte.</strong> Svagt verbum med -te.'},
+    {type:'mc',prompt:'Sæt verbet i datid:',sentence:'Barnet ___ af glæde. <span class="baseword">græde</span>',answer:'græd',options:['gråd','grædte','græd','grædede'],explanation:'<strong>Græde → græd.</strong> Stærkt verbum med vokalskifte.'},
+    {type:'mc',prompt:'Sæt verbet i datid:',sentence:'Vi ___ til festen. <span class="baseword">danse</span>',answer:'dansede',options:['dansede','danste','dansde','danset'],explanation:'<strong>Danse → dansede.</strong> Svage verber på vokal + nse/-nde får -ede.'},
+    {type:'mc',prompt:'Sæt verbet i datid:',sentence:'Katten ___ musen. <span class="baseword">fange</span>',answer:'fangede',options:['fangte','fangede','fangtes','fangde'],explanation:'<strong>Fange → fangede.</strong> Svagt verbum med -ede i datid.'},
+    {type:'mc',prompt:'Sæt verbet i nutid:',sentence:'Hun ___ en sang. <span class="baseword">synge</span>',answer:'synger',options:['synger','sang','sunget','synge'],explanation:'<strong>Synge → synger.</strong> Nutid: grundform + -r.'},
+  ]
+},
+{
+  name:'Øvet', cat:'adj', timeLimit:30, pts:135,
+  label:'🌈 Adjektiver – bøjning og gradbøjning', mascot:'🌈',
+  hint:'Adjektiver bøjes efter køn og bestemthed: grundform (en-ord) / t-form (et-ord) / e-form (bestemt + flertal). Gradbøjning: -ere / -este.',
+  questions:[
+    {type:'mc',prompt:'Vælg den rigtige form:',sentence:'Det er en ___ dag. <span class="baseword">stor</span>',answer:'stor',options:['stor','stort','store','stores'],explanation:'Foran et <em>en</em>-ord i ubestemt form bruges grundformen: <strong>stor</strong>.'},
+    {type:'mc',prompt:'Vælg den rigtige form:',sentence:'Det er et ___ hus. <span class="baseword">stor</span>',answer:'stort',options:['stor','stort','store','storts'],explanation:'Foran et <em>et</em>-ord i ubestemt form bruges t-formen: <strong>stort</strong>.'},
+    {type:'mc',prompt:'Vælg den rigtige form:',sentence:'De bor i det ___ hus. <span class="baseword">stor</span>',answer:'store',options:['stor','stort','store','stors'],explanation:'I bestemt form bruges e-formen: <strong>store</strong>.'},
+    {type:'ft',prompt:'Skriv komparativ (sammenligning):',sentence:'Hun er ___ end ham. <span class="baseword">glad</span>',answer:'gladere',accept:['gladere'],explanation:'Komparativ: glad → <strong>gladere</strong>. Tilføj -ere.'},
+    {type:'ft',prompt:'Skriv superlativ (bestemt form):',sentence:'Han er den ___ i klassen. <span class="baseword">dygtig</span>',answer:'dygtigste',accept:['dygtigste'],explanation:'Superlativ bestemt: dygtig → <strong>dygtigste</strong>. Tilføj -ste.'},
+    {type:'ft',prompt:'Bøj adjektivet korrekt:',sentence:'Det er et ___ eksempel. <span class="baseword">god</span>',answer:'godt',accept:['godt'],explanation:'<strong>God</strong> bøjes uregelmæssigt: god / godt / gode.'},
+    {type:'ft',prompt:'Skriv komparativ:',sentence:'Vejret er ___ i dag. <span class="baseword">dårlig</span>',answer:'dårligere',accept:['dårligere'],explanation:'Komparativ: dårlig → <strong>dårligere</strong>. Tilføj -ere.'},
+  ]
+},
+{
+  name:'Avanceret', cat:'verb', timeLimit:25, pts:170,
+  label:'⚡ Verber – perfektum og passiv', mascot:'⚡',
+  hint:'Perfektum: have/være + participium. S-passiv: verbum + -s. Blive-passiv: blive + participium.',
+  questions:[
+    {type:'ft',prompt:'Sæt i perfektum (have + participium):',sentence:'Jeg ___ allerede. <span class="baseword">spise</span>',answer:'har spist',accept:['har spist'],explanation:'Perfektum: <strong>har spist</strong>. Participium af spise = spist.'},
+    {type:'ft',prompt:'Sæt i perfektum:',sentence:'Hun ___ hele natten. <span class="baseword">sove</span>',answer:'har sovet',accept:['har sovet'],explanation:'Perfektum: <strong>har sovet</strong>. Stærkt verbum: sove → sovet.'},
+    {type:'ft',prompt:'Skriv s-passiv i nutid:',sentence:'Brevet ___ hvert år. <span class="baseword">skrive</span>',answer:'skrives',accept:['skrives'],explanation:'S-passiv nutid: skrive → <strong>skrives</strong>.'},
+    {type:'ft',prompt:'Skriv blive-passiv i datid:',sentence:'Vinduet ___ af drengen. <span class="baseword">knuse</span>',answer:'blev knust',accept:['blev knust'],explanation:'Blive-passiv datid: <strong>blev knust</strong>. Participium: knuse → knust.'},
+    {type:'ft',prompt:'Sæt i perfektum:',sentence:'De ___ til Paris. <span class="baseword">rejse</span>',answer:'har rejst',accept:['har rejst'],explanation:'Perfektum: <strong>har rejst</strong>. Svagt verbum: rejse → rejst.'},
+    {type:'ft',prompt:'Sæt i pluskvamperfektum:',sentence:'Da de kom, ___ hun allerede. <span class="baseword">gå</span>',answer:'var gået',accept:['var gået'],explanation:'Pluskvamperfektum: <strong>var gået</strong> — noget der skete FØR et andet fortidigt tidspunkt.'},
+    {type:'ft',prompt:'Skriv futurum med "vil":',sentence:'Rapporten ___ klar i morgen. <span class="baseword">være</span>',answer:'vil være',accept:['vil være'],explanation:'Futurum: <strong>vil være</strong> = vil + infinitiv.'},
+  ]
+},
+{
+  name:'Øvet – Pronominer', cat:'pron', timeLimit:28, pts:145,
+  label:'👤 Pronominer – kasus og possessiv', mascot:'👤',
+  hint:'Pronominer bøjes efter kasus (subjekt/objekt) og køn. Possessive pronominer angiver ejerskab. Refleksivt pronomen er "sig" for 3. person.',
+  questions:[
+    {type:'mc',prompt:'Vælg det rigtige pronomen (objekt):',sentence:'Bogen tilhører ___. <span class="baseword">jeg</span>',answer:'mig',options:['jeg','mig','min','mit'],explanation:'Subjektsform <em>jeg</em> → objektsform <strong>mig</strong>.'},
+    {type:'mc',prompt:'Vælg det rigtige pronomen (objekt):',sentence:'Hun så ___. <span class="baseword">han</span>',answer:'ham',options:['han','ham','hans','sig'],explanation:'Subjektsform <em>han</em> → objektsform <strong>ham</strong>.'},
+    {type:'mc',prompt:'Vælg det rigtige possessiv:',sentence:'___ bror er læge. <span class="baseword">hun</span>',answer:'hendes',options:['hende','hun','hendes','sig'],explanation:'Possessivt pronomen af hun: <strong>hendes</strong>.'},
+    {type:'ft',prompt:'Skriv det rigtige possessive pronomen:',sentence:'Det er ___ bog. (jeg, et-ord)',answer:'mit',accept:['mit'],explanation:'Possessivt pronomen af jeg foran et-ord: <strong>mit</strong> (min/mit/mine).'},
+    {type:'ft',prompt:'Skriv det refleksive pronomen:',sentence:'Han barberede ___.',answer:'sig',accept:['sig'],explanation:'Det refleksive pronomen for 3. person er <strong>sig</strong>.'},
+    {type:'ft',prompt:'Skriv det rigtige pronomen:',sentence:'___ er os, der vandt. (subjektsform af vi)',answer:'det',accept:['det'],explanation:'I konstruktioner som "det er os der…" bruges det indledende <strong>det</strong>.'},
+    {type:'ft',prompt:'Skriv objektsformen:',sentence:'Læreren roste ___. <span class="baseword">de</span>',answer:'dem',accept:['dem'],explanation:'Subjektsform <em>de</em> → objektsform <strong>dem</strong>.'},
+  ]
+},
+{
+  name:'Mester', cat:'noun', timeLimit:20, pts:230,
+  label:'🎓 Blandet mesterskab', mascot:'👑',
+  hint:'Nu blandes alle ordklasser og bøjningsformer. Læs konteksten nøje og find den præcise form.',
+  questions:[
+    {type:'ft',prompt:'Skriv bestemt form ental:',sentence:'Jeg ser ___. <span class="baseword">hund</span> (bestemt ental)',answer:'hunden',accept:['hunden'],explanation:'Bestemt ental: hund → <strong>hunden</strong>. Tilføj -en til en-ord.'},
+    {type:'ft',prompt:'Skriv bestemt form flertal:',sentence:'Alle ___ løber. <span class="baseword">dreng</span> (bestemt flertal)',answer:'drengene',accept:['drengene'],explanation:'Bestemt flertal: drenge + -ne = <strong>drengene</strong>.'},
+    {type:'ft',prompt:'Bøj korrekt:',sentence:'Det er den ___ film i år. <span class="baseword">god</span> (superlativ bestemt)',answer:'bedste',accept:['bedste'],explanation:'God bøjes uregelmæssigt: god / bedre / <strong>bedste</strong>.'},
+    {type:'ft',prompt:'Sæt i passiv perfektum:',sentence:'Huset ___ af arkitekten. <span class="baseword">tegne</span> (passiv perfektum)',answer:'er blevet tegnet',accept:['er blevet tegnet','er tegnet'],explanation:'Passiv perfektum: <strong>er blevet tegnet</strong> eller <strong>er tegnet</strong>.'},
+    {type:'ft',prompt:'Skriv flertalsformen:',sentence:'Mange ___ er syge. <span class="baseword">ko</span>',answer:'køer',accept:['køer'],explanation:'<strong>Ko → køer.</strong> Uregelmæssigt flertal med vokalskifte.'},
+    {type:'ft',prompt:'Vælg korrekt refleksivt pronomen:',sentence:'De morede ___.',answer:'sig',accept:['sig'],explanation:'Refleksivt pronomen for 3. person flertal: <strong>sig</strong>.'},
+    {type:'ft',prompt:'Sæt i den rette form:',sentence:'Det er ___ bil, ikke din. <span class="baseword">jeg</span> (possessiv, en-ord)',answer:'min',accept:['min'],explanation:'Possessivt pronomen af jeg foran en-ord: <strong>min</strong>.'},
+  ]
+}
+];
+
+const CAT_VARS = {
+  noun:{ cat:'var(--noun)', cat2:'var(--noun2)', glow:'rgba(255,107,157,.35)' },
+  verb:{ cat:'var(--verb)', cat2:'var(--verb2)', glow:'rgba(90,245,160,.3)'   },
+  adj: { cat:'var(--adj)',  cat2:'var(--adj2)',  glow:'rgba(255,230,102,.3)'  },
+  pron:{ cat:'var(--pron)', cat2:'var(--pron2)', glow:'rgba(82,216,255,.3)'   },
+};
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let G={name:'',score:0,level:0,qIdx:0,lives:3,streak:0,timer:null,timeLeft:35,levelScore:0,levelCorrect:0,answered:false,correctTotal:0,wrongTotal:0};
+
+// ─── SCREENS ────────────────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-highscore') renderHighscores();
+  if(id==='screen-welcome')   renderProfiles();
+}
+
+// ─── HIGHSCORES ─────────────────────────────────────────────────────────────
+function getHS(){try{return JSON.parse(localStorage.getItem('omhs2')||'[]');}catch(e){return[];}}
+function saveHS(hs){localStorage.setItem('omhs2',JSON.stringify(hs));}
+function addHS(name,score,level){const hs=getHS();hs.push({name,score,level,date:new Date().toLocaleDateString('da-DK')});hs.sort((a,b)=>b.score-a.score);saveHS(hs.slice(0,10));}
+function clearHighscores(){if(confirm('Nulstil resultattavlen?')){localStorage.removeItem('omhs2');renderHighscores();}}
+function renderHighscores(){
+  const hs=getHS();const list=document.getElementById('score-list');
+  if(!hs.length){list.innerHTML='<li><div class="empty-state">Ingen scores endnu – bliv den første!</div></li>';return;}
+  const m=['🥇','🥈','🥉'];
+  list.innerHTML=hs.map((h,i)=>`<li><span class="rank">${m[i]||(i+1)+'.'}</span><span class="name">${h.name}</span><span class="lvl">${LEVELS[Math.min(h.level,LEVELS.length-1)].name}</span><span class="pts">${h.score.toLocaleString('da')}</span></li>`).join('');
+}
+
+// ─── PROFILES ───────────────────────────────────────────────────────────────
+function getProfiles(){try{return JSON.parse(localStorage.getItem('omprofiles2')||'[]');}catch(e){return[];}}
+function saveProfile(n){let ps=getProfiles();ps=[n,...ps.filter(p=>p!==n)].slice(0,5);localStorage.setItem('omprofiles2',JSON.stringify(ps));}
+function renderProfiles(){
+  const ps=getProfiles();const el=document.getElementById('saved-profiles');
+  if(!ps.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="font-size:.75rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;">Tidligere spillere</div>'+
+    ps.map(p=>`<button onclick="selectProfile('${p}')" style="margin:3px;padding:5px 13px;border:1.5px solid var(--border);background:rgba(255,255,255,.04);border-radius:50px;cursor:pointer;font-family:Nunito,sans-serif;font-size:.87rem;font-weight:700;color:var(--white);transition:all .14s;" onmouseover="this.style.background='rgba(82,216,255,.1)'" onmouseout="this.style.background='rgba(255,255,255,.04)'">${p}</button>`).join('');
+}
+function selectProfile(n){document.getElementById('player-name').value=n;}
+
+// ─── GAME FLOW ───────────────────────────────────────────────────────────────
+function startGame(){
+  const n=document.getElementById('player-name').value.trim();
+  if(!n){const el=document.getElementById('player-name');el.focus();el.style.borderColor='var(--noun)';setTimeout(()=>el.style.borderColor='var(--border)',1500);return;}
+  G.name=n;saveProfile(n);
+  G.score=0;G.level=0;G.lives=3;G.streak=0;G.correctTotal=0;G.wrongTotal=0;
+  startLevel();
+}
+function startLevel(){
+  G.qIdx=0;G.levelScore=0;G.levelCorrect=0;
+  setCatColor();renderProgressDots();showScreen('screen-game');loadQuestion();
+}
+function nextLevel(){G.level++;if(G.level>=LEVELS.length){gameOver(true);return;}startLevel();}
+
+function setCatColor(){
+  const v=CAT_VARS[LEVELS[G.level].cat]||CAT_VARS.noun;
+  const r=document.documentElement.style;
+  r.setProperty('--cat',v.cat);
+  r.setProperty('--cat2',v.cat2);
+  r.setProperty('--cat-glow',v.glow);
+}
+
+function loadQuestion(){
+  clearInterval(G.timer);G.answered=false;
+  const lvl=LEVELS[G.level];const q=lvl.questions[G.qIdx];
+
+  document.getElementById('level-badge').textContent=`Niveau ${G.level+1}: ${lvl.name}`;
+  document.getElementById('hud-score').textContent=G.score.toLocaleString('da');
+  document.getElementById('cat-pill').textContent=lvl.label;
+  document.getElementById('rule-hint').textContent=lvl.hint;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('explanation').className='explanation';
+  document.getElementById('q-prompt').innerHTML=q.prompt;
+  document.getElementById('q-sentence').innerHTML=q.sentence;
+
+  const mc=document.getElementById('mc-area');
+  const ft=document.getElementById('ft-area');
+  const fti=document.getElementById('ft-input');
+  const ar=document.getElementById('action-row');
+
+  if(q.type==='mc'){
+    mc.style.display='grid';ft.style.display='none';
+    const opts=[...q.options].sort(()=>Math.random()-.5);
+    mc.innerHTML=opts.map(o=>`<button class="mc-btn" onclick="selectMC(this,'${o.replace(/'/g,"&#39;")}')">${o}</button>`).join('');
+    ar.innerHTML=`<button class="btn btn-secondary" onclick="skipQuestion()">Spring over</button>`;
+  } else {
+    mc.style.display='none';ft.style.display='block';
+    fti.value='';fti.className='ft-input';fti.disabled=false;fti.focus();
+    ar.innerHTML=`<button class="btn btn-primary" onclick="submitFT()">Tjek ✔</button><button class="btn btn-secondary" onclick="skipQuestion()">Spring over</button>`;
+    fti.onkeydown=e=>{if(e.key==='Enter')submitFT();};
+  }
+  renderLives();renderProgressDots();updateStreakPill();
+  G.timeLeft=lvl.timeLimit;updateTimerBar();
+  G.timer=setInterval(()=>{G.timeLeft-=.1;updateTimerBar();if(G.timeLeft<=0){clearInterval(G.timer);timeOut();}},100);
+}
+
+// ─── ANSWER HANDLERS ────────────────────────────────────────────────────────
+function selectMC(btn,val){
+  if(G.answered)return;
+  clearInterval(G.timer);G.answered=true;
+  const q=LEVELS[G.level].questions[G.qIdx];
+  const ok=(val===q.answer);
+  document.querySelectorAll('.mc-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===q.answer) b.classList.add('correct-ans');
+    else if(b===btn&&!ok) b.classList.add('wrong-ans');
+  });
+  resolveAnswer(ok);
+}
+function submitFT(){
+  if(G.answered)return;
+  clearInterval(G.timer);
+  const q=LEVELS[G.level].questions[G.qIdx];
+  const fti=document.getElementById('ft-input');
+  const val=fti.value.trim().toLowerCase();
+  const ok=q.accept.map(a=>a.toLowerCase()).includes(val);
+  fti.disabled=true;
+  fti.className='ft-input '+(ok?'correct-border':'wrong-border');
+  if(!ok) fti.value=q.answer;
+  G.answered=true;
+  resolveAnswer(ok);
+}
+function skipQuestion(){
+  if(G.answered)return;
+  clearInterval(G.timer);G.answered=true;
+  const q=LEVELS[G.level].questions[G.qIdx];
+  if(q.type==='mc'){document.querySelectorAll('.mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.answer)b.classList.add('correct-ans');});}
+  else{const fti=document.getElementById('ft-input');fti.value=q.answer;fti.disabled=true;fti.className='ft-input wrong-border';}
+  G.streak=0;G.wrongTotal++;G.lives--;
+  document.getElementById('feedback').className='feedback wrong show';
+  document.getElementById('feedback').textContent='⏭️ Sprunget over!';
+  document.getElementById('explanation').className='explanation show';
+  document.getElementById('explanation').innerHTML=`<strong>Svar:</strong> ${q.answer} — ${q.explanation}`;
+  renderLives();updateStreakPill();markDot(false);
+  if(G.lives<=0){setTimeout(()=>gameOver(false),2100);return;}
+  setTimeout(advance,2400);
+}
+function timeOut(){
+  if(G.answered)return;G.answered=true;
+  const q=LEVELS[G.level].questions[G.qIdx];
+  if(q.type==='mc'){document.querySelectorAll('.mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.answer)b.classList.add('correct-ans');});}
+  else{const fti=document.getElementById('ft-input');fti.value=q.answer;fti.disabled=true;fti.className='ft-input wrong-border';}
+  G.streak=0;G.wrongTotal++;G.lives--;
+  document.getElementById('feedback').className='feedback wrong show';
+  document.getElementById('feedback').textContent='⏰ Tiden er gået!';
+  document.getElementById('explanation').className='explanation show';
+  document.getElementById('explanation').innerHTML=`<strong>Svar:</strong> ${q.answer} — ${q.explanation}`;
+  renderLives();updateStreakPill();markDot(false);
+  if(G.lives<=0){setTimeout(()=>gameOver(false),2100);return;}
+  setTimeout(advance,2400);
+}
+function resolveAnswer(ok){
+  const lvl=LEVELS[G.level];const q=lvl.questions[G.qIdx];
+  document.getElementById('explanation').className='explanation show';
+  document.getElementById('explanation').innerHTML=`<strong>Forklaring:</strong> ${q.explanation}`;
+  if(ok){
+    G.streak++;G.correctTotal++;
+    const mult=Math.min(Math.floor(G.streak/3)+1,5);
+    const pts=lvl.pts*mult+Math.floor(G.timeLeft*1.5);
+    G.score+=pts;G.levelScore+=pts;G.levelCorrect++;
+    document.getElementById('feedback').className='feedback correct show';
+    document.getElementById('feedback').textContent=correctMsg(G.streak);
+    confetti();starBurst();
+  } else {
+    G.streak=0;G.wrongTotal++;G.lives--;
+    document.getElementById('feedback').className='feedback wrong show';
+    document.getElementById('feedback').textContent=wrongMsg();
+    document.getElementById('question-box').classList.add('shake');
+    setTimeout(()=>document.getElementById('question-box').classList.remove('shake'),380);
+    renderLives();
+  }
+  document.getElementById('hud-score').textContent=G.score.toLocaleString('da');
+  updateStreakPill();markDot(ok);
+  if(G.lives<=0){setTimeout(()=>gameOver(false),2100);return;}
+  setTimeout(advance,2450);
+}
+function advance(){G.qIdx++;if(G.qIdx>=LEVELS[G.level].questions.length)showLevelComplete();else loadQuestion();}
+function markDot(ok){const d=document.getElementById('progress-dots').children;if(d[G.qIdx])d[G.qIdx].className='dot '+(ok?'done':'wrong-dot');}
+
+// ─── LEVEL COMPLETE / GAME OVER ──────────────────────────────────────────────
+function showLevelComplete(){
+  clearInterval(G.timer);const lvl=LEVELS[G.level];
+  document.getElementById('level-title').textContent=`${lvl.name} klaret! 🎉`;
+  document.getElementById('level-pts').textContent='+'+G.levelScore.toLocaleString('da');
+  document.getElementById('level-msg').textContent=G.level+1<LEVELS.length?`Næste: ${LEVELS[G.level+1].label}`:'Du har gennemført alle niveauer!';
+  document.getElementById('level-details').innerHTML=`<div class="score-detail"><div class="lbl">Rigtige</div><div class="val">${G.levelCorrect}/${lvl.questions.length}</div></div><div class="score-detail"><div class="lbl">Total</div><div class="val">${G.score.toLocaleString('da')}</div></div>`;
+  confetti(true);showScreen('screen-level');
+}
+function gameOver(won){
+  clearInterval(G.timer);addHS(G.name,G.score,G.level);
+  document.getElementById('go-player').textContent=G.name+(won?' — Du er en grammatikmester!':'');
+  document.getElementById('go-score').textContent=G.score.toLocaleString('da');
+  document.getElementById('go-details').innerHTML=`<div class="score-detail"><div class="lbl">Niveau nået</div><div class="val">${G.level+1}/${LEVELS.length}</div></div><div class="score-detail"><div class="lbl">Rigtige</div><div class="val">${G.correctTotal}</div></div><div class="score-detail"><div class="lbl">Forkerte</div><div class="val">${G.wrongTotal}</div></div>`;
+  const hs=getHS();const rank=hs.findIndex(h=>h.score===G.score&&h.name===G.name);
+  document.getElementById('go-record').textContent=rank===0?'🏆 Ny rekord!':rank>0?`#${rank+1} på resultattavlen`:'';
+  if(won)confetti(true);showScreen('screen-gameover');
+}
+
+// ─── UI ──────────────────────────────────────────────────────────────────────
+function renderLives(){document.getElementById('lives-display').innerHTML=[1,2,3].map(i=>`<span class="heart${i>G.lives?' lost':''}">❤️</span>`).join('');}
+function renderProgressDots(){
+  const lvl=LEVELS[G.level];
+  document.getElementById('progress-dots').innerHTML=lvl.questions.map((_,i)=>{let c='dot';if(i<G.qIdx)c+=' done';else if(i===G.qIdx)c+=' current';return`<div class="${c}"></div>`;}).join('');
+}
+function updateTimerBar(){
+  const pct=Math.max(0,(G.timeLeft/LEVELS[G.level].timeLimit)*100);
+  const bar=document.getElementById('timer-bar');bar.style.width=pct+'%';bar.className='timer-bar'+(pct<25?' urgent':'');
+}
+function updateStreakPill(){
+  const el=document.getElementById('streak-pill');
+  if(G.streak>=3){const m=Math.min(Math.floor(G.streak/3)+1,5);el.textContent=`🔥 ×${m}`;el.className='streak-pill show';}
+  else el.className='streak-pill';
+}
+function correctMsg(s){
+  if(s>=9)return'🌟 Umuligt godt! Du er for sej!';
+  if(s>=6)return'💥 Ustoppelig! Grammatikmester!';
+  if(s>=3)return'⚡ Fantastisk! Du er for sej!';
+  return['✅ Korrekt!','✅ Rigtigt!','✅ Perfekt!','✅ Godt klaret!'][Math.floor(Math.random()*4)];
+}
+function wrongMsg(){return['❌ Ikke helt rigtigt.','❌ Det var desværre forkert.','❌ Prøv igen næste gang!','❌ Næsten!'][Math.floor(Math.random()*4)];}
+
+// ─── FX ──────────────────────────────────────────────────────────────────────
+function confetti(big=false){
+  const cols=['#ff6b9d','#5af5a0','#ffe566','#52d8ff','#c87aff','#ffaa3b'];
+  for(let i=0;i<(big?65:22);i++){
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.cssText=`left:${10+Math.random()*80}vw;top:-10px;background:${cols[Math.floor(Math.random()*cols.length)]};width:${6+Math.random()*9}px;height:${6+Math.random()*9}px;border-radius:${Math.random()>.4?'50%':'3px'};--dur:${.85+Math.random()*.85}s;animation-delay:${Math.random()*.65}s;`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),2100);
+  }
+}
+function starBurst(){
+  const emojis=['⭐','✨','💫','🌟','🎉','🦉'];
+  for(let i=0;i<5;i++){
+    const el=document.createElement('div');el.className='starburst';
+    const a=(i/5)*Math.PI*2;const d=70+Math.random()*55;
+    el.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.cssText=`left:50vw;top:50vh;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-delay:${i*.05}s;`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),850);
+  }
+}
+function makeStars(){
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*2.5+.5;
+    s.style.cssText=`left:${Math.random()*100}vw;top:${Math.random()*100}vh;width:${sz}px;height:${sz}px;--d:${2+Math.random()*4}s;--o:${.15+Math.random()*.6};animation-delay:${Math.random()*4}s;`;
+    document.body.appendChild(s);
+  }
+}
+
+window.addEventListener('load',()=>{
+  makeStars();renderProfiles();renderHighscores();
+  document.getElementById('player-name').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUMREJSEN // ALIEN QUIZSTATION</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:#000a00;
+  --scan:#001800;
+  --panel:#000f00;
+  --card:#001500;
+  --border-g:rgba(0,255,80,.18);
+  --border-h:rgba(0,255,80,.55);
+  --g0:#00ff50;   /* primary green */
+  --g1:#00cc40;
+  --g2:#008828;
+  --g3:#003d12;
+  --gdim:#002a0d;
+  --glow:rgba(0,255,80,.35);
+  --glow2:rgba(0,255,80,.12);
+  --amber:#ffaa00;
+  --amber-g:rgba(255,170,0,.35);
+  --red:#ff3030;
+  --red-g:rgba(255,48,48,.35);
+  --cyan:#00eeff;
+  --cyan-g:rgba(0,238,255,.3);
+  --white:#c8ffd4;
+  --muted:#3a7a4a;
+
+  /* level accent — overridden per level */
+  --acc:#00ff50;
+  --acc-g:rgba(0,255,80,.35);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  background:var(--void);
+  font-family:'Rajdhani',sans-serif;
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow-x:hidden;
+  color:var(--g0);
+}
+
+/* ══ SCANLINE OVERLAY ══ */
+body::before {
+  content:'';position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.22) 2px,rgba(0,0,0,.22) 4px);
+}
+
+/* ══ CRT FLICKER ══ */
+body::after {
+  content:'';position:fixed;inset:0;z-index:9997;pointer-events:none;
+  background:rgba(0,255,80,.012);
+  animation:flicker 8s steps(1) infinite;
+}
+@keyframes flicker {
+  0%,95%{opacity:1} 96%{opacity:.85} 97%{opacity:1} 98%{opacity:.9} 99%{opacity:1}
+}
+
+/* ══ GRID BG ══ */
+.grid-bg {
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background-image:
+    linear-gradient(rgba(0,255,80,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,80,.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  animation:gridShift 40s linear infinite;
+}
+@keyframes gridShift{from{background-position:0 0}to{background-position:0 48px}}
+
+/* ══ ALIEN BLOBS (subtle) ══ */
+.ablob {
+  position:fixed;pointer-events:none;z-index:0;
+  border-radius:40% 60% 55% 45%/50% 45% 55% 50%;
+  background:radial-gradient(ellipse,rgba(0,255,80,.07) 0%,transparent 70%);
+  animation:blobMorph var(--bd,18s) ease-in-out infinite alternate;
+}
+@keyframes blobMorph{
+  from{transform:translate(0,0) scale(1) rotate(0deg);border-radius:40% 60% 55% 45%/50% 45% 55% 50%;}
+  to{transform:translate(var(--bx,30px),var(--by,-20px)) scale(var(--bs,1.1)) rotate(var(--br,15deg));border-radius:55% 45% 40% 60%/45% 55% 50% 50%;}
+}
+
+/* ══ STARS ══ */
+.star{position:fixed;border-radius:50%;background:var(--g0);pointer-events:none;z-index:0;animation:stTwink var(--d,3s) ease-in-out infinite alternate;}
+@keyframes stTwink{from{opacity:var(--o,.5)}to{opacity:.02}}
+
+/* ══ ALIEN GLYPHS DRIFTING ══ */
+.glyph{position:fixed;pointer-events:none;z-index:0;font-family:'Share Tech Mono',monospace;color:rgba(0,255,80,.08);font-size:var(--gs,1rem);animation:glyphDrift var(--gd,15s) linear infinite;}
+@keyframes glyphDrift{from{transform:translateY(100vh) rotate(0deg)}to{transform:translateY(-20vh) rotate(360deg)}}
+
+/* ══ SCREEN ══ */
+.screen{display:none;position:relative;z-index:10;width:min(720px,96vw);animation:screenIn .3s ease-out;}
+.screen.active{display:block;}
+@keyframes screenIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+/* ══ CARD ══ */
+.card {
+  background:var(--card);
+  border:1px solid var(--border-h);
+  border-radius:4px;
+  padding:34px 40px;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 0 1px var(--border-g),0 0 40px var(--glow2),0 0 80px rgba(0,255,80,.05),inset 0 0 30px rgba(0,0,0,.8);
+}
+/* Corner brackets */
+.card::before,.card::after{content:'';position:absolute;width:18px;height:18px;border-color:var(--acc);border-style:solid;}
+.card::before{top:6px;left:6px;border-width:2px 0 0 2px;}
+.card::after{bottom:6px;right:6px;border-width:0 2px 2px 0;}
+/* Top scan line */
+.card .top-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);animation:scanMove 3s ease-in-out infinite alternate;}
+@keyframes scanMove{from{opacity:.6;transform:scaleX(.7)}to{opacity:1;transform:scaleX(1)}}
+
+/* ══ ALIEN MASCOT SVG ══ */
+.alien-head {
+  display:block;margin:0 auto 4px;
+  width:80px;height:80px;
+  animation:alienBob 3s ease-in-out infinite;
+  filter:drop-shadow(0 0 16px var(--acc));
+}
+@keyframes alienBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+
+/* ══ TYPOGRAPHY ══ */
+.sys-tag{display:block;text-align:center;font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:.25em;color:var(--muted);margin-bottom:6px;}
+h1{font-family:'Orbitron',monospace;font-size:clamp(1.8rem,6vw,3rem);font-weight:900;color:var(--g0);text-align:center;line-height:1;letter-spacing:.06em;text-shadow:0 0 20px var(--glow),0 0 40px var(--glow2);}
+h1 em{font-style:normal;color:var(--acc);text-shadow:0 0 20px var(--acc-g);}
+h2{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;color:var(--g0);text-align:center;margin-bottom:14px;letter-spacing:.06em;}
+p{color:var(--muted);line-height:1.7;font-size:.94rem;font-family:'Rajdhani',sans-serif;}
+.mono{font-family:'Share Tech Mono',monospace;}
+
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border-h),transparent);margin:16px 0;}
+
+/* ══ LEVEL MAP ══ */
+.level-map{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:14px 0;}
+.lm-node{aspect-ratio:1;border:1px solid var(--border-g);background:rgba(0,255,80,.02);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:2px;font-size:.58rem;font-family:'Share Tech Mono',monospace;color:var(--g2);text-align:center;gap:2px;padding:4px 2px;}
+.lm-node .lm-ico{font-size:1.4rem;}
+.lm-node.active{border-color:var(--acc);color:var(--g0);background:rgba(0,255,80,.06);box-shadow:0 0 10px var(--acc-g);}
+.lm-node.done{border-color:var(--cyan);color:var(--cyan);background:rgba(0,238,255,.04);}
+
+/* ══ BUTTONS ══ */
+.btn{display:inline-block;padding:11px 24px;border-radius:2px;font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;cursor:pointer;border:none;transition:all .15s;letter-spacing:.08em;text-transform:uppercase;position:relative;}
+.btn:active{transform:scale(.94)!important;}
+.btn::before{content:'> ';opacity:.6;}
+.btn-primary{background:transparent;color:var(--acc);border:1px solid var(--acc);box-shadow:0 0 12px var(--acc-g),inset 0 0 12px rgba(0,255,80,.06);}
+.btn-primary:hover{background:rgba(0,255,80,.08);box-shadow:0 0 22px var(--glow);transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--g1);border:1px solid var(--border-g);}
+.btn-ghost:hover{border-color:var(--g1);color:var(--g0);}
+.btn-amber{background:transparent;color:var(--amber);border:1px solid var(--amber);box-shadow:0 0 10px var(--amber-g);}
+.btn-amber:hover{background:rgba(255,170,0,.06);box-shadow:0 0 18px var(--amber-g);}
+
+/* ══ INPUT ══ */
+.input-group{margin:14px 0;}
+.input-group label{display:block;font-family:'Share Tech Mono',monospace;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--g1);margin-bottom:7px;}
+.input-group input{width:100%;padding:12px 16px;border:1px solid var(--border-h);border-radius:2px;background:rgba(0,255,80,.03);font-family:'Share Tech Mono',monospace;font-size:.95rem;color:var(--g0);outline:none;transition:all .2s;caret-color:var(--g0);}
+.input-group input::placeholder{color:var(--g2);}
+.input-group input:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--glow2),0 0 12px var(--acc-g);}
+
+/* ══ HUD ══ */
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
+.hud-block{text-align:center;}
+.hud-lbl{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--g2);display:block;}
+.hud-val{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:700;color:var(--acc);line-height:1.1;text-shadow:0 0 10px var(--acc-g);}
+
+/* ══ TIMER ══ */
+.timer-wrap{width:100%;height:3px;background:var(--g3);margin-bottom:10px;}
+.timer-bar{height:100%;background:linear-gradient(90deg,var(--g2),var(--acc));transition:width .12s linear;box-shadow:0 0 6px var(--glow);}
+.timer-bar.urgent{background:linear-gradient(90deg,var(--red),var(--amber));box-shadow:0 0 8px var(--red-g);animation:tUrge .3s ease infinite alternate;}
+@keyframes tUrge{from{opacity:1}to{opacity:.4}}
+
+/* ══ LEVEL BADGE ══ */
+.lvl-badge{font-family:'Share Tech Mono',monospace;font-size:.64rem;letter-spacing:.14em;color:var(--acc);border:1px solid var(--border-h);padding:3px 12px;border-radius:2px;}
+
+/* ══ PROGRESS ══ */
+.progress-dots{display:flex;justify-content:center;gap:6px;margin:7px 0 12px;}
+.dot{width:9px;height:9px;border-radius:1px;background:var(--g3);transition:all .3s;border:1px solid var(--border-g);}
+.dot.done{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 6px var(--cyan-g);}
+.dot.wrong-dot{background:var(--red);border-color:var(--red);box-shadow:0 0 6px var(--red-g);}
+.dot.current{background:var(--acc);border-color:var(--acc);transform:scale(1.4);box-shadow:0 0 8px var(--glow);}
+
+/* ══ LIVES ══ */
+.lives{display:flex;gap:4px;}
+.heart{font-size:1.1rem;transition:all .25s;}
+.heart.lost{opacity:.1;filter:grayscale(1);}
+
+/* ══ STREAK ══ */
+.streak-pill{font-family:'Share Tech Mono',monospace;font-size:.64rem;letter-spacing:.1em;padding:3px 10px;border:1px solid var(--amber);color:var(--amber);opacity:0;transition:opacity .25s;}
+.streak-pill.show{opacity:1;animation:spop .35s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes spop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+/* ══ QUESTION AREA ══ */
+.q-area{
+  background:rgba(0,255,80,.025);border:1px solid var(--acc);
+  border-radius:2px;padding:18px 22px;margin:10px 0;
+  box-shadow:0 0 16px var(--glow2),inset 0 0 20px rgba(0,0,0,.6);
+  position:relative;
+}
+.q-area::before,.q-area::after{content:'';position:absolute;width:10px;height:10px;border-color:var(--acc);border-style:solid;}
+.q-area::before{top:4px;left:4px;border-width:1px 0 0 1px;}
+.q-area::after{bottom:4px;right:4px;border-width:0 1px 1px 0;}
+.q-mode{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.2em;color:var(--g1);margin-bottom:8px;}
+.q-text{font-family:'Rajdhani',sans-serif;font-size:clamp(1rem,2.6vw,1.2rem);font-weight:600;line-height:1.65;color:var(--white);}
+.q-text strong,.q-text b{color:var(--acc);font-weight:700;}
+
+/* ══ HINT ══ */
+.hint-line{font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--g1);border-left:2px solid var(--g2);padding:6px 10px;margin-bottom:10px;opacity:.8;}
+
+/* ══ MC BUTTONS ══ */
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+@media(max-width:480px){.mc-grid{grid-template-columns:1fr;}}
+.mc-btn{padding:13px 10px;border:1px solid var(--border-g);background:rgba(0,255,80,.02);font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;color:var(--g0);cursor:pointer;transition:all .14s;text-align:left;padding-left:14px;line-height:1.3;border-radius:2px;}
+.mc-btn::before{content:'[ ] ';font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--g2);}
+.mc-btn:hover:not(:disabled){border-color:var(--acc);background:rgba(0,255,80,.06);box-shadow:0 0 12px var(--glow2);}
+.mc-btn.correct-ans{border-color:var(--cyan);background:rgba(0,238,255,.07);color:var(--cyan);}
+.mc-btn.correct-ans::before{content:'[✓] ';color:var(--cyan);}
+.mc-btn.wrong-ans{border-color:var(--red);background:rgba(255,48,48,.07);color:var(--red);}
+.mc-btn.wrong-ans::before{content:'[✗] ';color:var(--red);}
+.mc-btn:disabled{cursor:default;}
+
+/* ══ TRUE/FALSE ══ */
+.tf-row{display:flex;gap:10px;margin:10px 0;}
+.tf-btn{flex:1;padding:15px;border:1px solid var(--border-g);background:rgba(0,255,80,.02);font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;color:var(--g0);cursor:pointer;transition:all .14s;text-align:center;letter-spacing:.08em;border-radius:2px;}
+.tf-btn.true-btn:hover:not(:disabled){border-color:var(--cyan);background:rgba(0,238,255,.06);color:var(--cyan);box-shadow:0 0 12px var(--cyan-g);}
+.tf-btn.false-btn:hover:not(:disabled){border-color:var(--red);background:rgba(255,48,48,.06);color:var(--red);box-shadow:0 0 12px var(--red-g);}
+.tf-btn.correct-ans{border-color:var(--cyan);background:rgba(0,238,255,.08);color:var(--cyan);}
+.tf-btn.wrong-ans{border-color:var(--red);background:rgba(255,48,48,.08);color:var(--red);}
+.tf-btn:disabled{cursor:default;}
+
+/* ══ FRITEKST ══ */
+.ft-input{width:100%;padding:13px 16px;border:1px solid var(--border-g);background:rgba(0,255,80,.03);font-family:'Share Tech Mono',monospace;font-size:.95rem;color:var(--g0);outline:none;transition:all .2s;margin:10px 0;text-align:center;caret-color:var(--g0);border-radius:2px;}
+.ft-input::placeholder{color:var(--g2);}
+.ft-input:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--glow2);}
+.ft-input.correct-border{border-color:var(--cyan);background:rgba(0,238,255,.06);color:var(--cyan);}
+.ft-input.wrong-border{border-color:var(--red);background:rgba(255,48,48,.06);color:var(--red);}
+
+/* ══ FEEDBACK ══ */
+.feedback{font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700;padding:11px;text-align:center;margin:8px 0;opacity:0;transition:opacity .18s;letter-spacing:.06em;border-radius:2px;}
+.feedback.show{opacity:1;}
+.feedback.correct{color:var(--cyan);border:1px solid rgba(0,238,255,.25);background:rgba(0,238,255,.05);animation:fbPop .3s cubic-bezier(.175,.885,.32,1.275);}
+.feedback.wrong{color:var(--red);border:1px solid rgba(255,48,48,.25);background:rgba(255,48,48,.05);}
+@keyframes fbPop{0%{transform:scale(.88)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+
+/* ══ EXPLANATION ══ */
+.explanation{background:rgba(0,255,80,.02);border:1px solid var(--border-g);border-radius:2px;padding:11px 15px;font-size:.86rem;color:var(--muted);display:none;line-height:1.6;margin-top:7px;font-family:'Rajdhani',sans-serif;}
+.explanation.show{display:block;}
+.explanation strong{color:var(--g0);}
+
+.action-row{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+
+/* ══ HIGHSCORE ══ */
+.score-list{list-style:none;margin:10px 0;}
+.score-list li{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border-g);font-size:.88rem;border-radius:2px;transition:background .14s;}
+.score-list li:hover{background:var(--glow2);}
+.score-list li:first-child{background:rgba(255,170,0,.05);border:1px solid rgba(255,170,0,.2);margin-bottom:4px;}
+.score-list .rank{font-family:'Share Tech Mono',monospace;color:var(--amber);width:28px;font-size:.9rem;}
+.score-list .name{flex:1;font-weight:600;color:var(--white);}
+.score-list .pts{font-family:'Orbitron',monospace;font-weight:700;color:var(--acc);font-size:.9rem;}
+.score-list .lvl{font-size:.68rem;color:var(--muted);margin-left:8px;font-family:'Share Tech Mono',monospace;}
+.empty-state{text-align:center;color:var(--g2);padding:20px;font-family:'Share Tech Mono',monospace;font-size:.8rem;}
+
+.big-score{font-family:'Orbitron',monospace;font-size:3.6rem;font-weight:900;color:var(--acc);text-align:center;line-height:1;margin:8px 0;text-shadow:0 0 30px var(--glow),0 0 60px var(--glow2);}
+.score-details{display:flex;justify-content:center;gap:26px;margin:12px 0;flex-wrap:wrap;}
+.score-detail .lbl{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--g2);}
+.score-detail .val{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;color:var(--g0);}
+
+#saved-profiles{margin:0 0 12px;}
+.profile-btn{margin:3px;padding:4px 12px;border:1px solid var(--border-g);background:transparent;border-radius:2px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.74rem;color:var(--g1);transition:all .14s;}
+.profile-btn:hover{border-color:var(--g0);color:var(--g0);}
+
+/* ══ FX ══ */
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .36s ease;}
+
+.confetti-piece{position:fixed;pointer-events:none;z-index:9999;animation:cFall var(--dur,1s) ease-in forwards;}
+@keyframes cFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(540deg);opacity:0}}
+.pixel-burst{position:fixed;pointer-events:none;z-index:9999;font-family:'Share Tech Mono',monospace;animation:pBurst .7s ease-out forwards;}
+@keyframes pBurst{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1);opacity:0}}
+
+/* ══ TRANSMISSION EFFECT ══ */
+.transmission{position:fixed;inset:0;z-index:9996;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(0,10,0,.85);opacity:0;}
+.transmission.active{animation:transIn .5s ease forwards;}
+@keyframes transIn{0%{opacity:1}100%{opacity:0;pointer-events:none}}
+.trans-text{font-family:'Share Tech Mono',monospace;font-size:1.4rem;color:var(--g0);text-align:center;text-shadow:0 0 20px var(--glow);letter-spacing:.2em;}
+
+@media(max-width:500px){.card{padding:22px 16px;}.mc-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="transmission" id="transmission"><div class="trans-text" id="trans-text">FORBINDER TIL NETVÆRK...</div></div>
+
+<!-- WELCOME -->
+<div id="screen-welcome" class="screen active">
+  <div class="card">
+    <div class="top-line"></div>
+
+    <!-- SVG ALIEN -->
+    <svg class="alien-head" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="42" rx="26" ry="30" fill="#001800" stroke="#00ff50" stroke-width="1.5"/>
+      <ellipse cx="40" cy="36" rx="22" ry="25" fill="#001800"/>
+      <!-- Eyes -->
+      <ellipse cx="28" cy="34" rx="7" ry="9" fill="#00ff50" opacity=".15"/>
+      <ellipse cx="52" cy="34" rx="7" ry="9" fill="#00ff50" opacity=".15"/>
+      <ellipse cx="28" cy="34" rx="5" ry="7" fill="#00ff50" opacity=".8"/>
+      <ellipse cx="52" cy="34" rx="5" ry="7" fill="#00ff50" opacity=".8"/>
+      <ellipse cx="28" cy="34" rx="2.5" ry="3.5" fill="#000a00"/>
+      <ellipse cx="52" cy="34" rx="2.5" ry="3.5" fill="#000a00"/>
+      <!-- Glow pupils -->
+      <ellipse cx="28" cy="34" rx="1" ry="1.5" fill="#00ff50"/>
+      <ellipse cx="52" cy="34" rx="1" ry="1.5" fill="#00ff50"/>
+      <!-- Antennae -->
+      <line x1="30" y1="12" x2="22" y2="2" stroke="#00ff50" stroke-width="1.5" opacity=".8"/>
+      <circle cx="21" cy="1" r="2" fill="#00ff50" opacity=".9"/>
+      <line x1="50" y1="12" x2="58" y2="2" stroke="#00ff50" stroke-width="1.5" opacity=".8"/>
+      <circle cx="59" cy="1" r="2" fill="#00ff50" opacity=".9"/>
+      <!-- Mouth -->
+      <path d="M32 54 Q40 60 48 54" stroke="#00ff50" stroke-width="1.5" fill="none" opacity=".6"/>
+      <!-- Nostrils -->
+      <ellipse cx="37" cy="48" rx="1.5" ry="1" fill="#00ff50" opacity=".4"/>
+      <ellipse cx="43" cy="48" rx="1.5" ry="1" fill="#00ff50" opacity=".4"/>
+      <!-- Head lines -->
+      <ellipse cx="40" cy="42" rx="26" ry="30" fill="none" stroke="#00ff50" stroke-width="1.5" opacity=".7"/>
+    </svg>
+
+    <span class="sys-tag mono">// ALIEN QUIZSTATION v2.4 // INITIALISERER...</span>
+    <h1><em>RUM</em>REJSEN</h1>
+    <p style="text-align:center;margin:8px 0 4px;font-size:.9rem;color:var(--g1);">Fra Solen til universets kant — 10 transmissioner</p>
+
+    <div class="divider"></div>
+    <div class="level-map" id="welcome-map"></div>
+    <div class="divider"></div>
+
+    <div class="input-group">
+      <label>// ASTRONAUTIDENTIFIKATION</label>
+      <input type="text" id="player-name" placeholder="SKRIV DIT NAVN_" maxlength="20" autocomplete="off">
+    </div>
+    <div id="saved-profiles"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="startGame()">START MISSION</button>
+      <button class="btn btn-ghost" onclick="showScreen('screen-highscore')">TOPSCORER</button>
+    </div>
+    <p style="font-size:.74rem;text-align:center;margin-top:12px;font-family:Share Tech Mono,monospace;color:var(--g2);">// MC · SANDT/FALSK · FRITEKST · 10 NIVEAUER · 80 SPØRGSMÅL //</p>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="card">
+    <div class="top-line"></div>
+    <div class="hud">
+      <div class="hud-block">
+        <span class="hud-lbl">POINT</span>
+        <span class="hud-val" id="hud-score">0</span>
+      </div>
+      <div style="text-align:center;">
+        <div id="level-badge" class="lvl-badge">NIV_01</div>
+        <div style="margin-top:5px;"><span id="streak-pill" class="streak-pill">// STREAK ×2</span></div>
+      </div>
+      <div class="hud-block" style="text-align:right;">
+        <span class="hud-lbl">LIV</span>
+        <div class="lives" id="lives-display"></div>
+      </div>
+    </div>
+
+    <div class="timer-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+    <div class="progress-dots" id="progress-dots"></div>
+
+    <div id="hint-line" class="hint-line">…</div>
+
+    <div class="q-area" id="q-area">
+      <div class="q-mode" id="q-mode">// SPØRGSMÅL</div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+
+    <div id="mc-area" class="mc-grid"></div>
+    <div id="tf-area" class="tf-row" style="display:none;">
+      <button class="tf-btn true-btn" onclick="submitTF(true)">[ ✓ ] SANDT</button>
+      <button class="tf-btn false-btn" onclick="submitTF(false)">[ ✗ ] FALSK</button>
+    </div>
+    <div id="ft-area" style="display:none;">
+      <input type="text" class="ft-input" id="ft-input" placeholder="SKRIV SVAR HER_" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+    <div id="explanation" class="explanation"></div>
+    <div class="action-row" id="action-row">
+      <button class="btn btn-ghost" onclick="skipQ()">SPRING OVER</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL COMPLETE -->
+<div id="screen-level" class="screen">
+  <div class="card" style="text-align:center;">
+    <div class="top-line"></div>
+    <svg class="alien-head" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" id="lc-alien">
+      <ellipse cx="40" cy="42" rx="26" ry="30" fill="#001800" stroke="#00eeff" stroke-width="1.5"/>
+      <ellipse cx="28" cy="34" rx="5" ry="7" fill="#00eeff" opacity=".9"/>
+      <ellipse cx="52" cy="34" rx="5" ry="7" fill="#00eeff" opacity=".9"/>
+      <ellipse cx="28" cy="34" rx="2.5" ry="3.5" fill="#000a00"/>
+      <ellipse cx="52" cy="34" rx="2.5" ry="3.5" fill="#000a00"/>
+      <path d="M30 56 Q40 64 50 56" stroke="#00eeff" stroke-width="2" fill="none"/>
+      <line x1="30" y1="12" x2="22" y2="2" stroke="#00eeff" stroke-width="1.5"/><circle cx="21" cy="1" r="2" fill="#00eeff"/>
+      <line x1="50" y1="12" x2="58" y2="2" stroke="#00eeff" stroke-width="1.5"/><circle cx="59" cy="1" r="2" fill="#00eeff"/>
+    </svg>
+    <h2 id="lc-title">TRANSMISSION FULDFØRT</h2>
+    <div class="big-score" id="lc-pts">+1200</div>
+    <p id="lc-msg" style="margin:8px 0 14px;font-family:Share Tech Mono,monospace;font-size:.8rem;color:var(--g1);"></p>
+    <div class="score-details" id="lc-details"></div>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="nextLevel()">NÆSTE DESTINATION →</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="screen-gameover" class="screen">
+  <div class="card" style="text-align:center;">
+    <div class="top-line"></div>
+    <svg class="alien-head" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="42" rx="26" ry="30" fill="#001800" stroke="#ff3030" stroke-width="1.5"/>
+      <ellipse cx="28" cy="34" rx="5" ry="7" fill="#ff3030" opacity=".7"/>
+      <ellipse cx="52" cy="34" rx="5" ry="7" fill="#ff3030" opacity=".7"/>
+      <line x1="33" y1="57" x2="47" y2="55" stroke="#ff3030" stroke-width="2"/>
+      <line x1="30" y1="12" x2="22" y2="2" stroke="#ff3030" stroke-width="1.5"/><circle cx="21" cy="1" r="2" fill="#ff3030"/>
+      <line x1="50" y1="12" x2="58" y2="2" stroke="#ff3030" stroke-width="1.5"/><circle cx="59" cy="1" r="2" fill="#ff3030"/>
+    </svg>
+    <h2>MISSION AFSLUTTET</h2>
+    <p id="go-player" style="margin-bottom:4px;font-family:Share Tech Mono,monospace;font-size:.8rem;color:var(--g1);"></p>
+    <div class="big-score" id="go-score">0</div>
+    <p style="font-size:.72rem;margin-bottom:12px;font-family:Share Tech Mono,monospace;color:var(--g2);">POINT REGISTRERET</p>
+    <div class="score-details" id="go-details"></div>
+    <div id="go-record" style="font-family:Orbitron,monospace;font-size:.88rem;color:var(--amber);margin:10px 0;font-weight:700;"></div>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="startGame()">NY MISSION</button>
+      <button class="btn btn-amber" onclick="showScreen('screen-highscore')">TOPSCORER</button>
+      <button class="btn btn-ghost" onclick="showScreen('screen-welcome')">MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIGHSCORE -->
+<div id="screen-highscore" class="screen">
+  <div class="card">
+    <div class="top-line"></div>
+    <p style="font-family:Share Tech Mono,monospace;font-size:2rem;text-align:center;color:var(--amber);text-shadow:0 0 20px var(--amber-g);">★ TOP ASTRONAUTER ★</p>
+    <ul class="score-list" id="score-list"></ul>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="showScreen('screen-welcome')">← TILBAGE</button>
+      <button class="btn btn-ghost" onclick="clearHS()">NULSTIL</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// LEVELS DATA
+// ══════════════════════════════════════════════════════
+const LEVELS = [
+{
+  id:1,name:'SOLEN',icon:'☀️',acc:'#ffb830',accG:'rgba(255,184,48,.4)',
+  tag:'// TRANSMISSION 01 // VORES STJERNE',
+  hint:'// Solen er en G-type hovedseriestjerne — 99,86% af solsystemets masse',
+  timeLimit:38,pts:90,lives:4,
+  questions:[
+    {t:'mc',q:'Hvad er Solens overfladetemperatur?',a:'Ca. 5.500°C',opts:['Ca. 1.000°C','Ca. 5.500°C','Ca. 20.000°C','Ca. 100.000°C'],ex:'Solens overflade er ca. <strong>5.500°C</strong> — men kernen er 15 <em>millioner</em> grader.'},
+    {t:'tf',q:'Solen er klassificeret som en "gul dværg"-stjerne.',a:true,ex:'Korrekt — Solen er en <strong>G-type hovedseriestjerne</strong>, populært kaldet gul dværg.'},
+    {t:'mc',q:'Hvor lang tid tager det sollyset at nå Jorden?',a:'Ca. 8 minutter',opts:['Ca. 1 sekund','Ca. 8 minutter','Ca. 45 minutter','Ca. 8 timer'],ex:'Lyset rejser 300.000 km/s og bruger ca. <strong>8 min 20 sek</strong> fra Solen til Jorden.'},
+    {t:'tf',q:'Solen udgør mere end 99% af solsystemets samlede masse.',a:true,ex:'Ja — Solen vejer præcist <strong>99,86%</strong> af det samlede solsystem.'},
+    {t:'mc',q:'Hvad hedder det ydre lag af Solens atmosfære?',a:'Korona',opts:['Fotosfe','Korona','Kromosfe','Termosfe'],ex:'<strong>Korona</strong> er Solens ydre atmosfære — den kan ses som et lysende slør under solformørkelser.'},
+    {t:'mc',q:'Hvad sker i Solens kerne?',a:'Kernefusion',opts:['Kernefission','Kernefusion','Forbrænding','Radioaktivt henfald'],ex:'<strong>Kernefusion</strong>: brintatomer smelter til helium og frigiver enorme mængder energi.'},
+    {t:'tf',q:'Solen er ca. 4,6 milliarder år gammel.',a:true,ex:'Korrekt — Solen dannedes for ca. <strong>4,6 milliarder år</strong> siden fra en støv- og gasskrye.'},
+    {t:'mc',q:'Hvad er Solens diameter i forhold til Jordens?',a:'Ca. 109 gange større',opts:['Ca. 10 gange','Ca. 50 gange','Ca. 109 gange større','Ca. 1.000 gange'],ex:'Solens diameter er ca. <strong>109 gange</strong> Jordens — 1,39 millioner km.'},
+  ]
+},
+{
+  id:2,name:'INDRE PLANETER',icon:'🌍',acc:'#4fc3f7',accG:'rgba(79,195,247,.35)',
+  tag:'// TRANSMISSION 02 // KLIPPEPLANETER',
+  hint:'// Merkur, Venus, Jorden og Mars — faste overflader, tæt på Solen',
+  timeLimit:36,pts:110,lives:4,
+  questions:[
+    {t:'mc',q:'Hvilken planet er tættest på Solen?',a:'Merkur',opts:['Venus','Merkur','Jorden','Mars'],ex:'<strong>Merkur</strong> er nærmest Solen med en middelafstand på 58 millioner km.'},
+    {t:'tf',q:'Venus er varmere end Merkur trods større afstand til Solen.',a:true,ex:'Ja! Venus har en ekstrem <strong>drivhuseffekt</strong> der holder temperaturen på ca. 465°C.'},
+    {t:'mc',q:'Hvad hedder Jordens eneste naturlige satellit?',a:'Månen',opts:['Titan','Månen','Phobos','Callisto'],ex:'<strong>Månen</strong> er Jordens eneste naturlige satellit — ca. 384.000 km væk.'},
+    {t:'mc',q:'Hvilken planet kaldes "Den røde planet"?',a:'Mars',opts:['Venus','Merkur','Mars','Jupiter'],ex:'<strong>Mars</strong> er rød pga. jernoxid (rust) på overfladen.'},
+    {t:'tf',q:'Merkur har en meget tyk atmosfære.',a:false,ex:'Forkert — Merkur har næsten <strong>ingen atmosfære</strong> pga. svag tyngdekraft.'},
+    {t:'mc',q:'Hvad hedder den højeste vulkan i solsystemet?',a:'Olympus Mons (Mars)',opts:['Mauna Kea','Olympus Mons (Mars)','Maxwell Montes','Etna'],ex:'<strong>Olympus Mons</strong> på Mars er 22 km høj — 3× højere end Everest.'},
+    {t:'tf',q:'Jordens atmosfære består primært af ilt (oxygen).',a:false,ex:'Forkert — atmosfæren er primært <strong>kvælstof (78%)</strong>. Ilt udgør kun 21%.'},
+    {t:'mc',q:'Hvor mange måneder har Mars?',a:'2',opts:['0','1','2','4'],ex:'Mars har <strong>to</strong> måneder: Phobos og Deimos — formentlig indfangede asteroider.'},
+  ]
+},
+{
+  id:3,name:'YDRE PLANETER',icon:'🪐',acc:'#e0c97f',accG:'rgba(224,201,127,.35)',
+  tag:'// TRANSMISSION 03 // GASGIGANTER',
+  hint:'// Jupiter, Saturn, Uranus, Neptun — kæmper af gas og is med mange måneder',
+  timeLimit:34,pts:130,lives:4,
+  questions:[
+    {t:'mc',q:'Hvilken planet er størst i solsystemet?',a:'Jupiter',opts:['Saturn','Jupiter','Uranus','Neptun'],ex:'<strong>Jupiter</strong> er den største — større end alle andre planeter tilsammen.'},
+    {t:'tf',q:'Saturn er den eneste planet med ringe.',a:false,ex:'Alle <strong>fire gasgiganter</strong> har ringe. Saturns er blot langt de mest synlige.'},
+    {t:'mc',q:'Hvad hedder Jupiters kæmpestorm?',a:'Den store røde plet',opts:['Den store røde plet','Den blå hvirvel','Nordpolsstormen','Jupiters tyfon'],ex:'<strong>Den store røde plet</strong> er en storm der har raset i mindst 350 år.'},
+    {t:'mc',q:'Hvilken planet "ruller" rundt om Solen med en akse på ~98°?',a:'Uranus',opts:['Neptun','Saturn','Uranus','Jupiter'],ex:'<strong>Uranus</strong> er "væltet" med en aksetilt på 98° — den ruller nærmest som en kugle.'},
+    {t:'tf',q:'Neptun har en dag kortere end én jorddag.',a:true,ex:'Korrekt — Neptun roterer på <strong>16 timer</strong>, selvom et neptunsk år er 165 jordeår.'},
+    {t:'mc',q:'Hvad hedder Saturns største måne?',a:'Titan',opts:['Io','Europa','Titan','Ganymedes'],ex:'<strong>Titan</strong> har en tyk atmosfære og metansøer — muligvis et primitivt liv?'},
+    {t:'mc',q:'Jupiter er primært sammensat af?',a:'Brint og helium',opts:['Sten og jern','Brint og helium','Ilt og kvælstof','Metan og ammoniak'],ex:'Jupiter er primært <strong>brint og helium</strong> — en mislykket stjerne der manglede masse.'},
+    {t:'tf',q:'Uranus er koldere end Neptun.',a:true,ex:'Overraskende: <strong>Uranus</strong> med −224°C er koldere end Neptun (−218°C).'},
+  ]
+},
+{
+  id:4,name:'SOLSYSTEMETS RAND',icon:'🌑',acc:'#7986cb',accG:'rgba(121,134,203,.35)',
+  tag:'// TRANSMISSION 04 // HINSIDES NEPTUN',
+  hint:'// Kuiperbæltet, Oortskyen, dværgplaneter og kometer',
+  timeLimit:32,pts:155,lives:3,
+  questions:[
+    {t:'mc',q:'Hvad hedder dværgplaneten der engang var nr. 9?',a:'Pluto',opts:['Eris','Ceres','Pluto','Makemake'],ex:'<strong>Pluto</strong> blev nedgraderet til dværgplanet i 2006 af IAU.'},
+    {t:'tf',q:'Asteroidebæltet befinder sig mellem Mars og Jupiter.',a:true,ex:'Korrekt — asteroidebæltet ligger <strong>mellem Mars og Jupiter</strong>.'},
+    {t:'mc',q:'Hvorfra menes langperiodiske kometer at stamme?',a:'Oortskyen',opts:['Kuiperbæltet','Asteroidebæltet','Oortskyen','Milkyway-kanten'],ex:'<strong>Oortskyen</strong> er en hypotetisk sferisk skal af ismateriale langt fra Solen.'},
+    {t:'mc',q:'Hvad er en komet primært sammensat af?',a:'Is og støv',opts:['Sten og metal','Is og støv','Brint og helium','Radioaktive stoffer'],ex:'Kometer er "beskidte snebolde" — primært <strong>is og støv</strong>. Varme fordamper isen og skaber halen.'},
+    {t:'tf',q:'Ceres er en dværgplanet og den største krop i asteroidebæltet.',a:true,ex:'Korrekt — <strong>Ceres</strong> udgør ca. 1/3 af asteroidebæltets samlede masse.'},
+    {t:'mc',q:'Hvad hedder grænsen for Solens indflydelse?',a:'Heliopausen',opts:['Heliopausen','Oortskyen','Kuiperbæltet','Terminalstødet'],ex:'<strong>Heliopausen</strong> er grænsen hvor solvinden møder interstellarrum. Voyager 1 passerede den i 2012.'},
+    {t:'tf',q:'Voyager 1 er det menneskeskabte objekt der er længst fra Jorden.',a:true,ex:'Korrekt — <strong>Voyager 1</strong> er nu over 23 milliarder km fra Solen og ude i interstellart rum.'},
+    {t:'mc',q:'Hvad peger en komethale altid væk fra?',a:'Solen',opts:['Solen','Jupiterss retning','Jordens retning','Galaksens centrum'],ex:'Komethalen peger altid <strong>væk fra Solen</strong> pga. solvinden — uanset kometens bevægelsesretning.'},
+  ]
+},
+{
+  id:5,name:'STJERNETYPER',icon:'⭐',acc:'#80deea',accG:'rgba(128,222,234,.35)',
+  tag:'// TRANSMISSION 05 // LIVSCYKLUS OG KLASSIFIKATION',
+  hint:'// HR-diagrammet · farve = temperatur · rød→gul→hvid→blå = kold→varm',
+  timeLimit:32,pts:175,lives:3,
+  questions:[
+    {t:'mc',q:'Hvilken farve har de varmeste stjerner?',a:'Blå',opts:['Rød','Gul','Hvid','Blå'],ex:'<strong>Blå</strong> stjerner er varmest (>30.000 K). Farverækkefølge: rød→orange→gul→hvid→blå.'},
+    {t:'tf',q:'En rød kæmpe er en stjerne i sin ungdom.',a:false,ex:'Forkert — en <strong>rød kæmpe</strong> er en aldrende stjerne der har forladt hovedserien.'},
+    {t:'mc',q:'Hvad hedder diagrammet der viser stjerners temperatur vs. lysstyrke?',a:'Hertzsprung-Russell-diagrammet',opts:['Hubble-diagrammet','Hertzsprung-Russell-diagrammet','Doppler-spektret','Chandrasekhar-kurven'],ex:'<strong>HR-diagrammet</strong> er astronomiens vigtigste klassifikationsredskab.'},
+    {t:'mc',q:'Hvad er den mest almindelige stjernetype i Mælkevejen?',a:'Røde dværge',opts:['Gule dværge','Røde dværge','Blå kæmper','Hvide dværge'],ex:'<strong>Røde dværge</strong> udgør ca. 70-80% af stjernerne — de er kolde og lever ekstremt længe.'},
+    {t:'tf',q:'En supernova kan midlertidigt lyse som en hel galakse.',a:true,ex:'Korrekt — en <strong>supernova</strong> kan udstråle mere energi end Solen gør i hele sin levetid.'},
+    {t:'mc',q:'Hvad dannes når en massiv stjerne eksploderer?',a:'Neutronsstjerne eller sort hul',opts:['En ny ung stjerne','Neutronsstjerne eller sort hul','En ny galakse','En nebula der forsvinder'],ex:'Afhængig af massen: enten en <strong>neutronsstjerne</strong> eller et <strong>sort hul</strong>.'},
+    {t:'tf',q:'En teske fuld af hvid dværgmateriale vejer ca. 5 tons.',a:true,ex:'Korrekt — hvide dværge er ekstremt tætte: ca. <strong>5 tons per teske</strong>. Neutronsstjerner er endnu tættere.'},
+    {t:'ft',q:'Hvad hedder den fase hvor en stjerne som Solen forbrænder brint i kernen?',a:'Hovedserien',accept:['hovedserien','hovedserie'],ex:'Stjerner bruger størstedelen af livet på <strong>hovedserien</strong> — herunder Solen.'},
+  ]
+},
+{
+  id:6,name:'SORTE HULLER',icon:'🕳️',acc:'#ce93d8',accG:'rgba(206,147,216,.35)',
+  tag:'// TRANSMISSION 06 // RUM-TIDS SINGULARITETER',
+  hint:'// Sorte huller, neutronsstjerner og pulsarer — universets mest ekstreme objekter',
+  timeLimit:30,pts:200,lives:3,
+  questions:[
+    {t:'mc',q:'Hvad er et sort hul?',a:'Et objekt med gravitation så stærk at selv lys ikke undslipper',opts:['En mørk stjerne','Et objekt med gravitation så stærk at selv lys ikke undslipper','Et hul i galaksen','En region med manglende stjerner'],ex:'Et <strong>sort hul</strong> er et rum-tidsområde med så stærk krumning at selv lys ikke kan undslippe.'},
+    {t:'tf',q:'Hændelseshorisonten er en fast fysisk overflade man kan røre.',a:false,ex:'Forkert — <strong>hændelseshorisonten</strong> er en matematisk grænse, ikke en fysisk overflade.'},
+    {t:'mc',q:'Hvad hedder det centrale punkt med uendelig tæthed?',a:'Singulariteten',opts:['Hændelseshorisonten','Singulariteten','Fotonssfæren','Akkretionsskiven'],ex:'<strong>Singulariteten</strong> er det punkt hvor vores fysiske love bryder ned.'},
+    {t:'tf',q:'Sorte huller "suger" aktivt objekter ind som et støvsugere.',a:false,ex:'Forkert — sorte huller suger ikke mere end andre massive objekter. Jordens bane ville være uændret hvis Solen blev et sort hul.'},
+    {t:'mc',q:'Hvad er en pulsar?',a:'En roterende neutronsstjerne der udsender regelmæssige radiopulser',opts:['En type sort hul','En roterende neutronsstjerne der udsender regelmæssige radiopulser','En eksplosion','En ung galakse'],ex:'<strong>Pulsarer</strong> er neutronsstjerner der roterer ekstremt hurtigt og sender stråler ud som et fyrtårn.'},
+    {t:'mc',q:'Hvad var det første fotograferede sorte hul (2019)?',a:'M87*',opts:['Sagittarius A*','M87*','Cygnus X-1','IC 1101'],ex:'<strong>M87*</strong> i galaksen Messier 87 — 55 millioner lysår væk — var det første sort hul vi fotograferede.'},
+    {t:'tf',q:'Hawking-stråling beskriver hvordan sorte huller langsomt fordamper.',a:true,ex:'Korrekt — <strong>Hawking-stråling</strong> er en kvantemekanisk effekt forudsagt af Stephen Hawking i 1974.'},
+    {t:'ft',q:'Hvad hedder det supermassive sorte hul i centrum af Mælkevejen?',a:'Sagittarius A*',accept:['sagittarius a*','sagittarius a','sgr a*','sgr a'],ex:'<strong>Sagittarius A*</strong> vejer 4 millioner solmasser og befinder sig i centrum af Mælkevejen.'},
+  ]
+},
+{
+  id:7,name:'MÆLKEVEJEN',icon:'🌌',acc:'#f48fb1',accG:'rgba(244,143,177,.35)',
+  tag:'// TRANSMISSION 07 // VORES HJEMGALAKSE',
+  hint:'// 200-400 mia. stjerner · bjælkespiralgalakse · 100.000 lysår i diameter',
+  timeLimit:30,pts:220,lives:3,
+  questions:[
+    {t:'mc',q:'Hvilken type galakse er Mælkevejen?',a:'Bjælkespiralgalakse',opts:['Elliptisk galakse','Uregelmæssig galakse','Bjælkespiralgalakse','Linsegalakse'],ex:'Mælkevejen er en <strong>bjælkespiralgalakse</strong> med en central bjælke af stjerner.'},
+    {t:'mc',q:'Omtrent hvor mange stjerner er der i Mælkevejen?',a:'200-400 milliarder',opts:['1 million','1 milliard','200-400 milliarder','1 billion'],ex:'Mælkevejen indeholder <strong>200-400 milliarder stjerner</strong>.'},
+    {t:'tf',q:'Mælkevejens diameter er ca. 100.000 lysår.',a:true,ex:'Korrekt — <strong>100.000-120.000 lysår</strong> i diameter, ca. 1.000 lysår tyk.'},
+    {t:'mc',q:'Hvilken spiralarm befinder Solen sig i?',a:'Orion-armen',opts:['Perseus-armen','Sagittarius-armen','Orion-armen','Centaurus-armen'],ex:'Solen befinder sig i <strong>Orion-armen</strong>, ca. 26.000 lysår fra galaksecentrum.'},
+    {t:'tf',q:'Mælkevejen og Andromeda er på kollisionskurs.',a:true,ex:'Korrekt — om ca. <strong>4,5 milliarder år</strong> kolliderer de og smelter til en elliptisk galakse.'},
+    {t:'mc',q:'Hvad er "mørk materie"?',a:'Usynlig masse der bidrager til gravitation men ikke udsender lys',opts:['Sorte huller','Mørke støvskyer','Usynlig masse der bidrager til gravitation men ikke udsender lys','Interstellart gas'],ex:'<strong>Mørk materie</strong> udgør ca. 27% af universets indhold — men vi ved ikke hvad det er.'},
+    {t:'ft',q:'Hvad hedder den nærmeste store galakse til Mælkevejen?',a:'Andromeda',accept:['andromeda','andromeda-galaksen','m31'],ex:'<strong>Andromeda-galaksen</strong> (M31) er ca. 2,5 millioner lysår væk.'},
+    {t:'mc',q:'Hvor lang tid tager ét omløb rundt om galaksecentrum for Solen?',a:'Ca. 225 millioner år',opts:['Ca. 1 million år','Ca. 10 millioner år','Ca. 225 millioner år','Ca. 1 milliard år'],ex:'Et <strong>galaktisk år</strong> varer ca. 225-250 millioner jordår.'},
+  ]
+},
+{
+  id:8,name:'GALAKSER OG KOSMOS',icon:'🔭',acc:'#b39ddb',accG:'rgba(179,157,219,.35)',
+  tag:'// TRANSMISSION 08 // DET STORE BILLEDE',
+  hint:'// Big Bang · 13,8 mia. år · 2+ billioner galakser · mørk energi driver udvidelsen',
+  timeLimit:28,pts:250,lives:3,
+  questions:[
+    {t:'mc',q:'Hvad hedder teorien om universets oprindelse?',a:'Big Bang-teorien',opts:['Steady State-teorien','Big Bang-teorien','Oscillationsteorien','Inflationsteorien'],ex:'<strong>Big Bang-teorien</strong> beskriver universets oprindelse fra en ekstremt varm og tæt tilstand for 13,8 mia. år siden.'},
+    {t:'tf',q:'Universets alder er ca. 13,8 milliarder år.',a:true,ex:'Korrekt — baseret på CMB-målinger er universets alder <strong>13,8 milliarder år</strong>.'},
+    {t:'mc',q:'Hvad er Hubble-konstanten et mål for?',a:'Universets udvidelseshastighed',opts:['Stjerners lysstyrke','Universets udvidelseshastighed','Galaksers rotation','Sort energis tæthed'],ex:'<strong>Hubble-konstanten (H₀)</strong> måler universets udvidelseshastighed.'},
+    {t:'mc',q:'Hvad er kosmisk baggrundsstråling?',a:'Svag mikrobølgestråling — eftergløden fra Big Bang',opts:['Stråling fra sorte huller','Svag mikrobølgestråling — eftergløden fra Big Bang','Lys fra fjerne galakser','Gammastråling fra supernovaer'],ex:'<strong>CMB</strong> er eftergløden fra Big Bang, opdaget i 1965.'},
+    {t:'tf',q:'Jo længere væk en galakse er, jo hurtigere fjerner den sig fra os.',a:true,ex:'Korrekt — <strong>Hubbles lov</strong>: fjerne galakser fjerner sig hurtigere fordi der er mere rum imellem der udvider sig.'},
+    {t:'mc',q:'Hvad udgør mørk energi af universets samlede indhold?',a:'Ca. 68%',opts:['Ca. 5%','Ca. 27%','Ca. 68%','Ca. 95%'],ex:'<strong>Mørk energi</strong> udgør ca. 68% og er ansvarlig for universets accelererende udvidelse.'},
+    {t:'ft',q:'Hvad hedder fænomenet der gør at lys fra fjernende galakser forskydes mod rød?',a:'Rødforskydning',accept:['rødforskydning','rødforskydningseffekten','redshift'],ex:'<strong>Rødforskydning</strong>: lysbølger strækkes når kilden fjerner sig — lyset skifter mod rød.'},
+    {t:'mc',q:'Ca. hvor mange galakser er der i det observerbare univers?',a:'Over 2 billioner',opts:['Ca. 100 millioner','Ca. 200 milliarder','Over 2 billioner','Præcis 1 billion'],ex:'En undersøgelse fra 2016 anslår over <strong>2 billioner galakser</strong> i det observerbare univers.'},
+  ]
+},
+{
+  id:9,name:'EKSOPLANETER',icon:'🪐',acc:'#a5d6a7',accG:'rgba(165,214,167,.35)',
+  tag:'// TRANSMISSION 09 // JAGTEN PÅ LIV',
+  hint:'// 5.500+ bekræftede eksoplaneter · JWST · SETI · Fermi-paradokset',
+  timeLimit:26,pts:280,lives:3,
+  questions:[
+    {t:'mc',q:'Hvad er en eksoplanet?',a:'En planet der kredser om en anden stjerne end Solen',opts:['En planet uden måneder','En planet der kredser om en anden stjerne end Solen','En planet større end Jupiter','En hypotetisk 10. planet'],ex:'En <strong>eksoplanet</strong> kredser om en anden stjerne end vores Sol.'},
+    {t:'tf',q:'James Webb Space Telescope kan analysere atmosfæren på eksoplaneter.',a:true,ex:'Korrekt — <strong>JWST</strong> bruger transmissionsspektroskopi til at studere eksoplanetters atmosfærer.'},
+    {t:'mc',q:'Hvad hedder zonen rundt om en stjerne hvor flydende vand kan eksistere?',a:'Den beboelige zone (Goldilocks-zonen)',opts:['Frost-linjen','Den beboelige zone (Goldilocks-zonen)','Magnetosfæren','Heliopausen'],ex:'<strong>Goldilocks-zonen</strong> — hverken for varm eller kold til flydende vand.'},
+    {t:'tf',q:'Proxima Centauri b befinder sig i den beboelige zone om vores nærmeste nabostjerne.',a:true,ex:'Korrekt — <strong>Proxima Centauri b</strong> er 4,2 lysår væk og i den beboelige zone.'},
+    {t:'mc',q:'Hvad hedder den metode der opdager eksoplaneter ved at måle fald i stjernelysets?',a:'Transitmetoden',opts:['Dopplermetoden','Transitmetoden','Gravitationslinse','Direkte billeddannelse'],ex:'<strong>Transitmetoden</strong> måler nedsat lysstyrke når en planet passerer foran sin stjerne.'},
+    {t:'ft',q:'Hvad hedder paradokset: Hvis intelligente liv findes, hvorfor hører vi så ikke fra dem?',a:'Fermi-paradokset',accept:['fermi-paradokset','fermiparadokset','fermis paradoks'],ex:'<strong>Fermi-paradokset</strong> beskriver modsætningen mellem sandsynlighed for fremmed intelligens og manglen på evidens.'},
+    {t:'mc',q:'Ca. hvor mange bekræftede eksoplaneter kendes (2024)?',a:'Over 5.500',opts:['Ca. 200','Ca. 1.000','Over 5.500','Over 50.000'],ex:'Fra 2024 er over <strong>5.500 eksoplaneter</strong> bekræftet.'},
+    {t:'tf',q:'SETI-programmet søger efter radiosignaler fra intelligent liv i universet.',a:true,ex:'Korrekt — <strong>SETI</strong> (Search for Extraterrestrial Intelligence) bruger bl.a. radioteleskoper.'},
+  ]
+},
+{
+  id:10,name:'UNIVERSETS KANT',icon:'🌠',acc:'#ef9a9a',accG:'rgba(239,154,154,.35)',
+  tag:'// TRANSMISSION 10 // KOSMOLOGIENS GRÆNSER',
+  hint:'// Det observerbare univers · universets skæbne · multiversum · kvantekosmologi',
+  timeLimit:24,pts:320,lives:3,
+  questions:[
+    {t:'mc',q:'Hvad er "det observerbare univers"?',a:'Den del vi kan se da lyset har haft tid til at nå os',opts:['Hele universet','Den del vi kan se da lyset har haft tid til at nå os','Alt kortlagt af teleskoper','Universets synlige masse'],ex:'Det <strong>observerbare univers</strong> er en sfære på 93 mia. lysårs diameter centreret om Jorden.'},
+    {t:'tf',q:'Universets udvidelse accelererer.',a:true,ex:'Korrekt — opdagelsen i 1998 gav Nobelprisen i 2011 til Perlmutter, Schmidt og Riess.'},
+    {t:'mc',q:'Hvad forudsiges i "Big Freeze"-scenariet?',a:'Universet fortsætter med at udvide sig til alle stjerner dør og temperaturen nærmer sig absolut nulpunkt',opts:['Universet kollapser','Universet eksploderer','Universet fortsætter med at udvide sig til alle stjerner dør og temperaturen nærmer sig absolut nulpunkt','Universet begynder at trække sig sammen'],ex:'<strong>Big Freeze</strong>: universet udvider sig evigt, stjernerne dør, og entropien når maksimum.'},
+    {t:'tf',q:'Multiversum-teorien er videnskabeligt bevist.',a:false,ex:'Forkert — <strong>multiversum</strong> er stadig spekulativt og ikke empirisk bekræftet.'},
+    {t:'mc',q:'Hvad er kosmisk inflation?',a:'Ekstremt hurtig udvidelse i brøkdelen af et sekund efter Big Bang',opts:['Universets nuværende accelerering','Ekstremt hurtig udvidelse i brøkdelen af et sekund efter Big Bang','Vækst af sorte huller','Galaksernes dannelse'],ex:'<strong>Kosmisk inflation</strong> forklarer universets storskalahomogenitet — en eksplosiv udvidelse 10⁻³⁶ sekunder efter Big Bang.'},
+    {t:'mc',q:'Hvad er Plancktiden?',a:'Den korteste meningsfulde tidsenhed (~5,4 × 10⁻⁴⁴ s)',opts:['Lysets rejsetid pr. meter','Den korteste meningsfulde tidsenhed (~5,4 × 10⁻⁴⁴ s)','Universets alder i ns','Halverstid for sort hul'],ex:'<strong>Plancktiden</strong> er den mindste tidsenhed vores fysik kan beskrive.'},
+    {t:'ft',q:'Hvad hedder den danske astronom der bestemte lysets hastighed i 1676?',a:'Ole Rømer',accept:['ole rømer','ole romer','rømer','romer'],ex:'<strong>Ole Rømer</strong> beregnede lysets hastighed ved at observere Ios formørkelser bag Jupiter.'},
+    {t:'mc',q:'Hvad er "det antropiske princip"?',a:'Idéen om at universets konstanter synes indstillet til at muliggøre liv',opts:['Teorien at vi er universets centrum','Idéen om at universets konstanter synes indstillet til at muliggøre liv','Beviset for at vi er alene','En kosmologisk bevaringslov'],ex:'<strong>Det antropiske princip</strong>: naturkonstanterne synes fine-tuned til liv — hvad enten forklaringen er videnskabelig eller filosofisk.'},
+  ]
+}
+];
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let G={name:'',score:0,level:0,qIdx:0,lives:4,streak:0,timer:null,timeLeft:38,levelScore:0,levelCorrect:0,answered:false,correctTotal:0,wrongTotal:0};
+
+// ══════════════════════════════════════════════════════
+// SCREENS
+// ══════════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-highscore')renderHS_list();
+  if(id==='screen-welcome'){renderProfiles();buildMap();}
+}
+
+// ══════════════════════════════════════════════════════
+// LEVEL COLOR
+// ══════════════════════════════════════════════════════
+function setAcc(lvlIdx){
+  const l=LEVELS[lvlIdx];
+  document.documentElement.style.setProperty('--acc',l.acc);
+  document.documentElement.style.setProperty('--acc-g',l.accG);
+}
+
+// ══════════════════════════════════════════════════════
+// WELCOME MAP
+// ══════════════════════════════════════════════════════
+function buildMap(){
+  setAcc(0);
+  document.getElementById('welcome-map').innerHTML=
+    LEVELS.map((l,i)=>`<div class="lm-node${i===0?' active':''}"><span class="lm-ico">${l.icon}</span><span>${l.name}</span></div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// HIGHSCORES
+// ══════════════════════════════════════════════════════
+function getHS(){try{return JSON.parse(localStorage.getItem('rumhs2')||'[]');}catch(e){return[];}}
+function saveHS_s(hs){localStorage.setItem('rumhs2',JSON.stringify(hs));}
+function addHS(n,s,l){const hs=getHS();hs.push({name:n,score:s,level:l,date:new Date().toLocaleDateString('da-DK')});hs.sort((a,b)=>b.score-a.score);saveHS_s(hs.slice(0,10));}
+function clearHS(){if(confirm('NULSTIL TOPSCORER?')){localStorage.removeItem('rumhs2');renderHS_list();}}
+function renderHS_list(){
+  const hs=getHS();const list=document.getElementById('score-list');
+  if(!hs.length){list.innerHTML='<li><div class="empty-state">// INGEN MISSIONER REGISTRERET ENDNU</div></li>';return;}
+  const m=['01','02','03'];
+  list.innerHTML=hs.map((h,i)=>`<li><span class="rank">${m[i]||'0'+(i+1)}</span><span class="name">${h.name}</span><span class="lvl">NIV.${h.level+1}</span><span class="pts">${h.score.toLocaleString('da')}</span></li>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// PROFILES
+// ══════════════════════════════════════════════════════
+function getProfiles(){try{return JSON.parse(localStorage.getItem('rumprofiles2')||'[]');}catch(e){return[];}}
+function saveProfile(n){let ps=getProfiles();ps=[n,...ps.filter(p=>p!==n)].slice(0,5);localStorage.setItem('rumprofiles2',JSON.stringify(ps));}
+function renderProfiles(){
+  const ps=getProfiles();const el=document.getElementById('saved-profiles');
+  if(!ps.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="font-family:Share Tech Mono,monospace;font-size:.62rem;letter-spacing:.16em;color:var(--muted);margin-bottom:7px;">// GEMTE IDENTIFIKATIONER</div>'+
+    ps.map(p=>`<button class="profile-btn" onclick="selP('${p}')">${p}</button>`).join('');
+}
+function selP(n){document.getElementById('player-name').value=n;}
+
+// ══════════════════════════════════════════════════════
+// TRANSMISSION EFFECT
+// ══════════════════════════════════════════════════════
+function transmit(msg, cb){
+  const t=document.getElementById('transmission');
+  document.getElementById('trans-text').textContent=msg;
+  t.style.opacity='1';t.classList.add('active');
+  setTimeout(()=>{t.style.opacity='0';t.classList.remove('active');if(cb)cb();},600);
+}
+
+// ══════════════════════════════════════════════════════
+// GAME FLOW
+// ══════════════════════════════════════════════════════
+function startGame(){
+  const n=document.getElementById('player-name').value.trim();
+  if(!n){const el=document.getElementById('player-name');el.focus();el.style.borderColor='var(--amber)';setTimeout(()=>el.style.borderColor='var(--border-h)',1500);return;}
+  G.name=n;saveProfile(n);
+  G.score=0;G.level=0;G.lives=LEVELS[0].lives;G.streak=0;G.correctTotal=0;G.wrongTotal=0;
+  transmit('// INITIALISERER MISSION...', startLevel);
+}
+function startLevel(){
+  setAcc(G.level);
+  G.qIdx=0;G.levelScore=0;G.levelCorrect=0;G.lives=LEVELS[G.level].lives;
+  renderProgressDots();showScreen('screen-game');loadQuestion();
+}
+function nextLevel(){
+  G.level++;
+  if(G.level>=LEVELS.length){gameOver(true);return;}
+  transmit(`// INDLÆSER TRANSMISSION ${String(G.level+1).padStart(2,'0')}...`,startLevel);
+}
+
+function loadQuestion(){
+  clearInterval(G.timer);G.answered=false;
+  const lvl=LEVELS[G.level];const q=lvl.questions[G.qIdx];
+  document.getElementById('level-badge').textContent=`NIV_${String(G.level+1).padStart(2,'0')} // ${lvl.name}`;
+  document.getElementById('hud-score').textContent=G.score.toLocaleString('da');
+  document.getElementById('hint-line').textContent=lvl.hint;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('explanation').className='explanation';
+  const modes={mc:'// MULTIPLE CHOICE',tf:'// SANDT ELLER FALSK',ft:'// SKRIV SVARET'};
+  document.getElementById('q-mode').textContent=modes[q.t];
+  document.getElementById('q-text').innerHTML=q.q;
+  const mc=document.getElementById('mc-area'),tf=document.getElementById('tf-area'),ft=document.getElementById('ft-area'),fti=document.getElementById('ft-input'),ar=document.getElementById('action-row');
+  mc.style.display='none';tf.style.display='none';ft.style.display='none';
+  if(q.t==='mc'){
+    mc.style.display='grid';
+    mc.innerHTML=[...q.opts].sort(()=>Math.random()-.5).map(o=>`<button class="mc-btn" onclick="submitMC(this,'${o.replace(/'/g,"&#39;").replace(/"/g,"&quot;")}')">${o}</button>`).join('');
+    ar.innerHTML=`<button class="btn btn-ghost" onclick="skipQ()">SPRING OVER</button>`;
+  } else if(q.t==='tf'){
+    tf.style.display='flex';tf.querySelectorAll('button').forEach(b=>b.disabled=false);
+    ar.innerHTML=`<button class="btn btn-ghost" onclick="skipQ()">SPRING OVER</button>`;
+  } else {
+    ft.style.display='block';fti.value='';fti.className='ft-input';fti.disabled=false;fti.focus();
+    ar.innerHTML=`<button class="btn btn-primary" onclick="submitFT()">BEKRÆFT</button><button class="btn btn-ghost" onclick="skipQ()">SPRING OVER</button>`;
+    fti.onkeydown=e=>{if(e.key==='Enter')submitFT();};
+  }
+  renderLives();renderProgressDots();updateStreak();
+  G.timeLeft=lvl.timeLimit;updateTimer();
+  G.timer=setInterval(()=>{G.timeLeft-=.1;updateTimer();if(G.timeLeft<=0){clearInterval(G.timer);timeOut();}},100);
+}
+
+// ══════════════════════════════════════════════════════
+// ANSWER HANDLERS
+// ══════════════════════════════════════════════════════
+function submitMC(btn,val){
+  if(G.answered)return;clearInterval(G.timer);G.answered=true;
+  const q=LEVELS[G.level].questions[G.qIdx];const ok=(val===q.a);
+  document.querySelectorAll('.mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.a)b.classList.add('correct-ans');else if(b===btn&&!ok)b.classList.add('wrong-ans');});
+  resolve(ok);
+}
+function submitTF(val){
+  if(G.answered)return;clearInterval(G.timer);G.answered=true;
+  const q=LEVELS[G.level].questions[G.qIdx];const ok=(val===q.a);
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);
+  document.querySelector(val?'.true-btn':'.false-btn').classList.add(ok?'correct-ans':'wrong-ans');
+  if(!ok)document.querySelector(q.a?'.true-btn':'.false-btn').classList.add('correct-ans');
+  resolve(ok);
+}
+function submitFT(){
+  if(G.answered)return;clearInterval(G.timer);
+  const q=LEVELS[G.level].questions[G.qIdx];const fti=document.getElementById('ft-input');
+  const val=fti.value.trim().toLowerCase();
+  const ok=(q.accept||[q.a.toLowerCase()]).map(a=>a.toLowerCase()).includes(val);
+  fti.disabled=true;fti.className='ft-input '+(ok?'correct-border':'wrong-border');
+  if(!ok)fti.value=q.a;G.answered=true;resolve(ok);
+}
+function skipQ(){
+  if(G.answered)return;clearInterval(G.timer);G.answered=true;
+  revealAns(LEVELS[G.level].questions[G.qIdx]);
+  G.streak=0;G.wrongTotal++;G.lives--;
+  setFeedback(false,'// SPRUNGET OVER');showEx(LEVELS[G.level].questions[G.qIdx]);
+  renderLives();updateStreak();markDot(false);
+  if(G.lives<=0){setTimeout(()=>gameOver(false),2200);return;}
+  setTimeout(advance,2500);
+}
+function timeOut(){
+  if(G.answered)return;G.answered=true;
+  revealAns(LEVELS[G.level].questions[G.qIdx]);
+  G.streak=0;G.wrongTotal++;G.lives--;
+  setFeedback(false,'// TID UDLØBET');showEx(LEVELS[G.level].questions[G.qIdx]);
+  renderLives();updateStreak();markDot(false);
+  if(G.lives<=0){setTimeout(()=>gameOver(false),2200);return;}
+  setTimeout(advance,2500);
+}
+function revealAns(q){
+  if(q.t==='mc'){document.querySelectorAll('.mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.a)b.classList.add('correct-ans');});}
+  else if(q.t==='tf'){document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);document.querySelector(q.a?'.true-btn':'.false-btn').classList.add('correct-ans');}
+  else{const fti=document.getElementById('ft-input');fti.value=q.a;fti.disabled=true;fti.className='ft-input wrong-border';}
+}
+function resolve(ok){
+  const lvl=LEVELS[G.level];const q=lvl.questions[G.qIdx];
+  showEx(q);
+  if(ok){
+    G.streak++;G.correctTotal++;
+    const mult=Math.min(Math.floor(G.streak/3)+1,5);
+    const pts=Math.floor(lvl.pts*mult+G.timeLeft*2);
+    G.score+=pts;G.levelScore+=pts;G.levelCorrect++;
+    setFeedback(true,correctMsg(G.streak));confettiP();pixelBurst();
+  } else {
+    G.streak=0;G.wrongTotal++;G.lives--;
+    setFeedback(false,wrongMsg());
+    document.getElementById('q-area').classList.add('shake');
+    setTimeout(()=>document.getElementById('q-area').classList.remove('shake'),380);
+    renderLives();
+  }
+  document.getElementById('hud-score').textContent=G.score.toLocaleString('da');
+  updateStreak();markDot(ok);
+  if(G.lives<=0){setTimeout(()=>gameOver(false),2200);return;}
+  setTimeout(advance,2600);
+}
+function setFeedback(ok,msg){const el=document.getElementById('feedback');el.className='feedback '+(ok?'correct':'wrong')+' show';el.textContent=msg;}
+function showEx(q){const el=document.getElementById('explanation');el.className='explanation show';el.innerHTML=`<strong>// INFO:</strong> ${q.ex}`;}
+function advance(){G.qIdx++;if(G.qIdx>=LEVELS[G.level].questions.length)showLevelComplete();else loadQuestion();}
+function markDot(ok){const d=document.getElementById('progress-dots').children;if(d[G.qIdx])d[G.qIdx].className='dot '+(ok?'done':'wrong-dot');}
+
+// ══════════════════════════════════════════════════════
+// LEVEL COMPLETE / GAME OVER
+// ══════════════════════════════════════════════════════
+function showLevelComplete(){
+  clearInterval(G.timer);
+  const lvl=LEVELS[G.level];
+  document.getElementById('lc-title').textContent=`// ${lvl.name} — TRANSMISSION FULDFØRT`;
+  document.getElementById('lc-pts').textContent='+'+G.levelScore.toLocaleString('da');
+  const next=LEVELS[G.level+1];
+  document.getElementById('lc-msg').textContent=next?`// NÆSTE: ${next.name} — ${next.tag}`:'// DU HAR NÅET UNIVERSETS KANT — MISSION FULDFØRT';
+  document.getElementById('lc-details').innerHTML=`<div class="score-detail"><div class="lbl">RIGTIGE</div><div class="val">${G.levelCorrect}/${lvl.questions.length}</div></div><div class="score-detail"><div class="lbl">TOTAL</div><div class="val">${G.score.toLocaleString('da')}</div></div>`;
+  confettiP(true);showScreen('screen-level');
+}
+function gameOver(won){
+  clearInterval(G.timer);addHS(G.name,G.score,G.level);setAcc(G.level);
+  document.getElementById('go-player').textContent=`// ASTRONAUT: ${G.name}${won?' — UNIVERSETS KANT NÅET':' — MISSION AFBRUDT'}`;
+  document.getElementById('go-score').textContent=G.score.toLocaleString('da');
+  document.getElementById('go-details').innerHTML=`<div class="score-detail"><div class="lbl">NIVEAU</div><div class="val">${G.level+1}/${LEVELS.length}</div></div><div class="score-detail"><div class="lbl">RIGTIGE</div><div class="val">${G.correctTotal}</div></div><div class="score-detail"><div class="lbl">FORKERTE</div><div class="val">${G.wrongTotal}</div></div>`;
+  const hs=getHS();const rank=hs.findIndex(h=>h.score===G.score&&h.name===G.name);
+  document.getElementById('go-record').textContent=rank===0?'// NY REKORD REGISTRERET':rank>0?`// PLACERING: #${rank+1}`:'';
+  if(won)confettiP(true);showScreen('screen-gameover');
+}
+
+// ══════════════════════════════════════════════════════
+// UI
+// ══════════════════════════════════════════════════════
+function renderLives(){document.getElementById('lives-display').innerHTML=[...Array(LEVELS[G.level].lives)].map((_,i)=>`<span class="heart${i>=G.lives?' lost':''}">💚</span>`).join('');}
+function renderProgressDots(){
+  const qs=LEVELS[G.level].questions;
+  document.getElementById('progress-dots').innerHTML=qs.map((_,i)=>{let c='dot';if(i<G.qIdx)c+=' done';else if(i===G.qIdx)c+=' current';return`<div class="${c}"></div>`;}).join('');
+}
+function updateTimer(){const pct=Math.max(0,(G.timeLeft/LEVELS[G.level].timeLimit)*100);const bar=document.getElementById('timer-bar');bar.style.width=pct+'%';bar.className='timer-bar'+(pct<22?' urgent':'');}
+function updateStreak(){const el=document.getElementById('streak-pill');if(G.streak>=3){const m=Math.min(Math.floor(G.streak/3)+1,5);el.textContent=`// STREAK ×${m}`;el.className='streak-pill show';}else el.className='streak-pill';}
+function correctMsg(s){
+  if(s>=9)return'// UNIKUM · DU ER FOR SEJ';
+  if(s>=6)return'// USTOPPELIG · KOSMOLOGIMESTER';
+  if(s>=3)return'// FANTASTISK · DU ER FOR SEJ';
+  return['// KORREKT','// RIGTIGT','// PRÆCIST','// GODT KLARET'][Math.floor(Math.random()*4)];
+}
+function wrongMsg(){return['// FEJL REGISTRERET','// DESVÆRRE FORKERT','// PRØV IGEN','// NÆSTEN'][Math.floor(Math.random()*4)];}
+
+// ══════════════════════════════════════════════════════
+// FX
+// ══════════════════════════════════════════════════════
+function confettiP(big=false){
+  const l=LEVELS[G.level];const cols=[l.acc,'#00ff50','#00eeff','#ffaa00','#ce93d8'];
+  for(let i=0;i<(big?80:25);i++){
+    const el=document.createElement('div');el.className='confetti-piece';const sz=3+Math.random()*7;
+    el.style.cssText=`left:${10+Math.random()*80}vw;top:-10px;background:${cols[Math.floor(Math.random()*cols.length)]};width:${sz}px;height:${sz}px;border-radius:${Math.random()>.5?'1px':'50%'};--dur:${.9+Math.random()*.9}s;animation-delay:${Math.random()*.7}s;`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),2200);
+  }
+}
+function pixelBurst(){
+  const chars=['✦','*','◈','+','×','■'];const l=LEVELS[G.level];
+  for(let i=0;i<6;i++){
+    const el=document.createElement('div');el.className='pixel-burst';
+    const a=(i/6)*Math.PI*2;const d=65+Math.random()*55;
+    el.textContent=chars[Math.floor(Math.random()*chars.length)];
+    el.style.cssText=`left:50vw;top:50vh;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;color:${l.acc};text-shadow:0 0 8px ${l.acc};animation-delay:${i*.04}s;font-family:Share Tech Mono,monospace;font-size:1.2rem;`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),900);
+  }
+}
+function makeStars(){
+  for(let i=0;i<120;i++){
+    const s=document.createElement('div');s.className='star';const sz=Math.random()*1.8+.2;
+    s.style.cssText=`left:${Math.random()*100}vw;top:${Math.random()*100}vh;width:${sz}px;height:${sz}px;--d:${2+Math.random()*5}s;--o:${.1+Math.random()*.7};animation-delay:${Math.random()*5}s;`;
+    document.body.appendChild(s);
+  }
+}
+function makeBlobs(){
+  for(let i=0;i<4;i++){
+    const b=document.createElement('div');b.className='ablob';const sz=200+Math.random()*400;
+    b.style.cssText=`left:${Math.random()*100}vw;top:${Math.random()*100}vh;width:${sz}px;height:${sz*(.7+Math.random()*.6)}px;--bd:${18+Math.random()*14}s;--bx:${(Math.random()-.5)*80}px;--by:${(Math.random()-.5)*60}px;--bs:${1+Math.random()*.25};--br:${(Math.random()-.5)*30}deg;animation-delay:${Math.random()*10}s;`;
+    document.body.appendChild(b);
+  }
+}
+function makeGlyphs(){
+  const chars='ΔΨΩαβγδεζηθΛΞΠΣΦΧΨ◈◆▲▼★☆◉⊕⊗∞∑∂∇∈∉⊂⊃∪∩±≈≠≡∝∀∃';
+  for(let i=0;i<20;i++){
+    const g=document.createElement('div');g.className='glyph';
+    g.textContent=chars[Math.floor(Math.random()*chars.length)];
+    g.style.cssText=`left:${Math.random()*100}vw;top:100vh;--gs:${.8+Math.random()*1.4}rem;--gd:${18+Math.random()*22}s;animation-delay:${Math.random()*20}s;`;
+    document.body.appendChild(g);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  makeStars();makeBlobs();makeGlyphs();
+  renderProfiles();buildMap();renderHS_list();
+  document.getElementById('player-name').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+});
+</script>
+</body>
+</html>
