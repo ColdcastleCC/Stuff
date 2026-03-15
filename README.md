@@ -36,6 +36,6 @@ Matematik og fysik
 
 - [komma-spillet.html](https://coldcastlecc.github.io/Stuff/komma-spillet.html) – Spil om kommaer til 6.klasse HAY
 
-
+- [tabelmesteren.html](https://coldcastlecc.github.io/Stuff/tabelmesteren.html) – Spil om tabeller til 2.klasse HAY
 ---------------------
-ColdcastleCC – 2025
+ColdcastleCC – 2026
