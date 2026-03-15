@@ -27,7 +27,11 @@ Matematik og fysik
 - [Procentregning](https://coldcastlecc.github.io/Stuff/procentregning.png)
 - [Pythagoras](https://coldcastlecc.github.io/Stuff/Pythagoras1.png)
 
-
 ---
+### Quizpil
 
-ColdcastleCC – 2025
+- [rumrejsen.html](https://coldcastlecc.github.io/Stuff/rumrejsen.html) – Astronomispil for 7.klasse HAY
+
+- [ordmesteren.html](https://coldcastlecc.github.io/Stuff/ordmesteren.html) – Spil om ordklasser til 6.klasse HAY
+
+- [komma-spillet.html](https://coldcastlecc.github.io/Stuff/komma-spillet.html) – Spil om kommaer til 6.klasse HAY
