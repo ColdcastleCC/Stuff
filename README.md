@@ -38,5 +38,7 @@ Matematik og fysik
 
 - [tabelmesteren.html](https://coldcastlecc.github.io/Stuff/tabelmesteren.html) – Spil om tabeller til 2.klasse HAY
 
+- [energi-quiz.html](https://coldcastlecc.github.io/Stuff/energi-quiz.html) – Spil om tabeller til 2.klasse HAY
+
 ---------------------
 ColdcastleCC – 2026
