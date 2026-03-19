@@ -40,5 +40,7 @@ Matematik og fysik
 
 - [energi-quiz.html](https://coldcastlecc.github.io/Stuff/energi-quiz.html) – Spil om energi til 8.klasse HAY
 
+- [navneordskongen.html](https://coldcastlecc.github.io/Stuff/navneordskongen.html) – Spil om navneord til 6.klasse HAY
+
 ---------------------
 ColdcastleCC – 2026
