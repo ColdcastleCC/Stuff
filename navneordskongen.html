@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navneordskongen 🏷️</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky:#0d0b26; --panel:#181444; --panel2:#201c54; --border:#3d3590;
+  --white:#eeeaff; --muted:#9b91cc; --dim:#3d3870;
+  --noun:#ff6b9d;  --nounG:rgba(255,107,157,.35);
+  --verb:#5af5a0;  --verbG:rgba(90,245,160,.3);
+  --term:#ffaa3b;  --termG:rgba(255,170,59,.35);
+  --green:#5af5a0; --red:#ff5070; --gold:#ffe566; --blue:#52d8ff; --purple:#c87aff;
+  --acc:var(--noun); --accG:var(--nounG);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--sky);font-family:'Nunito Sans',sans-serif;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;overflow-x:hidden;color:var(--white);padding:16px 8px 48px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 25%,rgba(120,60,255,.2) 0%,transparent 55%),radial-gradient(ellipse at 85% 75%,rgba(255,107,157,.14) 0%,transparent 50%);pointer-events:none;z-index:0;animation:bgP 9s ease-in-out infinite alternate;}
+@keyframes bgP{from{opacity:.7}to{opacity:1}}
+.star{position:fixed;border-radius:50%;background:#fff;pointer-events:none;z-index:0;animation:tw var(--d,3s) ease-in-out infinite alternate;}
+@keyframes tw{from{opacity:var(--o,.6)}to{opacity:.03}}
+.screen{display:none;position:relative;z-index:1;width:min(700px,100%);animation:popIn .32s cubic-bezier(.175,.885,.32,1.275);}
+.screen.active{display:block;}
+@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.card{background:linear-gradient(155deg,var(--panel),var(--panel2));border-radius:22px;padding:32px 36px;box-shadow:0 0 0 2px var(--border),0 0 50px rgba(60,50,160,.5),0 20px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden;margin-bottom:12px;}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.85;}
+
+/* MASCOT */
+.mascot{text-align:center;font-size:4rem;display:block;margin:4px 0;animation:mFloat 3s ease-in-out infinite;filter:drop-shadow(0 4px 16px var(--accG));}
+@keyframes mFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg)}}
+h1{font-family:'Nunito',sans-serif;font-size:clamp(2rem,6vw,2.8rem);font-weight:900;text-align:center;color:var(--white);text-shadow:0 0 30px var(--accG);}
+h1 em{font-style:normal;color:var(--acc);}
+h2{font-family:'Nunito',sans-serif;font-size:1.45rem;font-weight:900;color:var(--white);text-align:center;margin-bottom:14px;}
+p{color:var(--muted);line-height:1.7;font-size:.95rem;}
+.sub{display:block;text-align:center;font-size:.76rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:6px;opacity:.85;}
+.divider{height:2px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:18px 0;}
+
+/* TOPIC CARDS */
+.topic-grid{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0;}
+.topic-card{border-radius:16px;padding:16px 20px;border:1.5px solid;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .18s cubic-bezier(.175,.885,.32,1.275);position:relative;background:rgba(255,255,255,.03);}
+.topic-card:hover:not(.locked){transform:translateY(-2px) scale(1.02);}
+.topic-card.locked{opacity:.38;cursor:not-allowed;}
+.topic-card .t-icon{font-size:2.2rem;flex-shrink:0;}
+.topic-card .t-info h3{font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:800;}
+.topic-card .t-info p{font-size:.82rem;color:var(--muted);margin-top:2px;}
+.t-badge{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:800;padding:4px 12px;border-radius:50px;}
+
+/* BUTTONS */
+.btn{display:inline-block;padding:12px 26px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:800;cursor:pointer;border:none;transition:all .15s cubic-bezier(.175,.885,.32,1.275);letter-spacing:.03em;text-transform:uppercase;}
+.btn:active{transform:scale(.93)!important;}
+.btn-primary{background:linear-gradient(135deg,var(--acc),color-mix(in srgb,var(--acc) 55%,#000));color:#fff;box-shadow:0 5px 20px var(--accG);}
+.btn-primary:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 8px 26px var(--accG);}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--blue);border:1.5px solid var(--border);}
+.btn-ghost:hover{background:rgba(82,216,255,.1);transform:translateY(-1px);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#d97706);color:#000;box-shadow:0 4px 16px rgba(255,230,102,.35);}
+.btn-gold:hover{transform:translateY(-2px) scale(1.04);}
+.action-row{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+
+/* INPUT */
+.input-group{margin:14px 0;}
+.input-group label{display:block;font-size:.75rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:7px;}
+.input-group input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;background:rgba(255,255,255,.05);font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:var(--white);outline:none;transition:all .2s;}
+.input-group input::placeholder{color:rgba(155,145,204,.4);}
+.input-group input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accG);}
+
+/* HUD */
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.hud-chip{background:rgba(255,255,255,.05);border:1.5px solid var(--border);border-radius:50px;padding:5px 14px;text-align:center;}
+.hud-chip .lbl{font-size:.62rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);display:block;}
+.hud-chip .val{font-family:'Nunito',sans-serif;font-size:1.5rem;font-weight:900;color:var(--white);line-height:1.1;}
+.hud-chip .val.hi{color:var(--acc);text-shadow:0 0 12px var(--accG);}
+.timer-wrap{width:100%;height:7px;background:rgba(255,255,255,.08);border-radius:4px;margin-bottom:12px;overflow:hidden;}
+.timer-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--acc));border-radius:4px;transition:width .12s linear;box-shadow:0 0 8px var(--accG);}
+.timer-bar.urgent{background:linear-gradient(90deg,var(--red),#ff9f43);animation:tPulse .35s ease infinite alternate;}
+@keyframes tPulse{from{opacity:1}to{opacity:.45}}
+.prog-dots{display:flex;justify-content:center;gap:6px;margin:8px 0 12px;flex-wrap:wrap;}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.1);transition:all .3s cubic-bezier(.175,.885,.32,1.275);border:1.5px solid rgba(255,255,255,.05);}
+.dot.done{background:var(--green);border-color:var(--green);box-shadow:0 0 7px rgba(90,245,160,.7);}
+.dot.wrong-dot{background:var(--red);border-color:var(--red);box-shadow:0 0 7px rgba(255,80,112,.7);}
+.dot.current{background:var(--acc);border-color:var(--acc);transform:scale(1.4);box-shadow:0 0 10px var(--accG);}
+.lvl-badge{display:inline-block;background:rgba(255,255,255,.07);color:var(--acc);font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 13px;border-radius:50px;border:1.5px solid var(--acc);}
+.streak-pill{display:inline-block;background:linear-gradient(135deg,var(--acc),var(--gold));color:#fff;font-family:'Nunito',sans-serif;font-size:.76rem;padding:3px 11px;border-radius:50px;font-weight:800;opacity:0;transition:opacity .25s;}
+.streak-pill.show{opacity:1;animation:sPop .35s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes sPop{0%{transform:scale(.45)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+.lives{display:flex;gap:4px;}
+.heart{font-size:1.1rem;transition:all .25s;}
+.heart.lost{opacity:.14;filter:grayscale(1);}
+
+/* QUESTION BOX */
+.q-box{background:rgba(255,255,255,.04);border:1.5px solid var(--acc);border-radius:16px;padding:18px 22px;margin:10px 0;box-shadow:0 0 18px var(--accG),inset 0 1px 0 rgba(255,255,255,.05);}
+.q-type{font-size:.66rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);margin-bottom:8px;opacity:.8;}
+.q-text{font-size:clamp(1rem,2.8vw,1.2rem);font-weight:600;line-height:1.65;color:var(--white);}
+.q-text .blank{display:inline-block;min-width:60px;border-bottom:3px solid var(--acc);padding:0 4px;color:var(--acc);font-weight:800;vertical-align:bottom;text-align:center;}
+.q-text .word{color:var(--gold);font-weight:800;}
+.hint-bar{background:rgba(255,230,102,.07);border-left:2px solid var(--gold);padding:8px 12px;border-radius:0 8px 8px 0;font-size:.82rem;color:rgba(255,230,102,.8);font-style:italic;margin-bottom:10px;line-height:1.5;}
+
+/* BIG EN/ET BUTTONS */
+.enet-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+.enet-btn{padding:28px 14px;border-radius:18px;border:2px solid var(--border);background:rgba(255,255,255,.04);font-family:'Nunito',sans-serif;font-size:2.4rem;font-weight:900;color:var(--white);cursor:pointer;transition:all .15s cubic-bezier(.175,.885,.32,1.275);text-align:center;letter-spacing:.04em;}
+.enet-btn:hover:not(:disabled){transform:translateY(-3px) scale(1.04);}
+.enet-btn.en-btn:hover:not(:disabled){border-color:var(--noun);background:rgba(255,107,157,.1);color:var(--noun);box-shadow:0 6px 20px var(--nounG);}
+.enet-btn.et-btn:hover:not(:disabled){border-color:var(--verb);background:rgba(90,245,160,.1);color:var(--verb);box-shadow:0 6px 20px var(--verbG);}
+.enet-btn.correct-ans{border-color:var(--green);background:rgba(90,245,160,.12);color:var(--green);}
+.enet-btn.wrong-ans{border-color:var(--red);background:rgba(255,80,112,.1);color:var(--red);}
+.enet-btn:disabled{cursor:default;}
+
+/* MC GRID */
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0;}
+@media(max-width:460px){.mc-grid{grid-template-columns:1fr;}}
+.mc-btn{padding:13px 10px;border-radius:12px;border:1.5px solid var(--border);background:rgba(255,255,255,.03);font-family:'Nunito Sans',sans-serif;font-size:.95rem;font-weight:600;color:var(--white);cursor:pointer;transition:all .14s cubic-bezier(.175,.885,.32,1.275);text-align:center;line-height:1.3;}
+.mc-btn:hover:not(:disabled){border-color:var(--acc);background:rgba(255,255,255,.07);transform:translateY(-2px);box-shadow:0 4px 14px var(--accG);}
+.mc-btn.correct-ans{border-color:var(--green);background:rgba(90,245,160,.1);color:var(--green);}
+.mc-btn.wrong-ans{border-color:var(--red);background:rgba(255,80,112,.1);color:var(--red);}
+.mc-btn:disabled{cursor:default;}
+
+/* FT INPUT */
+.ft-input{width:100%;padding:14px 18px;border:1.5px solid var(--border);border-radius:12px;background:rgba(255,255,255,.05);font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:700;color:var(--white);outline:none;transition:all .2s;margin:10px 0;text-align:center;}
+.ft-input::placeholder{color:rgba(155,145,204,.4);}
+.ft-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accG);}
+.ft-input.correct-border{border-color:var(--green);background:rgba(90,245,160,.07);color:var(--green);}
+.ft-input.wrong-border{border-color:var(--red);background:rgba(255,80,112,.07);color:var(--red);}
+
+/* FEEDBACK */
+.feedback{text-align:center;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:900;padding:12px;border-radius:12px;margin:9px 0;opacity:0;transition:opacity .18s;}
+.feedback.show{opacity:1;}
+.feedback.correct{color:var(--green);background:rgba(90,245,160,.1);border:1.5px solid rgba(90,245,160,.2);animation:fPop .28s cubic-bezier(.175,.885,.32,1.275);}
+.feedback.wrong{color:var(--red);background:rgba(255,80,112,.1);border:1.5px solid rgba(255,80,112,.2);}
+@keyframes fPop{0%{transform:scale(.88)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
+.explanation{background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;font-size:.86rem;color:var(--muted);display:none;line-height:1.6;margin-top:7px;}
+.explanation.show{display:block;}
+.explanation strong{color:var(--white);}
+
+/* TERM CARDS (learn mode) */
+.term-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;}
+@media(max-width:460px){.term-grid{grid-template-columns:1fr;}}
+.term-card{border-radius:14px;padding:14px 16px;border:1.5px solid var(--border);background:rgba(255,255,255,.03);transition:all .18s;cursor:default;}
+.term-card .dk{font-family:'Nunito',sans-serif;font-size:1rem;font-weight:900;color:var(--white);margin-bottom:2px;}
+.term-card .lat{font-size:.82rem;font-weight:600;color:var(--acc);font-style:italic;margin-bottom:6px;}
+.term-card .def{font-size:.8rem;color:var(--muted);line-height:1.5;}
+.term-card .example{font-size:.78rem;color:var(--gold);margin-top:5px;font-style:italic;}
+.term-section{margin-bottom:10px;}
+.term-section-title{font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.08);}
+
+/* MATCH GAME */
+.match-area{margin:12px 0;}
+.match-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.match-col-title{font-size:.7rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.match-item{padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:rgba(255,255,255,.04);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:7px;color:var(--white);min-height:44px;display:flex;align-items:center;}
+.match-item:hover:not(.matched):not(.wrong-match){border-color:var(--acc);background:rgba(255,255,255,.07);}
+.match-item.selected{border-color:var(--acc);background:rgba(255,107,157,.12);color:var(--acc);box-shadow:0 0 10px var(--accG);}
+.match-item.matched{border-color:var(--green);background:rgba(90,245,160,.1);color:var(--green);cursor:default;}
+.match-item.wrong-match{border-color:var(--red);background:rgba(255,80,112,.1);animation:shake .35s ease;cursor:default;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+/* RESULT */
+.big-score{font-family:'Nunito',sans-serif;font-size:3.8rem;font-weight:900;color:var(--acc);text-align:center;line-height:1;margin:8px 0;text-shadow:0 0 28px var(--accG);}
+.score-details{display:flex;justify-content:center;gap:22px;margin:12px 0;flex-wrap:wrap;}
+.score-detail .lbl{font-size:.64rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.score-detail .val{font-family:'Nunito',sans-serif;font-size:1.32rem;font-weight:900;color:var(--white);}
+
+/* HS */
+.hs-list{list-style:none;margin:10px 0;}
+.hs-list li{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;border-bottom:1px solid var(--border);font-size:.9rem;border-radius:8px;transition:background .14s;}
+.hs-list li:hover{background:rgba(255,255,255,.04);}
+.hs-list li:first-child{background:rgba(255,230,102,.07);border:1px solid rgba(255,230,102,.18);margin-bottom:4px;}
+.hs-rank{font-family:'Nunito',sans-serif;font-weight:900;color:var(--gold);width:26px;}
+.hs-name{flex:1;font-weight:700;color:var(--white);}
+.hs-pts{font-family:'Nunito',sans-serif;font-weight:900;color:var(--acc);}
+.empty-hs{text-align:center;color:var(--muted);padding:20px;font-style:italic;}
+#saved-profiles{margin:0 0 12px;}
+.profile-btn{margin:3px;padding:5px 13px;border:1.5px solid var(--border);background:rgba(255,255,255,.04);border-radius:50px;cursor:pointer;font-family:Nunito,sans-serif;font-size:.85rem;font-weight:700;color:var(--white);transition:all .13s;}
+.profile-btn:hover{background:rgba(82,216,255,.1);}
+.confetti-piece{position:fixed;pointer-events:none;z-index:9999;animation:cFall var(--dur,1.1s) ease-in forwards;}
+@keyframes cFall{0%{transform:translateY(-10px) rotate(0) scale(1);opacity:1}100%{transform:translateY(100vh) rotate(540deg) scale(.4);opacity:0}}
+.starburst{position:fixed;pointer-events:none;z-index:9999;font-size:1.4rem;animation:sBurst .65s ease-out forwards;}
+@keyframes sBurst{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1.1);opacity:0}}
+@keyframes qshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:qshake .38s ease;}
+@media(max-width:500px){.card{padding:22px 16px;}.enet-grid{gap:8px;}.enet-btn{font-size:1.8rem;padding:20px 10px;}}
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="screen-welcome" class="screen active">
+  <div class="card">
+    <span class="mascot">🏷️</span>
+    <span class="sub">Dansk grammatik</span>
+    <h1><em>Navneords</em>kongen</h1>
+    <p style="text-align:center;margin:10px 0 6px;">Lær at bruge <em style="color:var(--noun);">en</em> og <em style="color:var(--verb);">et</em> korrekt, bøj navneord rigtigt og bliv ekspert i grammatisk terminologi!</p>
+    <div class="divider"></div>
+    <div class="input-group"><label>Dit navn</label><input type="text" id="player-name" placeholder="Skriv dit navn…" maxlength="20" autocomplete="off"></div>
+    <div id="saved-profiles"></div>
+    <div class="divider"></div>
+    <p style="font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:10px;">Klare hvert niveau for at låse det næste op:</p>
+    <div class="topic-grid" id="topic-grid"></div>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-ghost" onclick="showScreen('screen-highscore')">🏆 Topscorer</button>
+      <button class="btn btn-ghost" onclick="resetProg()">🔄 Nulstil</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div class="card">
+    <div class="hud">
+      <div class="hud-chip"><span class="lbl">Point</span><span class="val hi" id="q-score">0</span></div>
+      <div style="text-align:center;">
+        <div id="q-lvl" class="lvl-badge">NIVEAU 1</div>
+        <div style="margin-top:5px;"><span id="q-streak" class="streak-pill">🔥 ×2</span></div>
+      </div>
+      <div class="hud-chip" style="text-align:right;"><span class="lbl">Liv</span><div class="lives" id="q-lives"></div></div>
+    </div>
+    <div class="timer-wrap"><div class="timer-bar" id="q-timer"></div></div>
+    <div class="prog-dots" id="q-dots"></div>
+    <div id="q-hint" class="hint-bar" style="display:none;"></div>
+    <div class="q-box" id="q-box">
+      <div class="q-type" id="q-type">EN ELLER ET?</div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+    <!-- EN/ET big buttons -->
+    <div id="q-enet" class="enet-grid" style="display:none;">
+      <button class="enet-btn en-btn" onclick="submitEnet('en')">EN</button>
+      <button class="enet-btn et-btn" onclick="submitEnet('et')">ET</button>
+    </div>
+    <!-- MC -->
+    <div id="q-mc" class="mc-grid" style="display:none;"></div>
+    <!-- FT -->
+    <div id="q-ft" style="display:none;">
+      <input type="text" class="ft-input" id="q-ft-input" placeholder="Skriv svaret…" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="q-feedback" class="feedback"></div>
+    <div id="q-explanation" class="explanation"></div>
+    <div class="action-row" id="q-actions">
+      <button class="btn btn-ghost" onclick="skipQ()">Spring over</button>
+    </div>
+  </div>
+</div>
+
+<!-- TERM LEARN -->
+<div id="screen-term-learn" class="screen">
+  <div class="card">
+    <span class="mascot">📚</span>
+    <h2>Lær terminologien</h2>
+    <p style="text-align:center;margin-bottom:12px;">Dansk betegnelse → Latinsk betegnelse. Lær disse begreber, inden du tager quizzen!</p>
+    <div class="divider"></div>
+
+    <div class="term-section">
+      <div class="term-section-title">🏷️ Om Navneord (Substantiv)</div>
+      <div class="term-grid" id="term-grid-noun"></div>
+    </div>
+    <div class="term-section">
+      <div class="term-section-title">⚡ Om Udsagnsord (Verbum)</div>
+      <div class="term-grid" id="term-grid-verb"></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="startTermQuiz()">Jeg er klar — Tag quizzen! 🎯</button>
+      <button class="btn btn-ghost" onclick="showScreen('screen-welcome')">← Tilbage</button>
+    </div>
+  </div>
+</div>
+
+<!-- MATCH GAME -->
+<div id="screen-match" class="screen">
+  <div class="card">
+    <div class="hud">
+      <div class="hud-chip"><span class="lbl">Point</span><span class="val hi" id="m-score">0</span></div>
+      <div><span class="lvl-badge" style="color:var(--term);border-color:var(--term);">TERMINOLOGI</span></div>
+      <div class="hud-chip"><span class="lbl">Fundet</span><span class="val" id="m-found">0/0</span></div>
+    </div>
+    <p id="m-instruction" style="text-align:center;margin-bottom:12px;font-weight:700;color:var(--muted);">Match den danske betegnelse med den latinske!</p>
+    <div class="match-area">
+      <div class="match-cols">
+        <div><div class="match-col-title">🇩🇰 Dansk</div><div id="m-danish"></div></div>
+        <div><div class="match-col-title">🌍 Latinsk</div><div id="m-latin"></div></div>
+      </div>
+    </div>
+    <div id="m-feedback" class="feedback"></div>
+    <div class="action-row" id="m-actions" style="display:none;">
+      <button class="btn btn-primary" onclick="nextMatchRound()">Næste runde ➜</button>
+    </div>
+  </div>
+</div>
+
+<!-- TERM QUIZ -->
+<div id="screen-term-quiz" class="screen">
+  <div class="card">
+    <div class="hud">
+      <div class="hud-chip"><span class="lbl">Point</span><span class="val hi" id="tq-score">0</span></div>
+      <div style="text-align:center;">
+        <span class="lvl-badge" style="color:var(--term);border-color:var(--term);">TERMINOLOGI QUIZ</span>
+        <div style="margin-top:5px;"><span id="tq-streak" class="streak-pill">🔥 ×2</span></div>
+      </div>
+      <div class="hud-chip" style="text-align:right;"><span class="lbl">Liv</span><div class="lives" id="tq-lives"></div></div>
+    </div>
+    <div class="timer-wrap"><div class="timer-bar" id="tq-timer"></div></div>
+    <div class="prog-dots" id="tq-dots"></div>
+    <div class="q-box" id="tq-box">
+      <div class="q-type" id="tq-type">HVAD HEDDER DET PÅ LATIN?</div>
+      <div class="q-text" id="tq-text"></div>
+    </div>
+    <div id="tq-mc" class="mc-grid"></div>
+    <div id="tq-feedback" class="feedback"></div>
+    <div id="tq-explanation" class="explanation"></div>
+    <div class="action-row" id="tq-actions">
+      <button class="btn btn-ghost" onclick="skipTQ()">Spring over</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL RESULT -->
+<div id="screen-result" class="screen">
+  <div class="card" style="text-align:center;">
+    <span class="mascot" id="r-mascot">🌟</span>
+    <h2 id="r-title">Niveau klaret!</h2>
+    <div class="big-score" id="r-score">+600</div>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px;font-weight:700;">point</p>
+    <div class="score-details" id="r-details"></div>
+    <div class="divider"></div>
+    <p id="r-msg" style="font-weight:700;color:var(--muted);margin-bottom:12px;"></p>
+    <div class="action-row">
+      <button class="btn btn-primary" id="r-next-btn">Fortsæt →</button>
+      <button class="btn btn-ghost" onclick="showScreen('screen-welcome')">Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIGHSCORE -->
+<div id="screen-highscore" class="screen">
+  <div class="card">
+    <span class="mascot">🏆</span>
+    <h2>Topscorer</h2>
+    <ul class="hs-list" id="hs-list"></ul>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="showScreen('screen-welcome')">← Tilbage</button>
+      <button class="btn btn-ghost" onclick="clearHS()">Nulstil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+
+/* NIVEAU 1 — EN eller ET (multiple choice/big buttons) */
+const ENET_EASY = [
+  {word:'hund',    art:'en', ex:'<strong>En hund</strong> — fælleskøn. De fleste dyr er fælleskøn.'},
+  {word:'bil',     art:'en', ex:'<strong>En bil</strong> — fælleskøn.'},
+  {word:'hus',     art:'et', ex:'<strong>Et hus</strong> — intetkøn. Mange bygninger er intetkøn.'},
+  {word:'æble',    art:'et', ex:'<strong>Et æble</strong> — intetkøn. Ord der ender på -e kan være begge, men æble er intetkøn.'},
+  {word:'pige',    art:'en', ex:'<strong>En pige</strong> — fælleskøn. Personer er næsten altid fælleskøn.'},
+  {word:'dreng',   art:'en', ex:'<strong>En dreng</strong> — fælleskøn.'},
+  {word:'bord',    art:'et', ex:'<strong>Et bord</strong> — intetkøn. Mange møbler er intetkøn.'},
+  {word:'stol',    art:'en', ex:'<strong>En stol</strong> — fælleskøn.'},
+  {word:'bog',     art:'en', ex:'<strong>En bog</strong> — fælleskøn.'},
+  {word:'vindue',  art:'et', ex:'<strong>Et vindue</strong> — intetkøn. Ord der ender på -ue er typisk intetkøn.'},
+  {word:'skole',   art:'en', ex:'<strong>En skole</strong> — fælleskøn.'},
+  {word:'barn',    art:'et', ex:'<strong>Et barn</strong> — intetkøn. Bemærk: barn er intetkøn, selv om det er en person.'},
+  {word:'land',    art:'et', ex:'<strong>Et land</strong> — intetkøn. Geografiske betegnelser er ofte intetkøn.'},
+  {word:'by',      art:'en', ex:'<strong>En by</strong> — fælleskøn.'},
+  {word:'dyr',     art:'et', ex:'<strong>Et dyr</strong> — intetkøn. Bemærk: selve ordet "dyr" er intetkøn, selv om mange navne på dyr er fælleskøn.'},
+  {word:'blomst',  art:'en', ex:'<strong>En blomst</strong> — fælleskøn.'},
+  {word:'træ',     art:'et', ex:'<strong>Et træ</strong> — intetkøn.'},
+  {word:'vand',    art:'et', ex:'<strong>Et vand</strong> (som stof) — intetkøn.'},
+  {word:'fugl',    art:'en', ex:'<strong>En fugl</strong> — fælleskøn.'},
+  {word:'problem', art:'et', ex:'<strong>Et problem</strong> — intetkøn. Mange låneord på -em/-um er intetkøn.'},
+  {word:'museum',  art:'et', ex:'<strong>Et museum</strong> — intetkøn. Ord på -ium/-eum er intetkøn.'},
+  {word:'system',  art:'et', ex:'<strong>Et system</strong> — intetkøn.'},
+  {word:'nummer',  art:'et', ex:'<strong>Et nummer</strong> — intetkøn.'},
+  {word:'møde',    art:'et', ex:'<strong>Et møde</strong> — intetkøn. Ord på -de der er navneord er typisk intetkøn.'},
+  {word:'tegning', art:'en', ex:'<strong>En tegning</strong> — fælleskøn. Ord på -ing er næsten altid fælleskøn.'},
+  {word:'stigning',art:'en', ex:'<strong>En stigning</strong> — fælleskøn. Ord på -ing er fælleskøn.'},
+  {word:'løsning', art:'en', ex:'<strong>En løsning</strong> — fælleskøn. Ord på -ing er fælleskøn.'},
+  {word:'svar',    art:'et', ex:'<strong>Et svar</strong> — intetkøn.'},
+  {word:'spørgsmål',art:'et',ex:'<strong>Et spørgsmål</strong> — intetkøn.'},
+  {word:'resultat',art:'et', ex:'<strong>Et resultat</strong> — intetkøn. Låneord på -at er typisk intetkøn.'},
+];
+
+const ENET_HARD = [
+  {word:'program',  art:'et', ex:'<strong>Et program</strong> — intetkøn.'},
+  {word:'princip',  art:'et', ex:'<strong>Et princip</strong> — intetkøn.'},
+  {word:'interval', art:'et', ex:'<strong>Et interval</strong> — intetkøn.'},
+  {word:'signal',   art:'et', ex:'<strong>Et signal</strong> — intetkøn.'},
+  {word:'materiale',art:'et', ex:'<strong>Et materiale</strong> — intetkøn.'},
+  {word:'tema',     art:'et', ex:'<strong>Et tema</strong> — intetkøn. Grækske låneord på -ma er intetkøn.'},
+  {word:'drama',    art:'et', ex:'<strong>Et drama</strong> — intetkøn.'},
+  {word:'dilemma',  art:'et', ex:'<strong>Et dilemma</strong> — intetkøn.'},
+  {word:'talent',   art:'et', ex:'<strong>Et talent</strong> — intetkøn.'},
+  {word:'moment',   art:'et', ex:'<strong>Et moment</strong> — intetkøn.'},
+  {word:'koncept',  art:'et', ex:'<strong>Et koncept</strong> — intetkøn.'},
+  {word:'produkt',  art:'et', ex:'<strong>Et produkt</strong> — intetkøn.'},
+  {word:'projekt',  art:'et', ex:'<strong>Et projekt</strong> — intetkøn.'},
+  {word:'instrument',art:'et',ex:'<strong>Et instrument</strong> — intetkøn.'},
+  {word:'element',  art:'et', ex:'<strong>Et element</strong> — intetkøn.'},
+];
+
+/* NIVEAU 2 — Indsæt navneord i sætning (4 bøjningsformer) */
+const SENTENCE_QS = [
+  {
+    base:'hund', forms:{ub_ent:'en hund',b_ent:'hunden',ub_flt:'hunde',b_flt:'hundene'},
+    questions:[
+      {t:'mc', prompt:'Ubestemt ental:',    sent:'Jeg ser ___ løbe i parken.',         form:'ub_ent', ex:'Ubestemt ental af <strong>hund</strong> = <strong>en hund</strong> (fælleskøn → en).'},
+      {t:'mc', prompt:'Bestemt ental:',     sent:'___ giøer hele natten.',              form:'b_ent',  ex:'Bestemt ental af <strong>hund</strong> = <strong>hunden</strong> (tilføj -en).'},
+      {t:'mc', prompt:'Ubestemt flertal:',  sent:'Der er mange ___ i parken.',          form:'ub_flt', ex:'Ubestemt flertal af <strong>hund</strong> = <strong>hunde</strong> (tilføj -e).'},
+      {t:'mc', prompt:'Bestemt flertal:',   sent:'___ løber rundt i haven.',            form:'b_flt',  ex:'Bestemt flertal af <strong>hund</strong> = <strong>hundene</strong> (tilføj -ene).'},
+    ]
+  },
+  {
+    base:'hus', forms:{ub_ent:'et hus',b_ent:'huset',ub_flt:'huse',b_flt:'husene'},
+    questions:[
+      {t:'mc', prompt:'Ubestemt ental:',   sent:'Vi bor i ___ ved skoven.',            form:'ub_ent', ex:'Ubestemt ental af <strong>hus</strong> = <strong>et hus</strong> (intetkøn → et).'},
+      {t:'mc', prompt:'Bestemt ental:',    sent:'___ er malet rødt.',                  form:'b_ent',  ex:'Bestemt ental af <strong>hus</strong> = <strong>huset</strong> (intetkøn → tilføj -et).'},
+      {t:'mc', prompt:'Ubestemt flertal:', sent:'Der er mange ___ i gaden.',           form:'ub_flt', ex:'Ubestemt flertal af <strong>hus</strong> = <strong>huse</strong> (tilføj -e).'},
+      {t:'mc', prompt:'Bestemt flertal:',  sent:'___ i gaden er alle hvide.',          form:'b_flt',  ex:'Bestemt flertal af <strong>hus</strong> = <strong>husene</strong> (tilføj -ene).'},
+    ]
+  },
+  {
+    base:'bil', forms:{ub_ent:'en bil',b_ent:'bilen',ub_flt:'biler',b_flt:'bilerne'},
+    questions:[
+      {t:'mc', prompt:'Ubestemt ental:',   sent:'Han har købt ___ ny.',               form:'ub_ent', ex:'Ubestemt ental af <strong>bil</strong> = <strong>en bil</strong>.'},
+      {t:'mc', prompt:'Bestemt ental:',    sent:'___ er parkeret forkert.',            form:'b_ent',  ex:'Bestemt ental af <strong>bil</strong> = <strong>bilen</strong>.'},
+      {t:'mc', prompt:'Ubestemt flertal:', sent:'Der holder mange ___ udenfor.',       form:'ub_flt', ex:'Ubestemt flertal af <strong>bil</strong> = <strong>biler</strong> (tilføj -er).'},
+      {t:'mc', prompt:'Bestemt flertal:',  sent:'___ i garagen er alle røde.',         form:'b_flt',  ex:'Bestemt flertal af <strong>bil</strong> = <strong>bilerne</strong> (tilføj -erne).'},
+    ]
+  },
+  {
+    base:'barn', forms:{ub_ent:'et barn',b_ent:'barnet',ub_flt:'børn',b_flt:'børnene'},
+    questions:[
+      {t:'mc', prompt:'Ubestemt ental:',   sent:'Der er ___ på legepladsen.',          form:'ub_ent', ex:'Ubestemt ental af <strong>barn</strong> = <strong>et barn</strong> (intetkøn).'},
+      {t:'mc', prompt:'Bestemt ental:',    sent:'___ leger i haven.',                  form:'b_ent',  ex:'Bestemt ental af <strong>barn</strong> = <strong>barnet</strong>.'},
+      {t:'mc', prompt:'Ubestemt flertal:', sent:'Mange ___ kom til festen.',           form:'ub_flt', ex:'Uregelmæssigt flertal: <strong>barn → børn</strong> (vokalskifte a→ø).'},
+      {t:'mc', prompt:'Bestemt flertal:',  sent:'___ spiller fodbold på gaden.',       form:'b_flt',  ex:'Bestemt flertal: <strong>børnene</strong>.'},
+    ]
+  },
+  {
+    base:'bog', forms:{ub_ent:'en bog',b_ent:'bogen',ub_flt:'bøger',b_flt:'bøgerne'},
+    questions:[
+      {t:'mc', prompt:'Ubestemt ental:',   sent:'Jeg har læst ___ om dinosaurer.',     form:'ub_ent', ex:'Ubestemt ental af <strong>bog</strong> = <strong>en bog</strong>.'},
+      {t:'mc', prompt:'Bestemt ental:',    sent:'Har du set ___ jeg lånte?',            form:'b_ent',  ex:'Bestemt ental af <strong>bog</strong> = <strong>bogen</strong>.'},
+      {t:'mc', prompt:'Ubestemt flertal:', sent:'Biblioteket har mange ___ om emnet.', form:'ub_flt', ex:'Uregelmæssigt flertal: <strong>bog → bøger</strong> (o→ø + -er).'},
+      {t:'mc', prompt:'Bestemt flertal:',  sent:'___ på hylden er i orden.',           form:'b_flt',  ex:'Bestemt flertal: <strong>bøgerne</strong>.'},
+    ]
+  },
+  {
+    base:'tegning', forms:{ub_ent:'en tegning',b_ent:'tegningen',ub_flt:'tegninger',b_flt:'tegningerne'},
+    questions:[
+      {t:'mc', prompt:'Ubestemt ental:',   sent:'Han lavede ___ af sit hus.',          form:'ub_ent', ex:'Ubestemt ental = <strong>en tegning</strong>. Ord på -ing er fælleskøn.'},
+      {t:'mc', prompt:'Bestemt ental:',    sent:'___ hang på væggen.',                 form:'b_ent',  ex:'Bestemt ental = <strong>tegningen</strong>.'},
+      {t:'mc', prompt:'Ubestemt flertal:', sent:'Der var mange ___ i mappen.',         form:'ub_flt', ex:'Ubestemt flertal = <strong>tegninger</strong>.'},
+      {t:'mc', prompt:'Bestemt flertal:',  sent:'___ i mappen er alle gode.',          form:'b_flt',  ex:'Bestemt flertal = <strong>tegningerne</strong>.'},
+    ]
+  },
+];
+
+/* TERMINOLOGI */
+const TERMS = [
+  // NAVNEORD
+  { dk:'Navneord', lat:'Substantiv', cat:'noun',
+    def:'Et ord der betegner en person, et sted, en ting eller en abstrakt ide.',
+    ex:'hund, skole, kærlighed, Danmark' },
+  { dk:'Ental', lat:'Singularis', cat:'noun',
+    def:'Når der kun er ét af noget.',
+    ex:'en hund, barnet, bilen' },
+  { dk:'Flertal', lat:'Pluralis', cat:'noun',
+    def:'Når der er to eller flere af noget.',
+    ex:'hunde, børnene, bilerne' },
+  { dk:'Ubestemt form', lat:'Indefinit form', cat:'noun',
+    def:'Navneordet står alene uden at pege på noget bestemt.',
+    ex:'en hund, et hus' },
+  { dk:'Bestemt form', lat:'Definitiv/Definitform', cat:'noun',
+    def:'Navneordet er bestemt — vi ved hvilket det er.',
+    ex:'hunden, huset, børnene' },
+  { dk:'Fælleskøn', lat:'Utrum / Genus commune', cat:'noun',
+    def:'Navneord der bruger artiklen "en". Det ene af de to køn på dansk.',
+    ex:'en hund, en bil, en pige' },
+  { dk:'Intetkøn', lat:'Neutrum / Genus neutrum', cat:'noun',
+    def:'Navneord der bruger artiklen "et".',
+    ex:'et hus, et barn, et træ' },
+  { dk:'Artikel / Kendeord', lat:'Artikel', cat:'noun',
+    def:'De små ord "en" og "et" (ubestemt) eller "-en"/"-et"/"-ne" (bestemt).',
+    ex:'"en" hund → "hunden"; "et" hus → "huset"' },
+  // UDSAGNSORD
+  { dk:'Udsagnsord', lat:'Verbum', cat:'verb',
+    def:'Et ord der udtrykker en handling, en tilstand eller en begivenhed.',
+    ex:'løber, spiser, er, tænker' },
+  { dk:'Nutid', lat:'Præsens', cat:'verb',
+    def:'Verbet fortæller om noget der sker nu eller gentagne gange.',
+    ex:'Han løber. Jeg spiser hver dag.' },
+  { dk:'Datid', lat:'Præteritum', cat:'verb',
+    def:'Verbet fortæller om noget der skete i fortiden.',
+    ex:'Han løb. Jeg spiste.' },
+  { dk:'Navneform', lat:'Infinitiv', cat:'verb',
+    def:'Grundformen af verbet — det man slår op i ordbogen.',
+    ex:'at løbe, at spise, at være' },
+  { dk:'Nutids tillægsform', lat:'Præsens participium', cat:'verb',
+    def:'Verbets -ende-form, der kan bruges som tillægsord.',
+    ex:'løbende, spisende, strålende' },
+  { dk:'Fortids tillægsform', lat:'Perfektum participium', cat:'verb',
+    def:'Verbets form i perfektum, brugt med hjælpeverb.',
+    ex:'har løbet, er spist, havde skrevet' },
+  { dk:'Hjælpeudsagnsord', lat:'Auxiliærbum', cat:'verb',
+    def:'Verber der hjælper andre verber med at danne tider.',
+    ex:'have, være, ville, skulle, burde' },
+];
+
+// Generate term quiz questions
+function buildTermQuiz() {
+  const qs = [];
+  // DK → Latinsk
+  TERMS.forEach(t => {
+    const wrong = TERMS.filter(x=>x.lat!==t.lat).map(x=>x.lat);
+    const distractors = shuffle(wrong).slice(0,3);
+    const opts = shuffle([t.lat,...distractors]);
+    qs.push({ q:`Hvad er den latinske betegnelse for <strong>${t.dk}</strong>?`,
+              a:t.lat, opts, ex:`<strong>${t.dk}</strong> hedder på latin: <strong>${t.lat}</strong>. ${t.def}`, dir:'dk2lat' });
+  });
+  // Latinsk → DK
+  TERMS.forEach(t => {
+    const wrong = TERMS.filter(x=>x.dk!==t.dk).map(x=>x.dk);
+    const distractors = shuffle(wrong).slice(0,3);
+    const opts = shuffle([t.dk,...distractors]);
+    qs.push({ q:`Hvad er den danske betegnelse for <strong>${t.lat}</strong>?`,
+              a:t.dk, opts, ex:`<strong>${t.lat}</strong> hedder på dansk: <strong>${t.dk}</strong>. ${t.def}`, dir:'lat2dk' });
+  });
+  // Definition → DK
+  TERMS.forEach(t => {
+    const wrong = TERMS.filter(x=>x.dk!==t.dk).map(x=>x.dk);
+    const distractors = shuffle(wrong).slice(0,3);
+    const opts = shuffle([t.dk,...distractors]);
+    qs.push({ q:`"${t.def}" — Hvad hedder dette begreb på dansk?`,
+              a:t.dk, opts, ex:`Det er <strong>${t.dk}</strong> (<em>${t.lat}</em>). Eksempel: ${t.ex}`, dir:'def2dk' });
+  });
+  return shuffle(qs);
+}
+
+// Match pairs for match game
+const MATCH_PAIRS = TERMS.map(t=>({dk:t.dk, lat:t.lat}));
+
+// ═══════════════════════════════════════════════════
+// SAVE
+// ═══════════════════════════════════════════════════
+const SK='navnk_save', HK='navnk_hs', PK='navnk_profiles';
+function loadSave(){try{return JSON.parse(localStorage.getItem(SK))||{name:'',done:[],scores:{}};}catch(e){return{name:'',done:[],scores:{}};}}
+function writeSave(s){localStorage.setItem(SK,JSON.stringify(s));}
+function getHS(){try{return JSON.parse(localStorage.getItem(HK))||[];}catch(e){return[];}}
+function saveHS_s(hs){localStorage.setItem(HK,JSON.stringify(hs));}
+function addHS(n,s,lvl){const hs=getHS();hs.push({name:n,score:s,lvl,date:new Date().toLocaleDateString('da-DK')});hs.sort((a,b)=>b.score-a.score);saveHS_s(hs.slice(0,12));}
+function clearHS(){if(confirm('Nulstil topscorer?')){localStorage.removeItem(HK);renderHS();}}
+function renderHS(){
+  const hs=getHS();const list=document.getElementById('hs-list');
+  if(!hs.length){list.innerHTML='<div class="empty-hs">Ingen scores endnu!</div>';return;}
+  const m=['🥇','🥈','🥉'];
+  list.innerHTML=hs.map((h,i)=>`<li><span class="hs-rank">${m[i]||(i+1)+'.'}</span><span class="hs-name">${h.name}</span><span style="font-size:.74rem;color:var(--muted);margin-left:8px;">${h.lvl}</span><span class="hs-pts">${h.score.toLocaleString('da')}</span></li>`).join('');
+}
+function getProfiles(){try{return JSON.parse(localStorage.getItem(PK))||[];}catch(e){return[];}}
+function saveProfile(n){let ps=getProfiles();ps=[n,...ps.filter(p=>p!==n)].slice(0,5);localStorage.setItem(PK,JSON.stringify(ps));}
+function renderProfiles(){
+  const ps=getProfiles();const el=document.getElementById('saved-profiles');
+  if(!ps.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;">Tidligere</div>'+
+    ps.map(p=>`<button class="profile-btn" onclick="selP('${p.replace(/'/g,"\\'")}')">${p}</button>`).join('');
+}
+function selP(n){document.getElementById('player-name').value=n;SAVE.name=n;const prev=JSON.parse(localStorage.getItem(SK+'_'+n)||'null');if(prev){SAVE=prev;SAVE.name=n;}buildGrid();}
+let SAVE=loadSave();
+
+// ═══════════════════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='screen-welcome'){renderProfiles();buildGrid();}
+  if(id==='screen-highscore')renderHS();
+}
+function setAcc(c,g){document.documentElement.style.setProperty('--acc',c);document.documentElement.style.setProperty('--accG',g);}
+function resetProg(){if(!confirm('Nulstil fremskridt?'))return;const n=SAVE.name;SAVE={name:n,done:[],scores:{}};writeSave(SAVE);if(n)localStorage.removeItem(SK+'_'+n);buildGrid();}
+
+// ═══════════════════════════════════════════════════
+// TOPIC GRID
+// ═══════════════════════════════════════════════════
+const TOPICS=[
+  {id:1,name:'En eller et?',           icon:'🏷️',acc:'var(--noun)',accG:'var(--nounG)',desc:'Lær hvilke navneord der er fælleskøn (en) og intetkøn (et)'},
+  {id:2,name:'Navneord i sætninger',   icon:'✍️',acc:'var(--verb)',accG:'var(--verbG)',desc:'Indsæt navneord i korrekt bøjet form i sætninger'},
+  {id:3,name:'Grammatisk terminologi', icon:'📚',acc:'var(--term)',accG:'var(--termG)',desc:'Lær danske og latinske grammatiske betegnelser'},
+];
+
+function buildGrid(){
+  const nameEl=document.getElementById('player-name');
+  if(nameEl.value.trim())SAVE.name=nameEl.value.trim();
+  const grid=document.getElementById('topic-grid');
+  grid.innerHTML='';
+  TOPICS.forEach((t,i)=>{
+    const done=SAVE.done.includes(t.id);
+    const unlocked=i===0||SAVE.done.includes(TOPICS[i-1].id);
+    const div=document.createElement('div');
+    div.className='topic-card'+((!unlocked&&!done)?' locked':'')+(done?' done':'');
+    div.style.borderColor=done?'rgba(90,245,160,.5)':unlocked?t.acc.replace('var(','').replace(')','').trim():'rgba(255,255,255,.1)';
+    if(done)div.style.background='rgba(90,245,160,.06)';
+    const pts=SAVE.scores[t.id]||0;
+    div.innerHTML=`<span class="t-icon">${t.icon}</span><div class="t-info"><h3 style="color:${done?'var(--green)':unlocked?t.acc:'var(--dim)'};">${t.name}</h3><p>${t.desc}${pts?' · '+pts.toLocaleString('da')+' pt':''}</p></div>${done?'<span class="t-badge" style="background:rgba(90,245,160,.12);color:var(--green);border:1px solid rgba(90,245,160,.3);">✓ Klaret</span>':unlocked?`<span class="t-badge" style="border:1px solid ${t.acc};color:${t.acc};background:rgba(255,255,255,.04);">Start →</span>`:'<span class="t-badge" style="background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.1);">🔒 Låst</span>'}`;
+    if(unlocked||done)div.onclick=()=>startTopic(t.id);
+    grid.appendChild(div);
+  });
+  setAcc(TOPICS[Math.min(...TOPICS.map((t,i)=>!SAVE.done.includes(t.id)?i:999).filter(i=>i<999),0)||0].acc,TOPICS[0].accG);
+}
+
+// ═══════════════════════════════════════════════════
+// QUIZ STATE
+// ═══════════════════════════════════════════════════
+let QS={};
+let TQ={};
+
+function startTopic(id){
+  const name=document.getElementById('player-name').value.trim()||SAVE.name||'Elev';
+  SAVE.name=name;saveProfile(name);
+  if(id===1) startEnet();
+  else if(id===2) startSentenceQuiz();
+  else if(id===3) startTermLearn();
+}
+
+// ─── NIVEAU 1: EN/ET ────────────────────────────────
+function startEnet(){
+  setAcc('var(--noun)','var(--nounG)');
+  const pool=shuffle([...ENET_EASY,...ENET_HARD]).slice(0,20);
+  QS={topicId:1,questions:pool,qIdx:0,score:0,lives:3,streak:0,correct:0,wrong:0,answered:false,timer:null,timeLeft:25};
+  document.getElementById('q-lvl').textContent='NIVEAU 1 · EN ELLER ET?';
+  document.getElementById('q-hint').textContent='💡 Husk: fælleskøn = en, intetkøn = et. Ord på -ing er næsten altid fælleskøn!';
+  document.getElementById('q-hint').style.display='block';
+  showScreen('screen-quiz');
+  loadQ();
+}
+
+function loadQ(){
+  clearInterval(QS.timer);QS.answered=false;
+  const q=QS.questions[QS.qIdx];
+  document.getElementById('q-score').textContent=QS.score.toLocaleString('da');
+  document.getElementById('q-type').textContent='EN ELLER ET?';
+  document.getElementById('q-text').innerHTML=`___ <span class="word">${q.word}</span>`;
+  document.getElementById('q-feedback').className='feedback';
+  document.getElementById('q-explanation').className='explanation';
+  document.getElementById('q-enet').style.display='grid';
+  document.getElementById('q-mc').style.display='none';
+  document.getElementById('q-ft').style.display='none';
+  // Reset enet buttons
+  document.querySelectorAll('.enet-btn').forEach(b=>{b.disabled=false;b.className=b.textContent.trim()==='EN'?'enet-btn en-btn':'enet-btn et-btn';});
+  document.getElementById('q-actions').innerHTML=`<button class="btn btn-ghost" onclick="skipQ()">Spring over</button>`;
+  renderQLives();renderQDots();updateQStreak();
+  QS.timeLeft=25;updateQTimer();
+  QS.timer=setInterval(()=>{QS.timeLeft-=.1;updateQTimer();if(QS.timeLeft<=0){clearInterval(QS.timer);timeOut();}},100);
+}
+
+function submitEnet(val){
+  if(QS.answered)return;
+  clearInterval(QS.timer);QS.answered=true;
+  const q=QS.questions[QS.qIdx];
+  const ok=(val===q.art);
+  document.querySelectorAll('.enet-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent.trim().toLowerCase()===q.art)b.classList.add('correct-ans');
+    else if(b.textContent.trim().toLowerCase()===val&&!ok)b.classList.add('wrong-ans');
+  });
+  resolveQ(ok,q.ex);
+}
+
+// ─── NIVEAU 2: SENTENCES ─────────────────────────────
+function startSentenceQuiz(){
+  setAcc('var(--verb)','var(--verbG)');
+  // Build question list from all sentence sets
+  const allQ=[];
+  SENTENCE_QS.forEach(set=>{
+    set.questions.forEach(sq=>{
+      // Generate options: correct + 3 wrong forms from same set
+      const correctForm=set.forms[sq.form];
+      const wrongForms=Object.values(set.forms).filter(f=>f!==correctForm);
+      // Add distractors from other sets
+      const extraWrong=SENTENCE_QS.filter(s=>s.base!==set.base).flatMap(s=>Object.values(s.forms)).filter(f=>f!==correctForm);
+      const opts=shuffle([correctForm,...shuffle([...wrongForms,...extraWrong]).slice(0,3)]);
+      allQ.push({
+        type:'sent',base:set.base,
+        q:`${sq.prompt}<br><span style="font-style:italic;color:var(--muted);font-size:.9em;">${sq.sent.replace('___','<span class="blank">___</span>')}</span>`,
+        a:correctForm,opts,ex:sq.ex
+      });
+    });
+  });
+  QS={topicId:2,questions:shuffle(allQ).slice(0,20),qIdx:0,score:0,lives:3,streak:0,correct:0,wrong:0,answered:false,timer:null,timeLeft:35};
+  document.getElementById('q-lvl').textContent='NIVEAU 2 · NAVNEORD I SÆTNINGER';
+  document.getElementById('q-hint').textContent='💡 Husk de fire former: ubestemt ental (en/et), bestemt ental (-en/-et), ubestemt flertal, bestemt flertal (-ene/-erne)';
+  document.getElementById('q-hint').style.display='block';
+  showScreen('screen-quiz');
+  loadSentQ();
+}
+
+function loadSentQ(){
+  clearInterval(QS.timer);QS.answered=false;
+  const q=QS.questions[QS.qIdx];
+  document.getElementById('q-score').textContent=QS.score.toLocaleString('da');
+  document.getElementById('q-type').textContent='INDSÆT NAVNEORDET KORREKT';
+  document.getElementById('q-text').innerHTML=q.q;
+  document.getElementById('q-feedback').className='feedback';
+  document.getElementById('q-explanation').className='explanation';
+  document.getElementById('q-enet').style.display='none';
+  document.getElementById('q-ft').style.display='none';
+  const mc=document.getElementById('q-mc');
+  mc.style.display='grid';
+  mc.innerHTML=q.opts.map(o=>`<button class="mc-btn" onclick="submitSentMC(this,'${o.replace(/'/g,"&#39;")}')">${o}</button>`).join('');
+  document.getElementById('q-actions').innerHTML=`<button class="btn btn-ghost" onclick="skipQ()">Spring over</button>`;
+  renderQLives();renderQDots();updateQStreak();
+  QS.timeLeft=35;updateQTimer();
+  QS.timer=setInterval(()=>{QS.timeLeft-=.1;updateQTimer();if(QS.timeLeft<=0){clearInterval(QS.timer);timeOut();}},100);
+}
+
+function submitSentMC(btn,val){
+  if(QS.answered)return;clearInterval(QS.timer);QS.answered=true;
+  const q=QS.questions[QS.qIdx];const ok=(val===q.a);
+  document.querySelectorAll('#q-mc .mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.a)b.classList.add('correct-ans');else if(b===btn&&!ok)b.classList.add('wrong-ans');});
+  resolveQ(ok,q.ex);
+}
+
+// ─── SHARED RESOLVE ─────────────────────────────────
+function resolveQ(ok,exText){
+  if(ok){QS.streak++;QS.correct++;const m=Math.min(Math.floor(QS.streak/3)+1,5);QS.score+=Math.floor(30*m+QS.timeLeft*1.2);setFB(true,correctMsg(QS.streak));confetti();burst();}
+  else{QS.streak=0;QS.wrong++;if(QS.lives>0)QS.lives--;setFB(false,wrongMsg());document.getElementById('q-box').classList.add('shake');setTimeout(()=>document.getElementById('q-box').classList.remove('shake'),380);renderQLives();}
+  document.getElementById('q-score').textContent=QS.score.toLocaleString('da');
+  document.getElementById('q-explanation').className='explanation show';
+  document.getElementById('q-explanation').innerHTML=`<strong>Forklaring:</strong> ${exText}`;
+  updateQStreak();markQDot(ok);
+  if(QS.lives<=0){setTimeout(()=>endQuiz(false),2200);return;}
+  setTimeout(advanceQ,2500);
+}
+function setFB(ok,msg){const el=document.getElementById('q-feedback');el.className='feedback '+(ok?'correct':'wrong')+' show';el.textContent=msg;}
+function skipQ(){if(QS.answered)return;clearInterval(QS.timer);QS.answered=true;revealQAnswer();QS.streak=0;QS.wrong++;if(QS.lives>0)QS.lives--;setFB(false,'⏭ Sprunget over');renderQLives();updateQStreak();markQDot(false);if(QS.lives<=0){setTimeout(()=>endQuiz(false),2200);return;}setTimeout(advanceQ,2500);}
+function timeOut(){if(QS.answered)return;QS.answered=true;revealQAnswer();QS.streak=0;QS.wrong++;if(QS.lives>0)QS.lives--;setFB(false,'⏰ Tid udløbet!');renderQLives();updateQStreak();markQDot(false);if(QS.lives<=0){setTimeout(()=>endQuiz(false),2200);return;}setTimeout(advanceQ,2500);}
+function revealQAnswer(){
+  const q=QS.questions[QS.qIdx];
+  if(QS.topicId===1){document.querySelectorAll('.enet-btn').forEach(b=>{b.disabled=true;if(b.textContent.trim().toLowerCase()===q.art)b.classList.add('correct-ans');});}
+  else{document.querySelectorAll('#q-mc .mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.a)b.classList.add('correct-ans');});}
+  document.getElementById('q-explanation').className='explanation show';
+  document.getElementById('q-explanation').innerHTML=`<strong>Forklaring:</strong> ${q.ex||''}`;
+}
+function advanceQ(){QS.qIdx++;if(QS.qIdx>=QS.questions.length)endQuiz(true);else{if(QS.topicId===1)loadQ();else loadSentQ();}}
+function markQDot(ok){const d=document.getElementById('q-dots').children;if(d[QS.qIdx])d[QS.qIdx].className='dot '+(ok?'done':'wrong-dot');}
+
+function endQuiz(completed){
+  clearInterval(QS.timer);
+  const topic=TOPICS.find(t=>t.id===QS.topicId);
+  setAcc(topic.acc,topic.accG);
+  const name=SAVE.name||'Elev';
+  if(completed){if(!SAVE.done.includes(QS.topicId))SAVE.done.push(QS.topicId);SAVE.scores[QS.topicId]=(SAVE.scores[QS.topicId]||0)+QS.score;SAVE.name=name;writeSave(SAVE);localStorage.setItem(SK+'_'+name,JSON.stringify(SAVE));addHS(name,QS.score,topic.name);}
+  const acc=Math.round(QS.correct/QS.questions.length*100);
+  document.getElementById('r-mascot').textContent=topic.icon;
+  document.getElementById('r-title').textContent=completed?`${topic.name} klaret! ${acc>=90?'⭐⭐⭐':acc>=70?'⭐⭐':'⭐'}`:'Quiz afsluttet';
+  document.getElementById('r-score').textContent='+'+QS.score.toLocaleString('da');
+  document.getElementById('r-details').innerHTML=`<div class="score-detail"><div class="lbl">Rigtige</div><div class="val">${QS.correct}/${QS.questions.length}</div></div><div class="score-detail"><div class="lbl">Præcision</div><div class="val">${acc}%</div></div>`;
+  const allDone=SAVE.done.length>=TOPICS.length;
+  const nextTopic=TOPICS.find(t=>!SAVE.done.includes(t.id));
+  if(!completed){document.getElementById('r-msg').textContent='Du løb tør for liv — prøv igen!';document.getElementById('r-next-btn').textContent='Prøv igen →';document.getElementById('r-next-btn').onclick=()=>startTopic(QS.topicId);}
+  else if(allDone){document.getElementById('r-msg').textContent='🏆 Du har klaret alle niveauer!';document.getElementById('r-next-btn').textContent='Menu 🏠';document.getElementById('r-next-btn').onclick=()=>showScreen('screen-welcome');}
+  else if(nextTopic){document.getElementById('r-msg').textContent=`✅ Næste niveau: ${nextTopic.name}`;document.getElementById('r-next-btn').textContent=`Start: ${nextTopic.name} →`;document.getElementById('r-next-btn').onclick=()=>startTopic(nextTopic.id);}
+  else{document.getElementById('r-next-btn').textContent='Menu';document.getElementById('r-next-btn').onclick=()=>showScreen('screen-welcome');}
+  if(completed)confetti(true);
+  showScreen('screen-result');
+}
+
+// ─── NIVEAU 3: TERMINOLOGI ───────────────────────────
+function startTermLearn(){
+  setAcc('var(--term)','var(--termG)');
+  // Fill term cards
+  const nounGrid=document.getElementById('term-grid-noun');
+  const verbGrid=document.getElementById('term-grid-verb');
+  nounGrid.innerHTML='';verbGrid.innerHTML='';
+  TERMS.forEach(t=>{
+    const card=`<div class="term-card"><div class="dk">${t.dk}</div><div class="lat">${t.lat}</div><div class="def">${t.def}</div><div class="example">Fx: ${t.ex}</div></div>`;
+    if(t.cat==='noun')nounGrid.innerHTML+=card;else verbGrid.innerHTML+=card;
+  });
+  showScreen('screen-term-learn');
+}
+
+// ─── MATCH GAME ──────────────────────────────────────
+let matchState={};
+
+function startMatchGame(){
+  setAcc('var(--term)','var(--termG)');
+  const pairs=shuffle([...MATCH_PAIRS]).slice(0,6);
+  matchState={pairs,selected:null,matched:0,score:0,total:pairs.length};
+  renderMatchGame(pairs);
+  document.getElementById('m-score').textContent='0';
+  document.getElementById('m-found').textContent=`0/${pairs.length}`;
+  document.getElementById('m-feedback').className='feedback';
+  document.getElementById('m-actions').style.display='none';
+  showScreen('screen-match');
+}
+
+function renderMatchGame(pairs){
+  const dkEl=document.getElementById('m-danish');
+  const latEl=document.getElementById('m-latin');
+  const dkShuffled=shuffle([...pairs]);
+  const latShuffled=shuffle([...pairs]);
+  dkEl.innerHTML=dkShuffled.map(p=>`<div class="match-item" data-dk="${p.dk}" data-pair="${p.dk}" onclick="selectMatch(this,'dk')">${p.dk}</div>`).join('');
+  latEl.innerHTML=latShuffled.map(p=>`<div class="match-item" data-lat="${p.lat}" data-pair="${p.dk}" onclick="selectMatch(this,'lat')">${p.lat}</div>`).join('');
+}
+
+function selectMatch(el,side){
+  if(el.classList.contains('matched')||el.classList.contains('wrong-match'))return;
+  if(!matchState.selected){
+    document.querySelectorAll('.match-item.selected').forEach(x=>x.classList.remove('selected'));
+    el.classList.add('selected');
+    matchState.selected={el,side};
+  } else {
+    const prev=matchState.selected;
+    if(prev.el===el){el.classList.remove('selected');matchState.selected=null;return;}
+    if(prev.side===side){prev.el.classList.remove('selected');el.classList.add('selected');matchState.selected={el,side};return;}
+    // Check match
+    const dkEl2=side==='dk'?el:prev.el;
+    const latEl2=side==='lat'?el:prev.el;
+    const isMatch=dkEl2.dataset.pair===latEl2.dataset.pair;
+    if(isMatch){
+      dkEl2.classList.remove('selected');latEl2.classList.remove('selected');
+      dkEl2.classList.add('matched');latEl2.classList.add('matched');
+      matchState.matched++;matchState.score+=50;
+      document.getElementById('m-score').textContent=matchState.score.toLocaleString('da');
+      document.getElementById('m-found').textContent=`${matchState.matched}/${matchState.total}`;
+      document.getElementById('m-feedback').className='feedback correct show';
+      document.getElementById('m-feedback').textContent='✅ Match! 🎉';
+      confetti();
+      if(matchState.matched>=matchState.total){
+        setTimeout(()=>{
+          document.getElementById('m-feedback').textContent='🌟 Alle par fundet!';
+          document.getElementById('m-actions').style.display='flex';
+        },500);
+      }
+    } else {
+      dkEl2.classList.remove('selected');latEl2.classList.remove('selected');
+      dkEl2.classList.add('wrong-match');latEl2.classList.add('wrong-match');
+      document.getElementById('m-feedback').className='feedback wrong show';
+      document.getElementById('m-feedback').textContent='❌ Ikke et match — prøv igen!';
+      setTimeout(()=>{dkEl2.classList.remove('wrong-match');latEl2.classList.remove('wrong-match');},800);
+    }
+    matchState.selected=null;
+  }
+}
+
+function nextMatchRound(){startTermQuiz();}
+
+// ─── TERM QUIZ ────────────────────────────────────────
+function startTermQuiz(){
+  setAcc('var(--term)','var(--termG)');
+  const qs=buildTermQuiz().slice(0,24);
+  TQ={questions:qs,qIdx:0,score:0,lives:3,streak:0,correct:0,wrong:0,answered:false,timer:null,timeLeft:30};
+  showScreen('screen-term-quiz');
+  loadTQ();
+}
+
+function loadTQ(){
+  clearInterval(TQ.timer);TQ.answered=false;
+  const q=TQ.questions[TQ.qIdx];
+  document.getElementById('tq-score').textContent=TQ.score.toLocaleString('da');
+  const typeLabel={dk2lat:'HVAD HEDDER DET PÅ LATIN?',lat2dk:'HVAD HEDDER DET PÅ DANSK?',def2dk:'HVAD ER BEGREBET?'}[q.dir]||'SPØRGSMÅL';
+  document.getElementById('tq-type').textContent=typeLabel;
+  document.getElementById('tq-text').innerHTML=q.q;
+  document.getElementById('tq-feedback').className='feedback';
+  document.getElementById('tq-explanation').className='explanation';
+  const opts=[...q.opts].sort(()=>Math.random()-.5);
+  document.getElementById('tq-mc').innerHTML=opts.map(o=>`<button class="mc-btn" onclick="submitTQMC(this,'${o.replace(/'/g,"&#39;").replace(/"/g,"&quot;")}')">${o}</button>`).join('');
+  document.getElementById('tq-actions').innerHTML=`<button class="btn btn-ghost" onclick="skipTQ()">Spring over</button>`;
+  renderTQLives();renderTQDots();updateTQStreak();
+  TQ.timeLeft=30;updateTQTimer();
+  TQ.timer=setInterval(()=>{TQ.timeLeft-=.1;updateTQTimer();if(TQ.timeLeft<=0){clearInterval(TQ.timer);tqTimeOut();}},100);
+}
+
+function submitTQMC(btn,val){
+  if(TQ.answered)return;clearInterval(TQ.timer);TQ.answered=true;
+  const q=TQ.questions[TQ.qIdx];const ok=(val===q.a);
+  document.querySelectorAll('#tq-mc .mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.a)b.classList.add('correct-ans');else if(b===btn&&!ok)b.classList.add('wrong-ans');});
+  const fb=document.getElementById('tq-feedback');
+  const ex=document.getElementById('tq-explanation');
+  ex.className='explanation show';ex.innerHTML=`<strong>Forklaring:</strong> ${q.ex}`;
+  if(ok){TQ.streak++;TQ.correct++;const m=Math.min(Math.floor(TQ.streak/3)+1,5);TQ.score+=Math.floor(35*m+TQ.timeLeft);fb.className='feedback correct show';fb.textContent=correctMsg(TQ.streak);confetti();burst();}
+  else{TQ.streak=0;TQ.wrong++;if(TQ.lives>0)TQ.lives--;fb.className='feedback wrong show';fb.textContent=wrongMsg();document.getElementById('tq-box').classList.add('shake');setTimeout(()=>document.getElementById('tq-box').classList.remove('shake'),380);renderTQLives();}
+  document.getElementById('tq-score').textContent=TQ.score.toLocaleString('da');
+  updateTQStreak();markTQDot(ok);
+  if(TQ.lives<=0){setTimeout(()=>endTermQuiz(false),2200);return;}
+  document.getElementById('tq-actions').innerHTML=`<button class="btn btn-primary" onclick="advanceTQ()">Næste ➜</button>`;
+}
+function skipTQ(){if(TQ.answered)return;clearInterval(TQ.timer);TQ.answered=true;const q=TQ.questions[TQ.qIdx];document.querySelectorAll('#tq-mc .mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.a)b.classList.add('correct-ans');});TQ.streak=0;TQ.wrong++;if(TQ.lives>0)TQ.lives--;document.getElementById('tq-feedback').className='feedback wrong show';document.getElementById('tq-feedback').textContent='⏭ Sprunget over';document.getElementById('tq-explanation').className='explanation show';document.getElementById('tq-explanation').innerHTML=`<strong>Forklaring:</strong> ${q.ex}`;renderTQLives();updateTQStreak();markTQDot(false);if(TQ.lives<=0){setTimeout(()=>endTermQuiz(false),2200);return;}setTimeout(advanceTQ,2500);}
+function tqTimeOut(){if(TQ.answered)return;TQ.answered=true;const q=TQ.questions[TQ.qIdx];document.querySelectorAll('#tq-mc .mc-btn').forEach(b=>{b.disabled=true;if(b.textContent===q.a)b.classList.add('correct-ans');});TQ.streak=0;TQ.wrong++;if(TQ.lives>0)TQ.lives--;document.getElementById('tq-feedback').className='feedback wrong show';document.getElementById('tq-feedback').textContent='⏰ Tid udløbet!';document.getElementById('tq-explanation').className='explanation show';document.getElementById('tq-explanation').innerHTML=`<strong>Forklaring:</strong> ${q.ex}`;renderTQLives();updateTQStreak();markTQDot(false);if(TQ.lives<=0){setTimeout(()=>endTermQuiz(false),2200);return;}setTimeout(advanceTQ,2500);}
+function advanceTQ(){TQ.qIdx++;if(TQ.qIdx>=TQ.questions.length)endTermQuiz(true);else loadTQ();}
+function markTQDot(ok){const d=document.getElementById('tq-dots').children;if(d[TQ.qIdx])d[TQ.qIdx].className='dot '+(ok?'done':'wrong-dot');}
+
+function endTermQuiz(completed){
+  clearInterval(TQ.timer);
+  setAcc('var(--term)','var(--termG)');
+  const name=SAVE.name||'Elev';
+  if(completed){if(!SAVE.done.includes(3))SAVE.done.push(3);SAVE.scores[3]=(SAVE.scores[3]||0)+TQ.score;SAVE.name=name;writeSave(SAVE);localStorage.setItem(SK+'_'+name,JSON.stringify(SAVE));addHS(name,TQ.score,'Terminologi');}
+  const acc=Math.round(TQ.correct/TQ.questions.length*100);
+  document.getElementById('r-mascot').textContent='📚';
+  document.getElementById('r-title').textContent=completed?`Terminologi klaret! ${acc>=90?'⭐⭐⭐':acc>=70?'⭐⭐':'⭐'}`:'Quiz afsluttet';
+  document.getElementById('r-score').textContent='+'+TQ.score.toLocaleString('da');
+  document.getElementById('r-details').innerHTML=`<div class="score-detail"><div class="lbl">Rigtige</div><div class="val">${TQ.correct}/${TQ.questions.length}</div></div><div class="score-detail"><div class="lbl">Præcision</div><div class="val">${acc}%</div></div>`;
+  document.getElementById('r-msg').textContent=completed?'🏆 Du kender nu alle grammatiske termer!':'Prøv igen — du klarer det!';
+  document.getElementById('r-next-btn').textContent=completed?'Menu 🏠':'Prøv igen →';
+  document.getElementById('r-next-btn').onclick=completed?()=>showScreen('screen-welcome'):()=>{startTermLearn();};
+  if(completed)confetti(true);
+  showScreen('screen-result');
+}
+
+// ═══════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════
+function renderQLives(){document.getElementById('q-lives').innerHTML=[1,2,3].map(i=>`<span class="heart${i>QS.lives?' lost':''}">❤️</span>`).join('');}
+function renderTQLives(){document.getElementById('tq-lives').innerHTML=[1,2,3].map(i=>`<span class="heart${i>TQ.lives?' lost':''}">❤️</span>`).join('');}
+function renderQDots(){const t=QS.questions.length;document.getElementById('q-dots').innerHTML=[...Array(t)].map((_,i)=>{let c='dot';if(i<QS.qIdx)c+=' done';else if(i===QS.qIdx)c+=' current';return`<div class="${c}"></div>`;}).join('');}
+function renderTQDots(){const t=TQ.questions.length;document.getElementById('tq-dots').innerHTML=[...Array(t)].map((_,i)=>{let c='dot';if(i<TQ.qIdx)c+=' done';else if(i===TQ.qIdx)c+=' current';return`<div class="${c}"></div>`;}).join('');}
+function updateQTimer(){const max=QS.topicId===1?25:35;const pct=Math.max(0,(QS.timeLeft/max)*100);const bar=document.getElementById('q-timer');bar.style.width=pct+'%';bar.className='timer-bar'+(pct<22?' urgent':'');}
+function updateTQTimer(){const pct=Math.max(0,(TQ.timeLeft/30)*100);const bar=document.getElementById('tq-timer');bar.style.width=pct+'%';bar.className='timer-bar'+(pct<22?' urgent':'');}
+function updateQStreak(){const el=document.getElementById('q-streak');if(QS.streak>=3){const m=Math.min(Math.floor(QS.streak/3)+1,5);el.textContent=`🔥 ×${m}`;el.className='streak-pill show';}else el.className='streak-pill';}
+function updateTQStreak(){const el=document.getElementById('tq-streak');if(TQ.streak>=3){const m=Math.min(Math.floor(TQ.streak/3)+1,5);el.textContent=`🔥 ×${m}`;el.className='streak-pill show';}else el.className='streak-pill';}
+function correctMsg(s){if(s>=9)return'🌟 Du er for sej!';if(s>=6)return'💥 Ustoppelig!';if(s>=3)return'⚡ Du er for sej!';return['✅ Korrekt!','✅ Rigtigt!','✅ Præcist!','✅ Godt klaret!'][Math.floor(Math.random()*4)];}
+function wrongMsg(){return['❌ Ikke helt rigtigt','❌ Desværre forkert','❌ Prøv igen!','❌ Næsten!'][Math.floor(Math.random()*4)];}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+// ═══════════════════════════════════════════════════
+// FX
+// ═══════════════════════════════════════════════════
+function confetti(big=false){const cols=['#ff6b9d','#5af5a0','#ffaa3b','#52d8ff','#c87aff','#ffe566'];for(let i=0;i<(big?70:20);i++){const el=document.createElement('div');el.className='confetti-piece';const sz=5+Math.random()*8;el.style.cssText=`left:${10+Math.random()*80}vw;top:-10px;background:${cols[Math.floor(Math.random()*cols.length)]};width:${sz}px;height:${sz}px;border-radius:${Math.random()>.4?'50%':'2px'};--dur:${.85+Math.random()*.85}s;animation-delay:${Math.random()*.65}s;`;document.body.appendChild(el);setTimeout(()=>el.remove(),2200);}}
+function burst(){const icons=['⭐','✨','💫','🌟','🏷️'];for(let i=0;i<5;i++){const el=document.createElement('div');el.className='starburst';const a=(i/5)*Math.PI*2;const d=70+Math.random()*55;el.textContent=icons[Math.floor(Math.random()*icons.length)];el.style.cssText=`left:50vw;top:50vh;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-delay:${i*.05}s;`;document.body.appendChild(el);setTimeout(()=>el.remove(),900);}}
+function makeStars(){for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2+.3;s.style.cssText=`left:${Math.random()*100}vw;top:${Math.random()*100}vh;width:${sz}px;height:${sz}px;--d:${2+Math.random()*4}s;--o:${.1+Math.random()*.65};animation-delay:${Math.random()*5}s;`;document.body.appendChild(s);}}
+
+// ═══════════════════════════════════════════════════
+// TERM LEARN → MATCH → QUIZ flow
+// ═══════════════════════════════════════════════════
+// Override startTermQuiz button in learn screen to go to match first
+function startTermQuiz_fromLearn(){startMatchGame();}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  makeStars();SAVE=loadSave();
+  if(SAVE.name)document.getElementById('player-name').value=SAVE.name;
+  renderProfiles();buildGrid();renderHS();
+  // Wire up "Jeg er klar" button to go match first
+  document.querySelector('#screen-term-learn .btn-primary').onclick=startMatchGame;
+  document.getElementById('player-name').addEventListener('input',e=>{
+    const n=e.target.value.trim();if(n){const prev=JSON.parse(localStorage.getItem(SK+'_'+n)||'null');if(prev){SAVE=prev;SAVE.name=n;}else SAVE.name=n;buildGrid();}
+  });
+  document.getElementById('player-name').addEventListener('keydown',e=>{if(e.key==='Enter'){const n=document.getElementById('player-name').value.trim();if(n){SAVE.name=n;saveProfile(n);buildGrid();}}});
+});
+</script>
+</body>
+</html>
