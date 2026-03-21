@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d1117">
+<title>SKOLEFLUGT 🏃</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Press+Start+2P&display=swap');
+:root{
+  --bg:#0d1117;--panel:#161b22;--border:#30363d;
+  --white:#e6edf3;--muted:#7d8590;
+  --green:#3fb950;--red:#f85149;--gold:#e3b341;
+  --blue:#58a6ff;--orange:#ff9100;--purple:#bc8cff;
+  --floor1:#1c2128;--floor2:#21262d;
+  --wall:#0d1117;--wall2:#161b22;
+  --corridor:#1f2937;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
+html,body{width:100%;height:100%;overflow:hidden;touch-action:none;}
+body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--white);}
+
+/* SCREENS */
+.scr{display:none;position:fixed;inset:0;flex-direction:column;align-items:center;justify-content:center;z-index:5;overflow-y:auto;padding:12px;}
+.scr.on{display:flex;}
+
+/* WELCOME */
+.wcard{background:var(--panel);border:2px solid var(--border);border-radius:20px;padding:22px 20px;max-width:420px;width:100%;text-align:center;}
+.gt{font-family:'Press Start 2P',monospace;font-size:clamp(.9rem,5vw,1.6rem);color:var(--gold);text-shadow:0 0 16px rgba(227,179,65,.4);line-height:1.6;margin-bottom:6px;}
+.gs{font-size:.8rem;color:var(--muted);margin-bottom:12px;line-height:1.6;}
+.ni{width:100%;padding:12px 14px;background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:10px;color:var(--white);font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:700;outline:none;margin-bottom:10px;text-align:center;}
+.ni:focus{border-color:var(--gold);}
+.ni::placeholder{color:var(--muted);}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;border:none;transition:all .12s;text-transform:uppercase;min-height:46px;}
+.btn:active{transform:scale(.93);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#b07d00);color:#000;}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);}
+.btn-red{background:linear-gradient(135deg,var(--red),#8b0000);color:#fff;}
+.btn-blue{background:linear-gradient(135deg,var(--blue),#0044aa);color:#fff;}
+.btn-green{background:linear-gradient(135deg,var(--green),#006400);color:#fff;}
+.btn-purple{background:linear-gradient(135deg,var(--purple),#6600aa);color:#fff;}
+.brow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.pu-g{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:8px 0;}
+.pu-i{background:rgba(255,255,255,.03);border-radius:7px;padding:5px 7px;font-size:.72rem;color:var(--muted);}
+.cl-li{margin:8px 0;text-align:left;}
+.cl-r{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:.76rem;border-bottom:1px solid rgba(255,255,255,.04);}
+.cl-n{font-family:'Press Start 2P',monospace;font-size:.52rem;color:var(--gold);width:14px;}
+.cl-nm{color:var(--white);font-weight:700;}
+.cl-s{color:var(--muted);font-size:.68rem;margin-left:auto;}
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;background:rgba(13,17,23,.98);border-bottom:1px solid var(--border);padding:5px 10px;display:flex;align-items:center;justify-content:space-between;gap:5px;z-index:50;height:44px;}
+.hc{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-weight:800;font-size:.7rem;white-space:nowrap;}
+.hc.g{color:var(--gold);}.hc.gr{color:var(--green);}.hc.b{color:var(--blue);}
+.lrw{display:flex;gap:1px;font-size:.85rem;}
+#kbar{position:fixed;top:44px;left:0;right:0;height:4px;background:rgba(255,255,255,.05);z-index:49;}
+#kfill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .3s;}
+
+/* CANVAS */
+#gc{display:block;position:fixed;top:48px;left:0;image-rendering:pixelated;image-rendering:crisp-edges;}
+
+/* DPAD */
+#dpad{position:fixed;bottom:8px;left:6px;z-index:50;touch-action:none;}
+.dr{display:flex;justify-content:center;gap:3px;margin:2px 0;}
+.db{width:54px;height:54px;background:rgba(88,166,255,.12);border:2px solid rgba(88,166,255,.3);border-radius:11px;font-size:1.3rem;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:none;}
+.db.p,.db:active{background:rgba(227,179,65,.3);border-color:var(--gold);}
+
+/* POWERUP BAR */
+#pub{position:fixed;top:52px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:48;pointer-events:none;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 160px);}
+.pua{background:rgba(13,17,23,.95);border:1.5px solid var(--gold);border-radius:16px;padding:3px 10px;font-size:.68rem;font-weight:800;color:var(--gold);white-space:nowrap;}
+
+/* TOAST */
+#toast{position:fixed;bottom:180px;left:50%;transform:translateX(-50%) translateY(5px);background:rgba(13,17,23,.97);border:2px solid var(--gold);border-radius:40px;padding:8px 18px;font-weight:800;font-size:.78rem;color:var(--gold);opacity:0;transition:all .3s;z-index:55;pointer-events:none;max-width:88vw;text-align:center;}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* QUESTION MODAL — bottom sheet */
+#qm{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:flex-end;justify-content:center;z-index:60;}
+#qm.on{display:flex;}
+.qcard{background:var(--panel);border:2px solid var(--gold);border-radius:20px 20px 0 0;padding:16px 16px 26px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;}
+.qhandle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 12px;}
+.qbadge{display:inline-block;font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 11px;border-radius:50px;margin-bottom:7px;}
+.qt{font-size:1rem;font-weight:700;color:var(--white);margin-bottom:11px;line-height:1.7;}
+.qtw{width:100%;height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:11px;overflow:hidden;}
+.qtb{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:2px;transition:width .1s linear;}
+.qtb.u{background:linear-gradient(90deg,var(--red),var(--orange));}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px;}
+.qo{padding:13px 8px;border-radius:10px;border:1.5px solid var(--border);background:rgba(255,255,255,.03);font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;color:var(--white);cursor:pointer;text-align:center;min-height:48px;display:flex;align-items:center;justify-content:center;line-height:1.3;}
+.qo:active:not(:disabled){border-color:var(--gold);background:rgba(227,179,65,.07);}
+.qo.ok{border-color:var(--green);background:rgba(63,185,80,.1);color:var(--green);}
+.qo.no{border-color:var(--red);background:rgba(248,81,73,.1);color:var(--red);}
+.qo:disabled{cursor:default;}
+.qpub{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.3);border-radius:7px;padding:7px 11px;font-size:.78rem;color:var(--green);text-align:center;margin-bottom:9px;font-weight:700;}
+.qhint{font-size:.78rem;color:var(--muted);text-align:center;margin-top:5px;font-style:italic;}
+
+/* CATCH DIALOG */
+#catchdlg{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:flex-end;justify-content:center;z-index:62;}
+#catchdlg.on{display:flex;}
+.catchcard{background:var(--panel);border:2px solid var(--red);border-radius:20px 20px 0 0;padding:18px 16px 28px;width:100%;max-width:520px;}
+.catch-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.catch-emoji{font-size:2.8rem;}
+.catch-info h3{font-family:'Nunito',sans-serif;font-size:1rem;font-weight:900;color:var(--red);}
+.catch-info p{font-size:.8rem;color:var(--muted);line-height:1.5;margin-top:3px;}
+.catch-opts{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.catch-opt{padding:14px 16px;border-radius:12px;border:1.5px solid var(--border);background:rgba(255,255,255,.03);font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;color:var(--white);cursor:pointer;display:flex;align-items:center;gap:12px;text-align:left;}
+.catch-opt:active{transform:scale(.97);}
+.catch-opt .co-icon{font-size:1.5rem;flex-shrink:0;}
+.catch-opt .co-txt{}
+.catch-opt .co-title{font-weight:800;color:var(--white);}
+.catch-opt .co-sub{font-size:.74rem;color:var(--muted);margin-top:2px;}
+.catch-opt.danger{border-color:rgba(248,81,73,.4);background:rgba(248,81,73,.05);}
+.catch-opt.safe{border-color:rgba(63,185,80,.4);background:rgba(63,185,80,.05);}
+.catch-opt.gamble{border-color:rgba(227,179,65,.4);background:rgba(227,179,65,.05);}
+.catch-opt.disabled-opt{opacity:.4;cursor:not-allowed;}
+
+/* RESULT OVERLAY (after lie/question outcome) */
+#result-flash{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:65;pointer-events:none;}
+#result-flash.on{display:flex;}
+.rf-box{font-family:'Press Start 2P',monospace;font-size:clamp(.9rem,5vw,1.4rem);padding:20px 28px;border-radius:16px;text-align:center;line-height:1.6;animation:rfPop .4s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes rfPop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.rf-good{background:rgba(63,185,80,.15);border:2px solid var(--green);color:var(--green);}
+.rf-bad{background:rgba(248,81,73,.15);border:2px solid var(--red);color:var(--red);}
+
+/* CLASS UP */
+#classup{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;align-items:center;justify-content:center;z-index:70;padding:16px;}
+#classup.on{display:flex;}
+.cucard{background:linear-gradient(155deg,var(--panel),#0d1117);border:2px solid var(--gold);border-radius:20px;padding:26px 22px;max-width:380px;width:100%;text-align:center;}
+.cutit{font-family:'Press Start 2P',monospace;font-size:clamp(.75rem,3.5vw,1rem);color:var(--gold);margin-bottom:8px;line-height:1.5;}
+.cucls{font-family:'Nunito',sans-serif;font-size:1.8rem;font-weight:900;color:var(--white);margin:8px 0;}
+.cusub{font-size:.82rem;color:var(--muted);line-height:1.7;margin-bottom:12px;white-space:pre-line;}
+
+/* OVERLAYS */
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:80;padding:16px;}
+.ovl.on{display:flex;}
+.ocard{background:var(--panel);border:2px solid var(--border);border-radius:20px;padding:24px 20px;max-width:360px;width:100%;text-align:center;}
+.otit{font-family:'Press Start 2P',monospace;font-size:clamp(.8rem,4vw,1.1rem);margin-bottom:10px;line-height:1.5;}
+.osub{font-size:.84rem;color:var(--muted);margin-bottom:12px;line-height:1.6;}
+.obig{font-family:'Nunito',sans-serif;font-size:2.4rem;font-weight:900;color:var(--gold);margin:8px 0;}
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div class="scr on" id="ws">
+  <div class="wcard">
+    <div class="gt">SKOLE<br>FLUGT</div>
+    <div class="gs">Gå ind i ❓-felter for at svare og samle 🔑 nøgler.<br>Brug nøglerne til at åbne 🔒 porte og find 🚪 udgangen!</div>
+    <input class="ni" id="pname" type="text" placeholder="Dit navn..." maxlength="14" autocomplete="off">
+    <div class="cl-li">
+      <div style="font-size:.65rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Klasseforløb</div>
+      <div class="cl-r"><span class="cl-n">1</span><span class="cl-nm">1. klasse</span><span class="cl-s">Regning · 6 nøgler</span></div>
+      <div class="cl-r"><span class="cl-n">2</span><span class="cl-nm">2. klasse</span><span class="cl-s">Gange-tabeller · 8 nøgler</span></div>
+      <div class="cl-r"><span class="cl-n">3</span><span class="cl-nm">3. klasse</span><span class="cl-s">Brøker · 10 nøgler</span></div>
+      <div class="cl-r"><span class="cl-n">4</span><span class="cl-nm">4. klasse</span><span class="cl-s">Ligninger · 12 nøgler</span></div>
+      <div class="cl-r"><span class="cl-n">5</span><span class="cl-nm">5. klasse 💀</span><span class="cl-s">Dansk + BOSS · 12 nøgler</span></div>
+      <div class="cl-r"><span class="cl-n">★</span><span class="cl-nm" style="color:var(--purple);">Kontor-indbrud 🗂️</span><span class="cl-s" style="color:var(--purple);">Stjæl "Note til forældre!"</span></div>
+      <div class="cl-r"><span class="cl-n">6</span><span class="cl-nm">6. klasse</span><span class="cl-s">Naturfag · 14 nøgler</span></div>
+      <div class="cl-r"><span class="cl-n">7</span><span class="cl-nm">7. klasse</span><span class="cl-s">Avanceret mat. · 14 nøgler</span></div>
+      <div class="cl-r"><span class="cl-n">8</span><span class="cl-nm">8. klasse</span><span class="cl-s">Geografi & blandet · 16</span></div>
+      <div class="cl-r"><span class="cl-n">9</span><span class="cl-nm">9. klasse</span><span class="cl-s">Eksamen · 18 nøgler</span></div>
+      <div class="cl-r"><span class="cl-n">10</span><span class="cl-nm">10. klasse 🏆</span><span class="cl-s">Final boss · 20 nøgler</span></div>
+    </div>
+    <div class="pu-g">
+      <div class="pu-i">📋 Snydeseddel — se svar</div>
+      <div class="pu-i">🚽 Toilet — usynlig 8s</div>
+      <div class="pu-i">🛍️ Storcenter — teleport</div>
+      <div class="pu-i">🥙 Kebab — liv + fart</div>
+      <div class="pu-i">📝 Snyd nabo — spring over</div>
+      <div class="pu-i">⭐ Spring time — usynlig</div>
+    </div>
+    <div style="background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.3);border-radius:10px;padding:9px 12px;font-size:.78rem;margin-bottom:10px;text-align:left;line-height:1.6;">
+      <strong style="color:var(--red);">⚠️ Fanget?</strong> Du kan:<br>
+      📚 <strong>Svar</strong> på et svært spørgsmål (sikkert hvis rigtigt)<br>
+      🎲 <strong>Lyv</strong> — 50% chance (80% risiko hos Inspektøren!)<br>
+      🏃 <strong>Løb</strong> — kun muligt med aktiv power-up
+    </div>
+    <button class="btn btn-gold" onclick="startGame()" style="width:100%;font-size:1rem;">🏃 START SPIL</button>
+    <div style="margin-top:7px;font-size:.68rem;color:var(--muted);">Bevæg: Piletaster / WASD / D-pad / Swipe på skærmen</div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="scr" id="gs">
+  <div id="hud">
+    <div style="display:flex;gap:5px;align-items:center;">
+      <div class="hc g" id="h-cls">Kl. 1</div>
+      <div class="hc gr" id="h-sc">0 pt</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <div class="hc b" id="h-ky">🔑 0/3</div>
+      <div class="lrw" id="h-lv"></div>
+    </div>
+    <div class="hc" id="h-nm" style="max-width:72px;overflow:hidden;text-overflow:ellipsis;"></div>
+  </div>
+  <div id="kbar"><div id="kfill" style="width:0%"></div></div>
+  <canvas id="gc"></canvas>
+  <div id="dpad">
+    <div class="dr"><div class="db" id="bu">↑</div></div>
+    <div class="dr"><div class="db" id="bl">←</div><div class="db" id="bd">↓</div><div class="db" id="br">→</div></div>
+  </div>
+  <div id="pub"></div>
+  <div id="toast"></div>
+</div>
+
+<!-- CATCH DIALOG -->
+<div id="catchdlg">
+  <div class="catchcard">
+    <div class="catch-header">
+      <span class="catch-emoji" id="cd-emoji">👩‍🏫</span>
+      <div class="catch-info">
+        <h3 id="cd-title">FANGET AF LÆREREN!</h3>
+        <p id="cd-msg">Hvad gør du?</p>
+      </div>
+    </div>
+    <div class="catch-opts">
+      <div class="catch-opt safe" onclick="catchChoice('answer')" id="co-answer">
+        <span class="co-icon">📚</span>
+        <div class="co-txt">
+          <div class="co-title">Svar på spørgsmål</div>
+          <div class="co-sub">Svært spørgsmål — svarer du rigtigt, slipper du fri</div>
+        </div>
+      </div>
+      <div class="catch-opt gamble" onclick="catchChoice('lie')" id="co-lie">
+        <span class="co-icon">🎲</span>
+        <div class="co-txt">
+          <div class="co-title">Lyv dig fri</div>
+          <div class="co-sub" id="co-lie-sub">50% chance — du siger du kom fra et andet klasseværelse</div>
+        </div>
+      </div>
+      <div class="catch-opt danger" onclick="catchChoice('run')" id="co-run">
+        <span class="co-icon">🏃</span>
+        <div class="co-txt">
+          <div class="co-title">Løb!</div>
+          <div class="co-sub" id="co-run-sub">Kun muligt med aktiv power-up (toilet/springtime)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUESTION MODAL -->
+<div id="qm">
+  <div class="qcard">
+    <div class="qhandle"></div>
+    <div id="qpub" class="qpub" style="display:none;"></div>
+    <span class="qbadge" id="qbadge">MAT</span>
+    <div class="qt" id="qtext"></div>
+    <div class="qtw"><div class="qtb" id="qtbar"></div></div>
+    <div id="qarea"></div>
+    <div class="qhint" id="qhint"></div>
+  </div>
+</div>
+
+<!-- RESULT FLASH -->
+<div id="result-flash">
+  <div class="rf-box" id="rf-box"></div>
+</div>
+
+<!-- CLASS UP -->
+<div id="classup">
+  <div class="cucard">
+    <div class="cutit">KLASSE RYKKET OP! 🎓</div>
+    <div class="cucls" id="cu-cls"></div>
+    <div class="cusub" id="cu-sub"></div>
+    <button class="btn btn-gold" onclick="closeClassUp()" style="width:100%;">Videre →</button>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div class="ovl" id="go-scr">
+  <div class="ocard">
+    <div class="otit" style="color:var(--red);">GAME OVER 💀</div>
+    <div class="osub">Ingen liv tilbage!</div>
+    <div class="obig" id="go-sc">0 pt</div>
+    <div class="brow"><button class="btn btn-gold" onclick="goMenu()">Spil igen</button></div>
+  </div>
+</div>
+
+<!-- WIN -->
+<div class="ovl" id="win-scr">
+  <div class="ocard">
+    <div class="otit" style="color:var(--gold);">FRIHED! 🏆</div>
+    <div class="osub" id="win-msg"></div>
+    <div class="obig" id="win-sc">0 pt</div>
+    <div class="brow"><button class="btn btn-gold" onclick="goMenu()">Spil igen</button></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// QUESTION BANK
+// ═══════════════════════════════════════════════════
+const QB={
+  tal:[
+    {q:'8+7=?',a:'15',o:['12','14','15','17'],b:'TAL',c:'#58a6ff',hard:false},
+    {q:'15−8=?',a:'7',o:['5','6','7','9'],b:'TAL',c:'#58a6ff',hard:false},
+    {q:'Dobbelt af 18?',a:'36',o:['28','32','36','40'],b:'TAL',c:'#58a6ff',hard:false},
+    {q:'Halvdelen af 54?',a:'27',o:['24','26','27','30'],b:'TAL',c:'#58a6ff',hard:false},
+    {q:'6+9+7=?',a:'22',o:['20','21','22','24'],b:'TAL',c:'#58a6ff',hard:false},
+  ],
+  mult:[
+    {q:'7×8=?',a:'56',o:['48','54','56','63'],b:'MULT',c:'#58a6ff',hard:false},
+    {q:'9×7=?',a:'63',o:['54','56','63','72'],b:'MULT',c:'#58a6ff',hard:false},
+    {q:'12×8=?',a:'96',o:['84','88','96','104'],b:'MULT',c:'#58a6ff',hard:false},
+    {q:'11×12=?',a:'132',o:['121','132','142','144'],b:'MULT',c:'#58a6ff',hard:false},
+    {q:'13×7=?',a:'91',o:['81','84','91','98'],b:'MULT',c:'#58a6ff',hard:false},
+    {q:'Kvadratet af 9?',a:'81',o:['18','72','81','99'],b:'MULT',c:'#58a6ff',hard:false},
+  ],
+  broek:[
+    {q:'½+¾=?',a:'5/4',o:['1','5/4','4/6','2/3'],b:'BRØKER',c:'#bc8cff',hard:false},
+    {q:'2/3 af 60=?',a:'40',o:['20','30','40','45'],b:'BRØKER',c:'#bc8cff',hard:false},
+    {q:'¾ som decimal?',a:'0,75',o:['0,25','0,5','0,75','1,25'],b:'BRØKER',c:'#bc8cff',hard:false},
+    {q:'2/3+1/6=?',a:'5/6',o:['3/9','1/2','5/6','1'],b:'BRØKER',c:'#bc8cff',hard:false},
+    {q:'3/8 af 64=?',a:'24',o:['16','20','24','32'],b:'BRØKER',c:'#bc8cff',hard:false},
+  ],
+  lign:[
+    {q:'3x+4=19\nx=?',a:'5',o:['3','4','5','6'],b:'LIGNING',c:'#3fb950',hard:false},
+    {q:'2x−6=14\nx=?',a:'10',o:['4','8','10','12'],b:'LIGNING',c:'#3fb950',hard:false},
+    {q:'4x+3=27\nx=?',a:'6',o:['4','5','6','7'],b:'LIGNING',c:'#3fb950',hard:false},
+    {q:'2(x+3)=14\nx=?',a:'4',o:['2','3','4','5'],b:'LIGNING',c:'#3fb950',hard:false},
+    {q:'x/5+2=7\nx=?',a:'25',o:['15','20','25','30'],b:'LIGNING',c:'#3fb950',hard:false},
+  ],
+  dansk:[
+    {q:'Subjektet i:\n"Den røde bil kørte hurtigt"?',a:'Den røde bil',o:['kørte','Den røde bil','hurtigt','Den'],b:'DANSK',c:'#ff9100',hard:false},
+    {q:'Komparativ af "lang"?',a:'Længere',o:['Langer','Langs','Længere','Langst'],b:'DANSK',c:'#ff9100',hard:false},
+    {q:'"Adjektiv" på dansk?',a:'Tillægsord',o:['Navneord','Udsagnsord','Tillægsord','Stedord'],b:'DANSK',c:'#ff9100',hard:false},
+    {q:'Flertal af "mand"?',a:'Mænd',o:['Mander','Mands','Mænd','Manden'],b:'DANSK',c:'#ff9100',hard:false},
+    {q:'Objektet i:\n"Peter spiste pizza"?',a:'pizza',o:['Peter','spiste','pizza','hurtigt'],b:'DANSK',c:'#ff9100',hard:false},
+    {q:'Superlativ af "god"?',a:'Bedst',o:['Godest','Godere','Bedst','Best'],b:'DANSK',c:'#ff9100',hard:false},
+  ],
+  natur:[
+    {q:'Kemisk formel for vand?',a:'H₂O',o:['HO','H₂O','CO₂','H₂SO₄'],b:'NATUR',c:'#3fb950',hard:false},
+    {q:'Hvad sker i fotosyntese?',a:'CO₂+H₂O+lys→sukker+O₂',o:['O₂+H₂O→CO₂','CO₂+H₂O+lys→sukker+O₂','H₂O→ilt','CO₂→O₂'],b:'NATUR',c:'#3fb950',hard:false},
+    {q:'Symbol for Natrium?',a:'Na',o:['Ni','Na','Ne','Nb'],b:'NATUR',c:'#3fb950',hard:false},
+    {q:'Newtons 2. lov: F=?',a:'m×a',o:['m+a','m×a','m/a','m²'],b:'NATUR',c:'#3fb950',hard:false},
+    {q:'Symbol for guld?',a:'Au',o:['Go','Gd','Au','Ag'],b:'NATUR',c:'#3fb950',hard:false},
+    {q:'Hvad udfører fotosyntese?',a:'Planter og alger',o:['Kun planter','Dyr og planter','Planter og alger','Kun alger'],b:'NATUR',c:'#3fb950',hard:false},
+  ],
+  avmat:[
+    {q:'2³×3²=?',a:'72',o:['54','72','81','96'],b:'AVANCERET',c:'#f85149',hard:false},
+    {q:'Omfang cirkel r=5\n(π≈3,14)?',a:'31,4',o:['15,7','31,4','78,5','25'],b:'AVANCERET',c:'#f85149',hard:false},
+    {q:'log₁₀(100)=?',a:'2',o:['1','2','10','100'],b:'AVANCERET',c:'#f85149',hard:false},
+    {q:'25% af 25% af 400=?',a:'25',o:['10','20','25','100'],b:'AVANCERET',c:'#f85149',hard:false},
+    {q:'Rødder i x²−5x+6=0?',a:'x=2 og x=3',o:['x=1 og x=6','x=2 og x=3','x=−2 og x=−3','x=3 og x=4'],b:'AVANCERET',c:'#f85149',hard:false},
+  ],
+  hard:[ // Used when caught — difficult questions
+    {q:'Hvad er sin(90°)?',a:'1',o:['0','0,5','1','√2'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Hvad er log₂(32)?',a:'5',o:['4','5','6','8'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'3x²−12=0\nx=?',a:'±2',o:['±1','±2','±3','±4'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Hvad er Avogadros tal\n(ca.)?',a:'6,02×10²³',o:['6,02×10¹²','6,02×10¹⁸','6,02×10²³','6,02×10²⁶'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Areal af cirkel r=6\n(π≈3,14)?',a:'113,04',o:['37,68','75,36','113,04','226,08'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Hvad hedder Verdens\nlængste flod?',a:'Nilen',o:['Amazon','Nilen','Yangtze','Mississippi'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'1 mole indeholder\ncirka... partikler?',a:'6×10²³',o:['6×10¹²','6×10¹⁸','6×10²³','6×10³⁰'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Hvad er π² (ca.)?',a:'9,87',o:['6,28','9,87','12,57','3,14'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Hvad kalder man en\nvinkel på 270°?',a:'Refleksvinkel',o:['Stump','Spids','Ret','Refleksvinkel'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Hvad er 12! (fakultet)\ndivideret med 11!?',a:'12',o:['11','12','132','1'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Differentiér f(x)=3x²',a:"f'(x)=6x",o:["f'(x)=3x","f'(x)=6x","f'(x)=6","f'(x)=3x²"],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+    {q:'Hvad er det kemiske\nsymbol for Wolfram?',a:'W',o:['Wo','Wf','W','Wm'],b:'SVÆR! 🔥',c:'#f85149',hard:true},
+  ],
+  kontor:[
+    {q:'Sekretæren spørger:\n"9×9=?"',a:'81',o:['72','81','90','99'],b:'KONTOR 📋',c:'#bc8cff',hard:false},
+    {q:'Sekretæren spørger:\n"15% af 200=?"',a:'30',o:['20','25','30','40'],b:'KONTOR 📋',c:'#bc8cff',hard:false},
+    {q:'Sekretæren spørger:\n"x hvis 4x=32?"',a:'8',o:['6','7','8','9'],b:'KONTOR 📋',c:'#bc8cff',hard:false},
+    {q:'Sekretæren spørger:\n"Flertal af \'barn\'?"',a:'Børn',o:['Barner','Børner','Børn','Barnene'],b:'KONTOR 📋',c:'#bc8cff',hard:false},
+    {q:'Sekretæren spørger:\n"Areal kvadrat side=7?"',a:'49',o:['14','28','49','56'],b:'KONTOR 📋',c:'#bc8cff',hard:false},
+    {q:'Sekretæren spørger:\n"CO₂ er?"',a:'Kuldioxid',o:['Ilt','Kulmonoxid','Kuldioxid','Kulsyre'],b:'KONTOR 📋',c:'#bc8cff',hard:false},
+  ],
+  geo:[
+    {q:'Jordens inderste lag?',a:'Indre kerne',o:['Jordskorpen','Kappen','Ydre kerne','Indre kerne'],b:'GEO',c:'#58a6ff',hard:false},
+    {q:'Plade skydes under anden?',a:'Subduktion',o:['Erosion','Subduktion','Tektonik','Vulkanism'],b:'GEO',c:'#58a6ff',hard:false},
+    {q:'Verdens højeste bjerg?',a:'Mount Everest',o:['K2','Mont Blanc','Mount Everest','Kilimanjaro'],b:'GEO',c:'#58a6ff',hard:false},
+  ],
+  blandet:[
+    {q:'Areal trekant b=8,h=5?',a:'20',o:['13','20','40','80'],b:'BLANDET',c:'#ff9100',hard:false},
+    {q:'5! (fakultet)=?',a:'120',o:['25','60','100','120'],b:'BLANDET',c:'#ff9100',hard:false},
+    {q:'Næste: 3,6,12,24,__?',a:'48',o:['36','42','48','54'],b:'BLANDET',c:'#ff9100',hard:false},
+    {q:'Latinsk for udsagnsord?',a:'Verbum',o:['Nomen','Verbum','Adverbium','Adjectivum'],b:'BLANDET',c:'#ff9100',hard:false},
+  ]
+};
+
+const LEVELS=[
+  {cls:'1. klasse',sub:'Addition og subtraktion',pool:[...QB.tal],gateNeed:6},
+  {cls:'2. klasse',sub:'Multiplikation',pool:[...QB.mult],gateNeed:8},
+  {cls:'3. klasse',sub:'Brøker',pool:[...QB.broek],gateNeed:10},
+  {cls:'4. klasse',sub:'Ligninger',pool:[...QB.lign],gateNeed:12},
+  {cls:'5. klasse 💀',sub:'Dansk — INSPEKTØRBOSS!',pool:[...QB.dansk],gateNeed:12},
+  {cls:'Kontor-Indbrud 🗂️',sub:'Snig dig forbi sekretæren\nog stjæl "Note til forældre!"',pool:[...QB.kontor],gateNeed:6,special:'kontor'},
+  {cls:'6. klasse',sub:'Naturfag',pool:[...QB.natur],gateNeed:14},
+  {cls:'7. klasse',sub:'Avanceret matematik',pool:[...QB.avmat],gateNeed:14},
+  {cls:'8. klasse',sub:'Geografi & blandet',pool:[...QB.geo,...QB.blandet],gateNeed:16},
+  {cls:'9. klasse',sub:'Eksamensniveau',pool:[...QB.avmat,...QB.dansk,...QB.natur],gateNeed:18},
+  {cls:'10. klasse 🏆',sub:'Alt muligt — Final boss!',pool:[...QB.avmat,...QB.blandet,...QB.geo,...QB.natur,...QB.dansk],gateNeed:20},
+];
+
+// ═══════════════════════════════════════════════════
+// MAP — VERY CLEAR CORRIDORS
+// ═══════════════════════════════════════════════════
+// Tile types: 0=floor, 1=wall, 2=q-tile (question), 3=gate(handled separately)
+const COLS=25, ROWS=19, T=44;
+
+// Generates an open map with wide corridors — clearly navigable
+// Structure: 3 horizontal corridors + 3 vertical corridors + rooms at intersections
+function genMap(seed){
+  const m=Array.from({length:ROWS},()=>new Array(COLS).fill(1));
+  // Horizontal corridors at rows 2, 7, 12 (3 wide each)
+  const hRows=[2,6,10,14];
+  // Vertical corridors at cols 3,7,13,19 (3 wide each)
+  const vCols=[3,7,13,19];
+
+  hRows.forEach(r=>{
+    for(let c=1;c<COLS-1;c++){m[r-1][c]=0;m[r][c]=0;m[r+1][c]=0;}
+  });
+  vCols.forEach(c=>{
+    for(let r=1;r<ROWS-1;r++){m[r][c-1]=0;m[r][c]=0;m[r][c+1]=0;}
+  });
+
+  // Solid borders
+  for(let c=0;c<COLS;c++){m[0][c]=1;m[ROWS-1][c]=1;}
+  for(let r=0;r<ROWS;r++){m[r][0]=1;m[r][COLS-1]=1;}
+  return m;
+}
+
+// Kontor: hand-crafted office building layout
+function genKontorMap(){
+  const m=Array.from({length:ROWS},()=>new Array(COLS).fill(1));
+  // Main corridor rows 6-8, full width
+  for(let r=6;r<9;r++)for(let c=1;c<COLS-1;c++)m[r][c]=0;
+  // Reception room: rows 3-11, cols 1-7
+  for(let r=3;r<12;r++)for(let c=1;c<8;c++)m[r][c]=0;
+  // Secretary desk (obstacle island in reception)
+  for(let r=5;r<9;r++)for(let c=3;c<6;c++)m[r][c]=1;
+  m[7][3]=0; // gap to slip past
+  // Wall between reception and hallway
+  for(let r=3;r<12;r++)m[r][7]=1;
+  m[7][7]=0; // door (gate)
+  // Hallway: rows 6-8, cols 7-11
+  for(let r=6;r<9;r++)for(let c=7;c<12;c++)m[r][c]=0;
+  // Wall to director's office
+  for(let r=3;r<12;r++)m[r][11]=1;
+  m[7][11]=0; // door (gate 2)
+  // Director's office: rows 3-11, cols 11-17
+  for(let r=3;r<12;r++)for(let c=11;c<18;c++)m[r][c]=0;
+  // Desk in office
+  for(let r=5;r<9;r++)for(let c=13;c<16;c++)m[r][c]=1;
+  m[7][15]=0; // gap
+  // Borders
+  for(let c=0;c<COLS;c++){m[0][c]=1;m[ROWS-1][c]=1;}
+  for(let r=0;r<ROWS;r++){m[r][0]=1;m[r][COLS-1]=1;}
+  return m;
+}
+
+function mrand(s){return()=>{s^=s<<13;s^=s>>17;s^=s<<5;return(s>>>0)/0xffffffff;};}
+
+function findStart(map){
+  // Try top-left corridor area first
+  for(let r=1;r<ROWS-1;r++)for(let c=1;c<COLS-1;c++){
+    if(map[r][c]===0)return{x:c,y:r};
+  }
+  return{x:1,y:1};
+}
+
+// ═══════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════
+let G={
+  level:1,lives:3,score:0,name:'Elev',
+  map:[],px:0,py:0,
+  enemies:[],powerups:[],gates:[],qtiles:[],
+  exit:{x:0,y:0},
+  keys:{},qOpen:false,caughtBy:null,exitBlocked:false,
+  aPU:{},moveInt:200,
+  rafId:null,lastTime:0,
+  correctCount:0,cam:{x:0,y:0},special:''
+};
+let canvas,ctx;
+
+function initCanvas(){
+  canvas=document.getElementById('gc');ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight-48;
+  canvas.style.width=canvas.width+'px';
+  canvas.style.height=canvas.height+'px';
+  updateCam();
+}
+
+function updateCam(){
+  if(!canvas)return;
+  G.cam.x=Math.max(0,Math.min(COLS*T-canvas.width,  G.px*T+T/2-canvas.width/2));
+  G.cam.y=Math.max(0,Math.min(ROWS*T-canvas.height, G.py*T+T/2-canvas.height/2));
+}
+
+// ═══════════════════════════════════════════════════
+// SETUP LEVEL
+// ═══════════════════════════════════════════════════
+function setupLevel(lvl){
+  const ld=LEVELS[lvl-1];
+  G.qOpen=false;G.caughtBy=null;G.aPU={};G.correctCount=0;
+  G.special=ld.special||'';
+
+  if(ld.special==='kontor'){
+    G.map=genKontorMap();
+    G.px=2;G.py=7;
+    G.exit={x:16,y:7};
+  } else {
+    G.map=genMap(lvl);
+    const s=findStart(G.map);G.px=s.x;G.py=s.y;
+    G.exit=findFarCorner();
+  }
+
+  const used=new Set([`${G.px},${G.py}`,`${G.exit.x},${G.exit.y}`]);
+
+  // GATES
+  G.gates=[];
+  const gc=['#f85149','#e3b341','#58a6ff','#bc8cff','#3fb950','#ff9100'];
+  if(ld.special==='kontor'){
+    G.gates=[
+      {x:7,y:7,passed:false,color:'#bc8cff',need:ld.gateNeed,label:'Sekretærens dør'},
+      {x:11,y:7,passed:false,color:'#f85149',need:ld.gateNeed+2,label:'Kontor-dør'},
+    ];
+  } else {
+    const gcount=Math.min(2+Math.floor(lvl/2),5);
+    const mid=openCells(used,true).sort(()=>Math.random()-.5);
+    for(let i=0;i<Math.min(gcount,mid.length);i++){
+      G.gates.push({x:mid[i].x,y:mid[i].y,passed:false,color:gc[i%gc.length],need:ld.gateNeed});
+      used.add(`${mid[i].x},${mid[i].y}`);
+    }
+  }
+
+  // QUESTION TILES — place on open floor cells, spread across map
+  G.qtiles=[];
+  // Many question tiles — spread across ALL areas of the map
+  const qtCount=Math.min(12+lvl*2, 40);
+  // Force spread: divide map into zones and place tiles in each
+  const qtCells=openCells(used).sort(()=>Math.random()-.5);
+  // Sort by position to spread across map (take every Nth)
+  const allOpen=openCells(new Set());
+  allOpen.sort((a,b)=>a.x+a.y*COLS-(b.x+b.y*COLS));
+  const step=Math.max(1,Math.floor(allOpen.length/qtCount));
+  let qPlaced=0;
+  for(let i=0;i<allOpen.length&&qPlaced<qtCount;i+=step){
+    const cell=allOpen[i];
+    if(!used.has(`${cell.x},${cell.y}`)){
+      G.qtiles.push({x:cell.x,y:cell.y,answered:false});
+      used.add(`${cell.x},${cell.y}`);
+      qPlaced++;
+    }
+  }
+
+  // ENEMIES
+  G.enemies=[];
+  if(ld.special==='kontor'){
+    // Secretary: slow patrol in reception
+    G.enemies.push({x:4,y:6,type:'sekretær',emoji:'👩',interval:1100,timer:0,patrol:{minX:2,maxX:6,minY:4,maxY:10}});
+    // Inspector: patrols his office
+    G.enemies.push({x:14,y:6,type:'inspektør',emoji:'👨‍💼',interval:1300,timer:0,patrol:{minX:12,maxX:17,minY:4,maxY:10}});
+  } else {
+    const numT=Math.min(2+Math.floor(lvl/2),6);  // Min 2 teachers, up to 6
+    const numB=Math.min(Math.floor(lvl/2),4);         // Bullies scale fast
+    const hasI=(lvl===5||lvl===11);
+    // Spread enemies across whole map by dividing into zones
+    const allCells=openCells(used).sort(()=>Math.random()-.5);
+    // Place teachers spread out (not all in same corner)
+    const zoneW=Math.floor(COLS/Math.max(numT+numB+(hasI?1:0),3));
+    let ei=0;
+    for(let i=0;i<numT;i++){
+      // Try to place each teacher in a different horizontal zone
+      const zoneStart=i*zoneW;
+      const zoneCells=allCells.filter(c=>c.x>=zoneStart&&c.x<zoneStart+zoneW+4);
+      const cell=zoneCells[0]||allCells[ei];
+      if(!cell)break;
+      G.enemies.push({x:cell.x,y:cell.y,type:'lærer',emoji:'👩‍🏫',interval:Math.max(600,1500-lvl*70),timer:0,roamDist:6+lvl});
+      used.add(`${cell.x},${cell.y}`);
+      allCells.splice(allCells.indexOf(cell),1);
+      ei++;
+    }
+    for(let i=0;i<numB&&ei<allCells.length;i++,ei++){
+      const cell=allCells[i]||allCells[0];
+      if(!cell)break;
+      G.enemies.push({x:cell.x,y:cell.y,type:'bølle',emoji:'😤',interval:Math.max(500,1400-lvl*65),timer:0,roamDist:4+lvl});
+      used.add(`${cell.x},${cell.y}`);
+    }
+    if(hasI&&allCells.length>0){
+      const cell=allCells[allCells.length-1];
+      G.enemies.push({x:cell.x,y:cell.y,type:'inspektør',emoji:'👨‍💼',interval:Math.max(550,1400-lvl*68),timer:0,roamDist:8+lvl});
+    }
+  }
+
+  // POWERUPS
+  G.powerups=[];
+  const puT=['snydeseddel','toilet','storcenter','kebab','snydsidekam','springtime'];
+  const free=openCells(used).sort(()=>Math.random()-.5);
+  const puC=ld.special==='kontor'?2:3+Math.floor(lvl/2);
+  for(let i=0;i<Math.min(puC,free.length);i++)
+    G.powerups.push({...free[i],type:puT[i%puT.length],got:false});
+
+  updateGateBar();
+}
+
+function openCells(used,mid=false,far=false){
+  const a=[];
+  for(let r=1;r<ROWS-1;r++)for(let c=1;c<COLS-1;c++){
+    if(G.map[r][c]!==0||used.has(`${c},${r}`))continue;
+    if(mid&&(c<3||c>COLS-4||r<3||r>ROWS-4))continue;
+    if(far&&(c<COLS/2||r<ROWS/2))continue;
+    a.push({x:c,y:r});
+  }
+  return a;
+}
+
+function findFarCorner(){
+  for(let r=ROWS-2;r>0;r--)for(let c=COLS-2;c>0;c--){
+    if(G.map[r][c]===0)return{x:c,y:r};
+  }
+  return{x:COLS-2,y:ROWS-2};
+}
+
+// ═══════════════════════════════════════════════════
+// BFS
+// ═══════════════════════════════════════════════════
+function bfs(sx,sy,ex,ey){
+  if(sx===ex&&sy===ey)return[];
+  const q=[[sx,sy,[]]],vis=new Set([`${sx},${sy}`]),D=[[0,-1],[0,1],[-1,0],[1,0]];
+  while(q.length){
+    const[cx,cy,p]=q.shift();
+    for(const[dx,dy]of D){
+      const nx=cx+dx,ny=cy+dy,k=`${nx},${ny}`;
+      if(nx<0||nx>=COLS||ny<0||ny>=ROWS||G.map[ny][nx]===1||vis.has(k))continue;
+      vis.add(k);const np=[...p,[nx,ny]];
+      if(nx===ex&&ny===ey)return np;
+      q.push([nx,ny,np]);
+    }
+  }
+  return[];
+}
+
+// ═══════════════════════════════════════════════════
+// DRAW — CLEAR VISUAL STYLE
+// ═══════════════════════════════════════════════════
+// Color palette for different tile types
+const C_WALL='#0d1117';
+const C_WALL_EDGE='rgba(30,50,80,.6)';
+const C_FLOOR_A='#1c2128';
+const C_FLOOR_B='#21262d';
+const C_CORRIDOR='#1f2937'; // slightly different shade for corridors
+const C_EXIT_GLOW='rgba(63,185,80,.2)';
+const C_QTILE='rgba(88,166,255,.18)';
+const C_QTILE_BORDER='rgba(88,166,255,.6)';
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.translate(-G.cam.x,-G.cam.y);
+
+  // ── TILES ──
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const x=c*T,y=r*T,tile=G.map[r][c];
+      if(tile===1){
+        // Wall — dark with subtle inner shadow
+        ctx.fillStyle=C_WALL;
+        ctx.fillRect(x,y,T,T);
+        // Top/left brighter edge for 3D feel
+        ctx.fillStyle='rgba(88,166,255,.06)';
+        ctx.fillRect(x,y,T,3);
+        ctx.fillRect(x,y,3,T);
+        // Bottom/right darker edge
+        ctx.fillStyle='rgba(0,0,0,.4)';
+        ctx.fillRect(x,y+T-2,T,2);
+        ctx.fillRect(x+T-2,y,2,T);
+      } else {
+        // Floor — checkerboard pattern so corridors are very obvious
+        ctx.fillStyle=(c+r)%2===0?C_FLOOR_A:C_FLOOR_B;
+        ctx.fillRect(x,y,T,T);
+        // Subtle floor grid line
+        ctx.strokeStyle='rgba(255,255,255,.025)';
+        ctx.lineWidth=.5;
+        ctx.strokeRect(x,y,T,T);
+      }
+    }
+  }
+
+  // ── WALL BORDERS (draw thick borders around walls touching floor) ──
+  ctx.strokeStyle='rgba(88,166,255,.15)';ctx.lineWidth=2;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(G.map[r][c]!==1)continue;
+    const D=[[0,-1],[0,1],[-1,0],[1,0]];
+    const x=c*T,y=r*T;
+    D.forEach(([dx,dy])=>{
+      const nr=r+dy,nc=c+dx;
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&G.map[nr][nc]===0){
+        ctx.beginPath();
+        if(dx===1){ctx.moveTo(x+T,y);ctx.lineTo(x+T,y+T);}
+        else if(dx===-1){ctx.moveTo(x,y);ctx.lineTo(x,y+T);}
+        else if(dy===1){ctx.moveTo(x,y+T);ctx.lineTo(x+T,y+T);}
+        else{ctx.moveTo(x,y);ctx.lineTo(x+T,y);}
+        ctx.stroke();
+      }
+    });
+  }
+
+  // ── QUESTION TILES ──
+  G.qtiles.forEach(qt=>{
+    if(qt.answered)return;
+    const x=qt.x*T,y=qt.y*T;
+    ctx.fillStyle=C_QTILE;
+    ctx.fillRect(x+2,y+2,T-4,T-4);
+    ctx.strokeStyle=C_QTILE_BORDER;
+    ctx.lineWidth=2;
+    ctx.strokeRect(x+3,y+3,T-6,T-6);
+    // Pulsing ❓
+    const pulse=.85+.15*Math.sin(Date.now()/400+qt.x+qt.y);
+    ctx.save();ctx.globalAlpha=pulse;
+    ctx.font=`${T-10}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('❓',x+T/2,y+T/2);
+    ctx.restore();
+  });
+
+  // ── GATES ──
+  G.gates.forEach(g=>{
+    if(g.passed)return;
+    const x=g.x*T,y=g.y*T;
+    // Fill
+    ctx.fillStyle=g.color+'22';ctx.fillRect(x,y,T,T);
+    // Border
+    ctx.strokeStyle=g.color;ctx.lineWidth=3;ctx.strokeRect(x+1,y+1,T-2,T-2);
+    // Bar
+    ctx.fillStyle=g.color+'99';ctx.fillRect(x,y+T/2-4,T,8);
+    // Icon
+    ctx.font=`${T-10}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🔒',x+T/2,y+T/2);
+    // Need label
+    ctx.fillStyle=g.color;ctx.font=`bold ${Math.max(8,T/5)}px Nunito,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(`${G.correctCount}/${g.need}`,x+T/2,y+2);
+  });
+
+  // ── EXIT ──
+  const ex=G.exit.x*T,ey=G.exit.y*T;
+  const ld=LEVELS[G.level-1];
+  const exitUnlocked=G.correctCount>=ld.gateNeed;
+  if(G.exitBlocked){
+    // Flash red when player tries to enter without enough keys
+    ctx.fillStyle='rgba(248,81,73,0.35)';ctx.fillRect(ex,ey,T,T);
+    ctx.strokeStyle='#f85149';ctx.lineWidth=3;ctx.strokeRect(ex+1,ey+1,T-2,T-2);
+  } else if(exitUnlocked){
+    const ep=.15+.12*Math.sin(Date.now()/280);
+    ctx.fillStyle=`rgba(63,185,80,${ep})`;ctx.fillRect(ex,ey,T,T);
+    ctx.strokeStyle='#3fb950';ctx.lineWidth=2;ctx.strokeRect(ex+1,ey+1,T-2,T-2);
+  } else {
+    // Locked exit — grey/dim
+    ctx.fillStyle='rgba(125,133,144,.1)';ctx.fillRect(ex,ey,T,T);
+    ctx.strokeStyle='#7d8590';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.strokeRect(ex+1,ey+1,T-2,T-2);ctx.setLineDash([]);
+  }
+  ctx.font=`${T-6}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  // Show lock icon over door if not enough keys
+  if(!exitUnlocked){
+    ctx.save();ctx.globalAlpha=.5;
+    ctx.fillText('🚪',ex+T/2,ey+T/2);
+    ctx.restore();
+    ctx.font=`${T-14}px serif`;
+    ctx.fillText('🔒',ex+T/2,ey+T/2);
+    // Show needed count on door
+    ctx.fillStyle='rgba(248,81,73,.9)';ctx.font=`bold ${Math.max(8,T/5)}px Nunito,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(`${G.correctCount}/${ld.gateNeed}`,ex+T/2,ey+2);
+  } else {
+    ctx.fillText(G.special==='kontor'?'📄':'🚪',ex+T/2,ey+T/2);
+    if(G.special==='kontor'){
+      ctx.fillStyle='rgba(255,200,80,.9)';ctx.font=`bold 9px Nunito,sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillText('NOTE!',ex+T/2,ey);
+    }
+    // Pulsing "GO!" label when unlocked
+    const lp=.7+.3*Math.sin(Date.now()/200);
+    ctx.fillStyle=`rgba(63,185,80,${lp})`;ctx.font=`bold ${Math.max(8,T/5)}px Nunito,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText('UD!',ex+T/2,ey+2);
+  }
+
+  // ── POWERUPS ──
+  const pp=.8+.2*Math.sin(Date.now()/350);
+  G.powerups.forEach(pu=>{
+    if(pu.got)return;
+    ctx.save();ctx.globalAlpha=pp;
+    ctx.font=`${T-8}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(puE(pu.type),pu.x*T+T/2,pu.y*T+T/2);
+    ctx.restore();
+  });
+
+  // ── ENEMIES ──
+  const inv=G.aPU.toilet||G.aPU.spring;
+  G.enemies.forEach(e=>{
+    const x=e.x*T,y=e.y*T;
+    if(e.type==='inspektør'){ctx.shadowBlur=18;ctx.shadowColor='#f85149';}
+    ctx.font=`${T-4}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(e.emoji,x+T/2,y+T/2);
+    ctx.shadowBlur=0;
+    // Name tag background
+    ctx.fillStyle='rgba(0,0,0,.8)';
+    ctx.fillRect(x,y+T-15,T,15);
+    ctx.fillStyle=e.type==='inspektør'?'#f85149':e.type==='bølle'?'#e3b341':'#3fb950';
+    ctx.font=`bold ${Math.max(7,T/5.5)}px Nunito,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(e.type.toUpperCase(),x+T/2,y+T-7);
+  });
+
+  // ── PLAYER ──
+  const px=G.px*T,py=G.py*T;
+  ctx.save();
+  if(inv){ctx.globalAlpha=.28;}
+  if(G.aPU.kebab){ctx.shadowBlur=14;ctx.shadowColor='#ff9100';}
+  ctx.font=`${T-4}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🏃',px+T/2,py+T/2);
+  ctx.shadowBlur=0;
+  if(inv){
+    ctx.globalAlpha=1;
+    ctx.strokeStyle='rgba(63,185,80,.5)';ctx.lineWidth=3;
+    ctx.strokeRect(px+1,py+1,T-2,T-2);
+  }
+  ctx.restore();
+
+  // ── KONTOR LABELS ──
+  if(G.special==='kontor'){
+    ctx.save();ctx.font='bold 11px Nunito,sans-serif';ctx.textAlign='center';
+    ctx.fillStyle='rgba(180,160,255,.6)';
+    ctx.fillText('🏢 RECEPTION',4*T,2.5*T);
+    ctx.fillStyle='rgba(255,150,150,.6)';
+    ctx.fillText('👨‍💼 INSPEKTØRENS KONTOR',14*T,2.5*T);
+    ctx.fillStyle='rgba(180,160,255,.5)';
+    ctx.font='bold 9px Nunito,sans-serif';
+    ctx.fillText('SEKRETÆR SKRIVEBORD',4.5*T,4.5*T);
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function puE(t){return{snydeseddel:'📋',toilet:'🚽',storcenter:'🛍️',kebab:'🥙',snydsidekam:'📝',springtime:'⭐'}[t]||'⭐';}
+
+// ═══════════════════════════════════════════════════
+// MOVEMENT
+// ═══════════════════════════════════════════════════
+function tryMove(dx,dy){
+  if(G.qOpen||G.caughtBy)return;
+  const nx=G.px+dx,ny=G.py+dy;
+  if(nx<0||nx>=COLS||ny<0||ny>=ROWS||G.map[ny][nx]===1)return;
+
+  // Gate check
+  const gate=G.gates.find(g=>g.x===nx&&g.y===ny&&!g.passed);
+  if(gate){
+    if(G.correctCount>=gate.need){
+      gate.passed=true;
+      showToast(`✅ ${gate.label||'Port'} åbnet! (${G.correctCount}/${gate.need} 🔑)`);
+      G.px=nx;G.py=ny;updateCam();updateGateBar();
+    } else {
+      showToast(`🔒 ${gate.label||'Port'} kræver ${gate.need} nøgler — du har ${G.correctCount}`);
+    }
+    return;
+  }
+
+  G.px=nx;G.py=ny;updateCam();
+
+  // Walk onto question tile
+  const qt=G.qtiles.find(q=>q.x===nx&&q.y===ny&&!q.answered);
+  if(qt){walkIntoQuestion(qt);return;}
+
+  // Powerup
+  const pu=G.powerups.find(p=>p.x===nx&&p.y===ny&&!p.got);
+  if(pu){pu.got=true;activatePU(pu.type);}
+
+  // Exit
+  // Exit — only if enough keys collected
+  if(nx===G.exit.x&&ny===G.exit.y){
+    const ld=LEVELS[G.level-1];
+    if(G.correctCount>=ld.gateNeed){
+      levelDone();
+    } else {
+      showExitBlocked(ld.gateNeed);
+    }
+    return;
+  }
+
+  // Enemy collision
+  if(!G.aPU.toilet&&!G.aPU.spring){
+    const e=G.enemies.find(e=>e.x===nx&&e.y===ny);
+    if(e)openCatchDialog(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SPAWN NEW Q-TILE
+function spawnNewQTile(){
+  const taken=new Set([
+    ...G.qtiles.filter(q=>!q.answered).map(q=>`${q.x},${q.y}`),
+    ...G.enemies.map(e=>`${e.x},${e.y}`),
+    ...G.gates.map(g=>`${g.x},${g.y}`),
+    ...G.powerups.filter(p=>!p.got).map(p=>`${p.x},${p.y}`),
+    `${G.px},${G.py}`,`${G.exit.x},${G.exit.y}`
+  ]);
+  // Try to place far from player
+  const candidates=[];
+  for(let r=1;r<ROWS-1;r++)for(let c=1;c<COLS-1;c++){
+    if(G.map[r][c]===0&&!taken.has(`${c},${r}`)){
+      const dist=Math.abs(c-G.px)+Math.abs(r-G.py);
+      if(dist>4)candidates.push({x:c,y:r,dist});
+    }
+  }
+  if(!candidates.length)return;
+  // Pick from furthest third
+  candidates.sort((a,b)=>b.dist-a.dist);
+  const pick=candidates[Math.floor(Math.random()*Math.min(candidates.length,Math.ceil(candidates.length/3)))];
+  G.qtiles.push({x:pick.x,y:pick.y,answered:false});
+}
+
+// ═══════════════════════════════════════════════════
+// QUESTION TILE — walk into it
+// ═══════════════════════════════════════════════════
+function walkIntoQuestion(qt){
+  const ld=LEVELS[G.level-1];
+  // Snydsidekam: skip
+  if(G.aPU.snydsidekam){
+    delete G.aPU.snydsidekam;updatePUBar();
+    qt.answered=true;
+    G.correctCount++;updateGateBar();
+    showToast('📝 Snyder af sidemanden — automatisk nøgle! 🔑');
+    return;
+  }
+  openQuestion(ld.pool, false, (correct,q)=>{
+    if(correct){
+      qt.answered=true;
+      G.correctCount++;G.score+=50+G.level*10;
+      updateGateBar();updateHUD();
+      showToast(`✅ +🔑 Nøgle! (${G.correctCount}/${ld.gateNeed})`);
+      // Spawn a new q-tile somewhere else so map stays active
+      setTimeout(()=>spawnNewQTile(),800);
+    } else {
+      showToast('❌ Forkert — prøv det ❓-felt igen!');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// CATCH DIALOG
+// ═══════════════════════════════════════════════════
+function openCatchDialog(enemy){
+  if(G.qOpen||G.caughtBy)return;
+  if(G.aPU.toilet||G.aPU.spring)return;
+  G.caughtBy=enemy;
+
+  const isInsp=enemy.type==='inspektør';
+  const isBølle=enemy.type==='bølle';
+  const isSecretary=enemy.type==='sekretær';
+
+  document.getElementById('cd-emoji').textContent=enemy.emoji;
+  document.getElementById('cd-title').textContent={
+    lærer:'FANGET AF LÆREREN! 👩‍🏫',
+    bølle:'BØLLEN STOPPER DIG! 😤',
+    inspektør:'INSPEKTØREN! 👨‍💼',
+    sekretær:'SEKRETÆREN OPDAGER DIG! 👩',
+  }[enemy.type];
+
+  document.getElementById('cd-msg').textContent={
+    lærer:'"Hvad laver du her ude? Kom med mig!"',
+    bølle:'"Hva\' sker der? Giv mig dine lektiepenge!"',
+    inspektør:'"STOP! Jeg kender dig. Kom med mig til kontoret."',
+    sekretær:'"Undskyld, har du en aftale?"',
+  }[enemy.type];
+
+  // Lie chance info
+  const lieChance=isInsp?'20% chance (80% risiko! ⚠️)':'50% chance';
+  document.getElementById('co-lie-sub').textContent=
+    isInsp?'Meget risikabelt! Inspektøren er ikke til grin — 80% mister du et liv!':
+    isBølle?'Du prøver at lokke bøllen med 10 kr. — 50% chance.':
+    isSecretary?'Du siger du er fra klasse 7B — 50% chance':'Du siger du kom fra lærerens eget kontor — 50% chance';
+
+  // Run option — only with active PU
+  const canRun=!!(G.aPU.toilet||G.aPU.spring||G.aPU.kebab);
+  const runOpt=document.getElementById('co-run');
+  if(canRun){
+    runOpt.classList.remove('disabled-opt');
+    document.getElementById('co-run-sub').textContent='Du har en aktiv power-up — løb nu!';
+  } else {
+    runOpt.classList.add('disabled-opt');
+    document.getElementById('co-run-sub').textContent='Ingen aktive power-ups — du kan ikke løbe!';
+  }
+
+  document.getElementById('catchdlg').classList.add('on');
+}
+
+function catchChoice(choice){
+  const enemy=G.caughtBy;if(!enemy)return;
+  document.getElementById('catchdlg').classList.remove('on');
+  const isInsp=enemy.type==='inspektør';
+
+  if(choice==='run'){
+    if(!G.aPU.toilet&&!G.aPU.spring&&!G.aPU.kebab){
+      showToast('❌ Du kan ikke løbe — ingen power-up aktiv!');
+      return;
+    }
+    G.caughtBy=null;
+    respawn();
+    showToast('🏃 Du løb fra '+enemy.type+'en!');
+    return;
+  }
+
+  if(choice==='lie'){
+    const chance=isInsp?0.20:0.50; // 20% success for inspektør, 50% for others
+    if(Math.random()<chance){
+      G.caughtBy=null;
+      respawn();
+      showResultFlash('🎲 LØGNEN LYKKEDES! Du slap fri!',true);
+    } else {
+      G.caughtBy=null;
+      showResultFlash(isInsp?'💀 INSPEKTØREN TROEDE DIG IKKE!':'❌ Løgnen virkede ikke!',false);
+      loseLife();
+    }
+    return;
+  }
+
+  if(choice==='answer'){
+    // Open a HARD question
+    G.caughtBy=null;
+    openQuestion(QB.hard, true, (correct,q)=>{
+      if(correct){
+        respawn();
+        showResultFlash('📚 RIGTIGT! Du slap fri!',true);
+        G.score+=100+G.level*20;
+        updateHUD();
+      } else {
+        showResultFlash('❌ Forkert svar — du mister et liv!',false);
+        loseLife();
+      }
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// QUESTION ENGINE
+// ═══════════════════════════════════════════════════
+let qTimer=null,qCB=null;
+
+function openQuestion(pool,isCatch,cb){
+  if(G.qOpen)return;
+  G.qOpen=true;
+  const q=pool[Math.floor(Math.random()*pool.length)];
+  qCB=cb;
+
+  const modal=document.getElementById('qm');
+  document.getElementById('qbadge').textContent=q.b;
+  document.getElementById('qbadge').style.cssText=`background:${q.c}22;color:${q.c};border:1px solid ${q.c}66;`;
+  document.getElementById('qtext').innerHTML=q.q.replace(/\n/g,'<br>');
+  document.getElementById('qhint').textContent='';
+
+  const pub=document.getElementById('qpub');
+  if(G.aPU.snydeseddel&&!isCatch){pub.style.display='block';pub.textContent=`📋 Snydeseddel: Svaret er "${q.a}"`;}
+  else pub.style.display='none';
+
+  // Build MC options
+  const area=document.getElementById('qarea');area.innerHTML='';
+  const opts=[...q.o].sort(()=>Math.random()-.5);
+  const grid=document.createElement('div');grid.className='qopts';
+  opts.forEach(opt=>{
+    const btn=document.createElement('button');btn.className='qo';btn.textContent=opt;
+    btn.addEventListener('click',()=>resolveQ(opt,q,isCatch),{once:true});
+    grid.appendChild(btn);
+  });
+  area.appendChild(grid);
+
+  // Timer — less for catch (pressure), more for walk-in
+  const totalT=isCatch?25:40;
+  let tLeft=totalT;
+  document.getElementById('qtbar').style.width='100%';
+  document.getElementById('qtbar').className='qtb';
+  if(qTimer)clearInterval(qTimer);
+  qTimer=setInterval(()=>{
+    tLeft-=.1;
+    const pct=Math.max(0,(tLeft/totalT)*100);
+    document.getElementById('qtbar').style.width=pct+'%';
+    if(pct<30)document.getElementById('qtbar').className='qtb u';
+    if(tLeft<=0){
+      clearInterval(qTimer);
+      document.getElementById('qhint').textContent=`⏰ Tid! Svaret var: ${q.a}`;
+      setTimeout(()=>{modal.classList.remove('on');G.qOpen=false;if(qCB)qCB(false,q);},1300);
+    }
+  },100);
+
+  modal.classList.add('on');
+}
+
+function resolveQ(val,q,isCatch){
+  if(qTimer)clearInterval(qTimer);
+  const ok=val.toLowerCase().trim()===q.a.toLowerCase().trim();
+  document.querySelectorAll('.qo').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===q.a)b.classList.add('ok');
+    else if(b.textContent===val&&!ok)b.classList.add('no');
+  });
+  const hint=document.getElementById('qhint');
+  hint.textContent=ok?'✅ Korrekt!':'❌ Forkert svar!';
+  setTimeout(()=>{
+    document.getElementById('qm').classList.remove('on');
+    G.qOpen=false;
+    if(qCB)qCB(ok,q);
+  },ok?500:1300);
+}
+
+// ═══════════════════════════════════════════════════
+// ENEMY UPDATE
+// ═══════════════════════════════════════════════════
+function updateEnemies(dt){
+  if(G.qOpen||G.caughtBy)return;
+  const inv=G.aPU.toilet||G.aPU.spring;
+  G.enemies.forEach(e=>{
+    e.timer+=dt;if(e.timer<e.interval)return;e.timer=0;
+    if(e.patrol){patrolMove(e);chkHit(e);return;}
+    if(e.type==='bølle'&&Math.random()<.4){rndM(e);chkHit(e);return;}
+    if(inv&&e.type!=='inspektør'){rndM(e);return;}
+    const path=bfs(e.x,e.y,G.px,G.py);
+    if(path.length>0){
+      const[nx,ny]=path[0];
+      if(e.type!=='bølle'&&G.gates.find(g=>g.x===nx&&g.y===ny&&!g.passed)){rndM(e);return;}
+      e.x=nx;e.y=ny;
+    }else rndM(e);
+    chkHit(e);
+  });
+}
+
+function patrolMove(e){
+  const pa=e.patrol,inv=G.aPU.toilet||G.aPU.spring;
+  if(!inv&&G.px>=pa.minX&&G.px<=pa.maxX&&G.py>=pa.minY&&G.py<=pa.maxY){
+    const path=bfs(e.x,e.y,G.px,G.py);
+    if(path.length>0){const[nx,ny]=path[0];if(G.map[ny][nx]!==1){e.x=nx;e.y=ny;return;}}
+  }
+  const D=[[0,-1],[0,1],[-1,0],[1,0]].sort(()=>Math.random()-.5);
+  for(const[dx,dy]of D){
+    const nx=e.x+dx,ny=e.y+dy;
+    if(nx>=pa.minX&&nx<=pa.maxX&&ny>=pa.minY&&ny<=pa.maxY&&G.map[ny][nx]===0){e.x=nx;e.y=ny;break;}
+  }
+}
+
+function rndM(e){
+  const D=[[0,-1],[0,1],[-1,0],[1,0]].sort(()=>Math.random()-.5);
+  for(const[dx,dy]of D){const nx=e.x+dx,ny=e.y+dy;if(nx>=0&&nx<COLS&&ny>=0&&ny<ROWS&&G.map[ny][nx]===0){e.x=nx;e.y=ny;break;}}
+}
+
+function chkHit(e){
+  if(G.aPU.toilet||G.aPU.spring)return;
+  if(e.x===G.px&&e.y===G.py)openCatchDialog(e);
+}
+
+// ═══════════════════════════════════════════════════
+// POWERUPS
+// ═══════════════════════════════════════════════════
+function activatePU(type){
+  const msgs={snydeseddel:'📋 Snydeseddel klar!',toilet:'🚽 Usynlig 8s!',storcenter:'🛍️ Teleporterer!',kebab:'🥙 +1 liv og fart!',snydsidekam:'📝 Spring næste ❓ over!',springtime:'⭐ Usynlig 10s!'};
+  switch(type){
+    case 'snydeseddel':G.aPU.snydeseddel=true;G.aPU.sneEnd=Date.now()+15000;break;
+    case 'toilet':G.aPU.toilet=true;G.aPU.tolEnd=Date.now()+8000;break;
+    case 'storcenter':{const c=openCells(new Set(G.enemies.map(e=>`${e.x},${e.y}`))).sort(()=>Math.random()-.5)[0];if(c){G.px=c.x;G.py=c.y;updateCam();}}break;
+    case 'kebab':G.lives=Math.min(G.lives+1,5);G.aPU.kebab=true;G.aPU.kebEnd=Date.now()+10000;G.moveInt=90;updateHUD();break;
+    case 'snydsidekam':G.aPU.snydsidekam=true;break;
+    case 'springtime':G.aPU.spring=true;G.aPU.spEnd=Date.now()+10000;break;
+  }
+  showToast(msgs[type]||'');updatePUBar();
+}
+
+function tickPU(){
+  const n=Date.now();
+  if(G.aPU.snydeseddel&&n>G.aPU.sneEnd){delete G.aPU.snydeseddel;delete G.aPU.sneEnd;updatePUBar();}
+  if(G.aPU.toilet&&n>G.aPU.tolEnd){delete G.aPU.toilet;delete G.aPU.tolEnd;showToast('🚽 Du er ude af toilettet!');updatePUBar();}
+  if(G.aPU.kebab&&n>G.aPU.kebEnd){delete G.aPU.kebab;delete G.aPU.kebEnd;G.moveInt=200;updatePUBar();}
+  if(G.aPU.spring&&n>G.aPU.spEnd){delete G.aPU.spring;delete G.aPU.spEnd;showToast('⭐ Usynlighed slut!');updatePUBar();}
+}
+
+function updatePUBar(){
+  const n=Date.now(),b=document.getElementById('pub');let h='';
+  if(G.aPU.toilet){const l=Math.max(0,Math.ceil((G.aPU.tolEnd-n)/1000));h+=`<div class="pua">🚽 ${l}s</div>`;}
+  if(G.aPU.spring){const l=Math.max(0,Math.ceil((G.aPU.spEnd-n)/1000));h+=`<div class="pua">⭐ ${l}s</div>`;}
+  if(G.aPU.kebab){const l=Math.max(0,Math.ceil((G.aPU.kebEnd-n)/1000));h+=`<div class="pua">🥙 ${l}s</div>`;}
+  if(G.aPU.snydeseddel){const l=Math.max(0,Math.ceil((G.aPU.sneEnd-n)/1000));h+=`<div class="pua">📋 ${l}s</div>`;}
+  if(G.aPU.snydsidekam)h+=`<div class="pua">📝 klar</div>`;
+  b.innerHTML=h;
+}
+
+// ═══════════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════════
+function loseLife(){
+  G.lives=Math.max(0,G.lives-1);updateHUD();
+  if(G.lives<=0){gameOver();return;}
+  setTimeout(()=>respawn(),800);
+}
+
+function respawn(){
+  let best=null,bestD=0;
+  for(let r=1;r<ROWS-1;r++)for(let c=1;c<COLS-1;c++){
+    if(G.map[r][c]!==0)continue;
+    const d=Math.min(...G.enemies.map(e=>Math.abs(e.x-c)+Math.abs(e.y-r)));
+    if(d>bestD){bestD=d;best={x:c,y:r};}
+  }
+  if(best){G.px=best.x;G.py=best.y;}else{G.px=1;G.py=1;}
+  updateCam();
+}
+
+function levelDone(){
+  if(qTimer)clearInterval(qTimer);
+  G.score+=G.level*150;updateHUD();
+  if(G.level>=LEVELS.length){showWin();return;}
+  const next=LEVELS[G.level];
+  document.getElementById('cu-cls').textContent=next.cls;
+  const isK=next.special==='kontor';
+  document.getElementById('cu-sub').textContent=isK?
+    `⚠️ SPECIALMISSION!\n${next.sub}\n\nSekretær-port: ${next.gateNeed} nøgler 🔑\nKontor-port: ${next.gateNeed+2} nøgler 🔑`:
+    `Du rykkede op i ${next.cls}!\n${next.sub}\nPortkrav: ${next.gateNeed} nøgler 🔑`;
+  document.getElementById('classup').classList.add('on');
+}
+
+function closeClassUp(){
+  document.getElementById('classup').classList.remove('on');
+  G.level++;setupLevel(G.level);updateHUD();updateCam();
+  showToast(`📚 ${LEVELS[G.level-1].cls} — gå ind i ❓-felterne for at svare!`);
+}
+
+function gameOver(){document.getElementById('go-sc').textContent=`${G.score} pt`;document.getElementById('go-scr').classList.add('on');}
+function showWin(){document.getElementById('win-msg').textContent=`${G.name} undslap alle niveauer! 🎓`;document.getElementById('win-sc').textContent=`${G.score} pt`;document.getElementById('win-scr').classList.add('on');}
+function goMenu(){
+  if(G.rafId){cancelAnimationFrame(G.rafId);G.rafId=null;}
+  if(qTimer)clearInterval(qTimer);
+  document.querySelectorAll('.ovl.on,.scr.on').forEach(s=>s.classList.remove('on'));
+  document.getElementById('catchdlg').classList.remove('on');
+  document.getElementById('qm').classList.remove('on');
+  document.getElementById('classup').classList.remove('on');
+  document.getElementById('ws').classList.add('on');
+}
+
+function showResultFlash(msg,good){
+  const rf=document.getElementById('result-flash');
+  const box=document.getElementById('rf-box');
+  box.textContent=msg;box.className='rf-box '+(good?'rf-good':'rf-bad');
+  rf.classList.add('on');
+  setTimeout(()=>rf.classList.remove('on'),1800);
+}
+
+// ═══════════════════════════════════════════════════
+// HUD / GATE BAR
+// ═══════════════════════════════════════════════════
+function updateGateBar(){
+  const ld=LEVELS[G.level-1];
+  const pct=Math.min(100,(G.correctCount/ld.gateNeed)*100);
+  document.getElementById('kfill').style.width=pct+'%';
+  document.getElementById('h-ky').textContent=`🔑 ${G.correctCount}/${ld.gateNeed}`;document.getElementById('h-ky').title=`${G.correctCount} rigtige svar — ${ld.gateNeed} kræves for at åbne porte`;
+}
+function updateHUD(){
+  const ld=LEVELS[G.level-1];
+  document.getElementById('h-cls').textContent=ld.cls;
+  document.getElementById('h-sc').textContent=`${G.score} pt`;
+  document.getElementById('h-nm').textContent=G.name;
+  document.getElementById('h-lv').innerHTML=[...Array(5)].map((_,i)=>i<G.lives?'❤️':'🖤').join('');
+  updateGateBar();
+}
+
+// Show blocked exit message with visual feedback
+function showExitBlocked(need){
+  const missing=need-G.correctCount;
+  showToast(`🚪 UDGANGEN ER LÅST! Du mangler ${missing} nøgle${missing===1?'':'r'} (${G.correctCount}/${need} 🔑)`);
+  // Flash the exit tile red briefly
+  G.exitBlocked=true;
+  setTimeout(()=>{G.exitBlocked=false;},600);
+}
+
+let toastT=null;
+function showToast(m){
+  const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
+  if(toastT)clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3500);
+}
+
+// ═══════════════════════════════════════════════════
+// GAME LOOP
+// ═══════════════════════════════════════════════════
+let lastMT=0;
+function loop(ts){
+  G.rafId=requestAnimationFrame(loop);
+  const dt=ts-G.lastTime;G.lastTime=ts;
+  const mi=G.moveInt||200;
+  if(ts-lastMT>mi){
+    const k=G.keys;let mv=false;
+    if(k.up){tryMove(0,-1);mv=true;}
+    else if(k.down){tryMove(0,1);mv=true;}
+    else if(k.left){tryMove(-1,0);mv=true;}
+    else if(k.right){tryMove(1,0);mv=true;}
+    if(mv)lastMT=ts;
+  }
+  if(!G.qOpen&&!G.caughtBy){updateEnemies(dt);tickPU();}
+  draw();
+}
+
+// ═══════════════════════════════════════════════════
+// INPUT
+// ═══════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',KeyW:'up',KeyS:'down',KeyA:'left',KeyD:'right'};
+  if(m[e.code]){G.keys[m[e.code]]=true;e.preventDefault();}
+});
+document.addEventListener('keyup',e=>{
+  const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',KeyW:'up',KeyS:'down',KeyA:'left',KeyD:'right'};
+  if(m[e.code])G.keys[m[e.code]]=false;
+});
+
+// DPAD
+['up','down','left','right'].forEach(dir=>{
+  const id={'up':'bu','down':'bd','left':'bl','right':'br'}[dir];
+  const btn=document.getElementById(id);if(!btn)return;
+  const on=e=>{e.preventDefault();G.keys[dir]=true;btn.classList.add('p');};
+  const off=e=>{e.preventDefault();G.keys[dir]=false;btn.classList.remove('p');};
+  btn.addEventListener('touchstart',on,{passive:false});
+  btn.addEventListener('touchend',off,{passive:false});
+  btn.addEventListener('touchcancel',off,{passive:false});
+  btn.addEventListener('mousedown',on);btn.addEventListener('mouseup',off);btn.addEventListener('mouseleave',off);
+});
+
+// Swipe
+let sw=null;
+document.addEventListener('touchstart',e=>{
+  if(e.target.closest('#dpad')||e.target.closest('#qm')||e.target.closest('#catchdlg'))return;
+  const t=e.touches[0];sw={x:t.clientX,y:t.clientY};
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(!sw)return;
+  if(e.target.closest('#dpad')||e.target.closest('#qm')||e.target.closest('#catchdlg')){sw=null;return;}
+  const t=e.changedTouches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;sw=null;
+  if(Math.abs(dx)<14&&Math.abs(dy)<14)return;
+  if(Math.abs(dx)>Math.abs(dy)){dx>0?tryMove(1,0):tryMove(-1,0);}else{dy>0?tryMove(0,1):tryMove(0,-1);}
+},{passive:true});
+
+// ═══════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════
+function startGame(){
+  const name=document.getElementById('pname').value.trim()||'Elev';
+  G.name=name;G.level=1;G.lives=3;G.score=0;G.keys={};G.moveInt=200;G.aPU={};G.caughtBy=null;G.qOpen=false;
+  document.querySelectorAll('.scr.on,.ovl.on').forEach(s=>s.classList.remove('on'));
+  document.getElementById('catchdlg').classList.remove('on');
+  document.getElementById('qm').classList.remove('on');
+  document.getElementById('classup').classList.remove('on');
+  document.getElementById('result-flash').classList.remove('on');
+  document.getElementById('gs').classList.add('on');
+  initCanvas();setupLevel(1);updateHUD();updatePUBar();
+  G.lastTime=performance.now();lastMT=0;
+  if(G.rafId)cancelAnimationFrame(G.rafId);
+  G.rafId=requestAnimationFrame(loop);
+  showToast('🏃 Gå ind i ❓-felter for at svare og samle 🔑 nøgler!');
+}
+
+window.addEventListener('resize',()=>{if(document.getElementById('gs').classList.contains('on'))initCanvas();});
+document.getElementById('pname').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+</script>
+</body>
+</html>
