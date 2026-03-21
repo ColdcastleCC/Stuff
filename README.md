@@ -44,6 +44,6 @@ Matematik og fysik
 
 - [procentkongen.html](https://coldcastlecc.github.io/Stuff/procentkongen.html) – Spil om procenter til 8.klasse HAY
 
-- [skoleflugt.html](https://coldcastlecc.github.io/Stuff/skoleflugt.html) – Spil for sjov til 6.klasse HAY
+- [skoleflugten.html](https://coldcastlecc.github.io/Stuff/skoleflugten.html) – Spil for sjov til 6.klasse HAY
 ---------------------
 ColdcastleCC – 2026
