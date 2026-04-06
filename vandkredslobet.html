@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Vandkredsløbet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --accent: #4cde80;
+    --panel-bg: rgba(6, 20, 50, 0.95);
+    --fh: 'Nunito', sans-serif;
+    --fb: 'Nunito Sans', sans-serif;
+    --f-xs:  clamp(10px, 2.2vw, 12px);
+    --f-sm:  clamp(12px, 2.8vw, 14px);
+    --f-md:  clamp(13px, 3.2vw, 16px);
+    --f-lg:  clamp(16px, 4.5vw, 22px);
+    --f-xl:  clamp(20px, 6vw,   32px);
+  }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #061232;
+    font-family: var(--fb);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  #wc {
+    position: relative;
+    width: 100dvw;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  #mapsvg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  #hint {
+    position: absolute;
+    top: max(10px, env(safe-area-inset-top, 10px));
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(6,20,50,0.82);
+    color: #fff;
+    font-family: var(--fh);
+    font-weight: 700;
+    font-size: var(--f-xs);
+    padding: 5px 14px;
+    border-radius: 30px;
+    pointer-events: none;
+    transition: opacity 0.8s;
+    white-space: nowrap;
+    z-index: 20;
+    max-width: 90vw;
+    text-align: center;
+  }
+  #progress-bar {
+    position: absolute;
+    top: max(10px, env(safe-area-inset-top, 10px));
+    right: max(12px, env(safe-area-inset-right, 12px));
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    z-index: 20;
+  }
+  .prog-dot {
+    width: clamp(8px,2vw,11px);
+    height: clamp(8px,2vw,11px);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+    border: 1.5px solid rgba(255,255,255,0.45);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .prog-dot.done { background: var(--accent); border-color: var(--accent); }
+  #panel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--panel-bg);
+    border-top: 1px solid rgba(255,255,255,0.13);
+    border-radius: 18px 18px 0 0;
+    padding: 14px 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    transform: translateY(110%);
+    transition: transform 0.38s cubic-bezier(.22,1,.36,1);
+    z-index: 30;
+    max-height: 65dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #panel.open { transform: translateY(0); }
+  #panel::before {
+    content: '';
+    display: block;
+    width: 36px; height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    margin: 0 auto 12px;
+  }
+  .p-badge {
+    display: inline-block;
+    font-family: var(--fh); font-weight: 700;
+    font-size: var(--f-xs); letter-spacing: .07em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    padding: 2px 9px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    margin-bottom: 5px;
+  }
+  .p-title {
+    font-family: var(--fh); font-weight: 900;
+    font-size: var(--f-lg); color: #fff;
+    margin-bottom: 5px; line-height: 1.2;
+  }
+  .p-desc {
+    font-size: var(--f-sm); color: rgba(255,255,255,0.8);
+    line-height: 1.5; margin-bottom: 8px;
+  }
+  .p-fact {
+    font-size: var(--f-xs); color: rgba(255,255,255,0.52);
+    line-height: 1.5;
+    padding: 7px 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 10px;
+  }
+  .p-fact b { color: rgba(255,255,255,0.82); font-weight: 600; }
+  .quiz-box {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 12px;
+    padding: 11px 12px;
+    margin-bottom: 10px;
+  }
+  .quiz-q {
+    font-family: var(--fh); font-weight: 700;
+    font-size: var(--f-sm); color: #fff;
+    margin-bottom: 9px; line-height: 1.4;
+  }
+  .quiz-opts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .qbtn {
+    font-family: var(--fh); font-weight: 700;
+    font-size: var(--f-xs);
+    background: rgba(255,255,255,0.09); color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 9px 6px;
+    cursor: pointer; text-align: center;
+    line-height: 1.3;
+    min-height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.14s, transform 0.1s;
+  }
+  .qbtn:hover:not(:disabled) { background: rgba(255,255,255,0.2); }
+  .qbtn:active:not(:disabled) { transform: scale(0.95); }
+  .qbtn.correct { background: rgba(50,200,100,0.28); border-color: rgba(50,200,100,0.65); }
+  .qbtn.wrong   { background: rgba(220,60,60,0.28);  border-color: rgba(220,60,60,0.6); }
+  .qbtn:disabled { cursor: default; }
+  .quiz-fb {
+    font-size: var(--f-xs);
+    margin-top: 8px; padding: 8px 10px;
+    border-radius: 8px; line-height: 1.45;
+    display: none;
+  }
+  .quiz-fb.ok { background: rgba(50,200,100,0.16); color: #8affc0; }
+  .quiz-fb.no { background: rgba(220,60,60,0.16);  color: #ffbebe; }
+  .choices { display: none; flex-wrap: wrap; gap: 7px; }
+  .choices.show { display: flex; }
+  .cbtn {
+    font-family: var(--fh); font-weight: 700;
+    font-size: var(--f-sm);
+    background: rgba(255,255,255,0.11); color: #fff;
+    border: 1px solid rgba(255,255,255,0.26);
+    border-radius: 9px; padding: 11px 12px;
+    cursor: pointer; flex: 1; min-width: 120px;
+    min-height: 44px; text-align: center;
+    transition: background 0.14s, transform 0.1s;
+  }
+  .cbtn:hover { background: rgba(255,255,255,0.22); }
+  .cbtn:active { transform: scale(0.96); }
+  .stamp {
+    position: absolute;
+    width: clamp(16px,4vw,22px); height: clamp(16px,4vw,22px);
+    border-radius: 50%;
+    background: var(--accent); border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(9px,2.2vw,12px); font-weight: 700; color: #fff;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0);
+    animation: stampIn 0.4s cubic-bezier(.34,1.56,.64,1) forwards;
+    z-index: 25;
+  }
+  @keyframes stampIn { to { transform: translate(-50%,-50%) scale(1); } }
+  #endscreen {
+    display: none; position: absolute; inset: 0;
+    background: rgba(6,18,45,0.97);
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 28px 20px;
+    padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));
+    z-index: 50; overflow-y: auto;
+  }
+  #endscreen.show { display: flex; }
+  .end-emoji  { font-size: clamp(40px,10vw,64px); margin-bottom: 10px; }
+  .end-title  { font-family: var(--fh); font-weight: 900; font-size: var(--f-xl); color: #fff; margin-bottom: 8px; }
+  .end-sub    { font-size: var(--f-md); color: rgba(255,255,255,0.68); line-height: 1.55; margin-bottom: 16px; max-width: 380px; }
+  .end-score  { font-family: var(--fh); font-weight: 900; font-size: clamp(48px,13vw,72px); color: var(--accent); line-height: 1; }
+  .end-score-label { font-size: var(--f-xs); color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+  .end-stars  { font-size: clamp(26px,7vw,40px); margin: 4px 0 8px; }
+  .end-msg    { font-size: var(--f-sm); color: rgba(255,255,255,0.58); max-width: 340px; line-height: 1.6; margin-bottom: 22px; }
+  .restart-btn {
+    font-family: var(--fh); font-weight: 900;
+    font-size: var(--f-md);
+    background: var(--accent); color: #061232;
+    border: none; border-radius: 12px;
+    padding: 14px 36px; cursor: pointer;
+    min-height: 52px;
+    transition: background 0.14s, transform 0.1s;
+  }
+  .restart-btn:hover  { background: #6fffa0; }
+  .restart-btn:active { transform: scale(0.97); }
+  @keyframes pulse { 0%,100%{opacity:.48} 50%{opacity:1} }
+  .hs { animation: pulse 2.2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<div id="wc">
+
+<svg id="mapsvg" viewBox="0 0 800 500"
+     preserveAspectRatio="xMidYMid slice"
+     xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="800" height="500" fill="#7ec8e3"/>
+  <circle cx="730" cy="62" r="38" fill="#FFD966" opacity=".95"/>
+  <circle cx="730" cy="62" r="29" fill="#FFE580"/>
+  <line x1="730" y1="12"  x2="730" y2="5"    stroke="#FFD966" stroke-width="3" stroke-linecap="round"/>
+  <line x1="768" y1="24"  x2="773" y2="18"   stroke="#FFD966" stroke-width="3" stroke-linecap="round"/>
+  <line x1="780" y1="62"  x2="787" y2="62"   stroke="#FFD966" stroke-width="3" stroke-linecap="round"/>
+  <line x1="768" y1="100" x2="773" y2="106"  stroke="#FFD966" stroke-width="3" stroke-linecap="round"/>
+  <line x1="692" y1="24"  x2="687" y2="18"   stroke="#FFD966" stroke-width="3" stroke-linecap="round"/>
+  <line x1="680" y1="62"  x2="673" y2="62"   stroke="#FFD966" stroke-width="3" stroke-linecap="round"/>
+  <rect x="0"   y="338" width="800" height="162" fill="#5D8A3C"/>
+  <rect x="570" y="338" width="230" height="162" fill="#1a6aaa"/>
+  <rect x="570" y="338" width="230" height="9"   fill="#2280cc" opacity=".6"/>
+  <path d="M572 350 Q598 342 624 350 Q650 358 676 350 Q702 342 728 350 Q754 358 780 350 Q795 343 800 346" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="2"/>
+  <path d="M572 366 Q602 359 632 366 Q662 373 692 366 Q722 359 752 366 Q782 373 800 368" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+  <text x="685" y="394" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="14" fill="rgba(255,255,255,0.88)">hav</text>
+  <rect x="0" y="418" width="570" height="82"  fill="#7A5230"/>
+  <rect x="0" y="450" width="570" height="50"  fill="#5C3A1E"/>
+  <ellipse cx="285" cy="468" rx="160" ry="18"  fill="#1a6aaa" opacity=".5"/>
+  <ellipse cx="285" cy="468" rx="120" ry="11"  fill="#2280cc" opacity=".4"/>
+  <text x="285" y="472" text-anchor="middle" font-family="Nunito Sans,sans-serif" font-size="11" fill="rgba(255,255,255,0.55)" font-weight="600">grundvand</text>
+  <polygon points="20,340 115,138 210,340"       fill="#8B9DC3"/>
+  <polygon points="70,340 158,156 245,340"       fill="#A0AEC0"/>
+  <polygon points="20,340 115,138 140,160 55,340" fill="#7A8DB5"/>
+  <polygon points="105,143 115,138 127,143 119,167 111,167" fill="white" opacity=".92"/>
+  <text x="132" y="294" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="12" fill="rgba(255,255,255,0.9)">bjerg</text>
+  <rect x="228" y="248" width="11" height="90" fill="#7a5230"/>
+  <polygon points="234,248 207,288 261,288" fill="#2d6e2a"/>
+  <polygon points="234,228 205,272 263,272" fill="#3a8a35"/>
+  <polygon points="234,210 207,250 261,250" fill="#4aa545"/>
+  <rect x="282" y="258" width="11" height="80" fill="#7a5230"/>
+  <polygon points="288,258 261,296 315,296" fill="#2d6e2a"/>
+  <polygon points="288,238 260,280 316,280" fill="#3a8a35"/>
+  <polygon points="288,220 261,260 315,260" fill="#4aa545"/>
+  <rect x="336" y="265" width="11" height="73" fill="#7a5230"/>
+  <polygon points="342,265 316,302 368,302" fill="#2d6e2a"/>
+  <polygon points="342,248 318,284 366,284" fill="#3a8a35"/>
+  <polygon points="342,230 318,267 366,267" fill="#4aa545"/>
+  <text x="288" y="330" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="12" fill="rgba(255,255,255,0.9)">skov</text>
+  <path d="M198 338 Q270 350 340 340 Q412 330 462 342 Q512 354 546 345 Q560 341 570 339" fill="none" stroke="#2280cc" stroke-width="11" opacity=".8"/>
+  <path d="M198 338 Q270 350 340 340 Q412 330 462 342 Q512 354 546 345 Q560 341 570 339" fill="none" stroke="#5ab0e8" stroke-width="5" opacity=".65"/>
+  <text x="390" y="360" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="11" fill="rgba(255,255,255,0.75)">flod</text>
+  <ellipse cx="300" cy="95"  rx="60" ry="35" fill="white" opacity=".92"/>
+  <ellipse cx="267" cy="108" rx="41" ry="27" fill="white" opacity=".96"/>
+  <ellipse cx="338" cy="106" rx="41" ry="25" fill="white" opacity=".92"/>
+  <line x1="272" y1="132" x2="266" y2="151" stroke="#5ab0e8" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="294" y1="135" x2="288" y2="154" stroke="#5ab0e8" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="316" y1="134" x2="310" y2="153" stroke="#5ab0e8" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="338" y1="132" x2="332" y2="151" stroke="#5ab0e8" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="300" y="80" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="12" fill="rgba(20,40,80,0.85)">regnsky</text>
+  <ellipse cx="568" cy="88"  rx="52" ry="31" fill="white" opacity=".86"/>
+  <ellipse cx="538" cy="101" rx="36" ry="23" fill="white" opacity=".9"/>
+  <ellipse cx="601" cy="99"  rx="36" ry="23" fill="white" opacity=".86"/>
+  <text x="568" y="72" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="12" fill="rgba(20,40,80,0.85)">dampsky</text>
+  <path d="M618 334 Q604 240 600 126" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr)"/>
+  <path d="M300 130 Q296 202 291 220" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr)"/>
+  <path d="M284 418 Q284 400 284 368" fill="none" stroke="rgba(255,255,255,0.2)"  stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr)"/>
+  <path d="M288 218 Q293 158 300 130" fill="none" stroke="rgba(255,255,255,0.2)"  stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr)"/>
+  <path d="M460 126 Q512 110 538 110" fill="none" stroke="rgba(255,255,255,0.26)" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr)"/>
+  <circle id="hs-ocean"       class="hs" cx="660" cy="376" r="30" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-cloud2"      class="hs" cx="568" cy="92"  r="28" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-cloud1"      class="hs" cx="300" cy="97"  r="28" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-forest"      class="hs" cx="288" cy="264" r="28" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-mountain"    class="hs" cx="120" cy="247" r="28" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-river"       class="hs" cx="400" cy="342" r="28" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-underground" class="hs" cx="285" cy="462" r="28" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <g id="droplet">
+    <ellipse cx="0" cy="3"   rx="13" ry="16" fill="#2196F3"/>
+    <ellipse cx="0" cy="1"   rx="9"  ry="12" fill="#42A5F5"/>
+    <ellipse cx="-3" cy="-4" rx="4"  ry="3"  fill="rgba(255,255,255,0.5)"/>
+    <circle cx="-4"   cy="2" r="2.5" fill="white"/>
+    <circle cx="4"    cy="2" r="2.5" fill="white"/>
+    <circle cx="-3.5" cy="2" r="1.2" fill="#1a237e"/>
+    <circle cx="4.5"  cy="2" r="1.2" fill="#1a237e"/>
+    <path d="M-3 7 Q0 10 3 7" fill="none" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+</svg>
+
+<div id="hint">Tryk på en glødende cirkel for at starte!</div>
+<div id="progress-bar"></div>
+<div id="panel"></div>
+
+<div id="endscreen">
+  <div class="end-emoji">🎉</div>
+  <div class="end-title">Tillykke!</div>
+  <div class="end-sub">Du har gennemført hele vandkredsløbet og besvaret alle spørgsmål!</div>
+  <div class="end-score" id="end-score">0/7</div>
+  <div class="end-score-label">rigtige svar</div>
+  <div class="end-stars" id="end-stars"></div>
+  <div class="end-msg"   id="end-msg"></div>
+  <button class="restart-btn" onclick="restartGame()">Spil igen 💧</button>
+</div>
+</div>
+
+<script>
+const stages = {
+  ocean:{x:660,y:376,hsId:'hs-ocean',badge:'Fordampning',title:'Havet',
+    desc:'Du er en lille vanddråbe, der hviler i det varme hav. Solen varmer dig op, og du begynder at stige som usynlig vanddamp!',
+    fact:'<b>Fordampning:</b> varme fra solen forvandler flydende vand til vanddamp. Havet sender milliarder af liter vand op i atmosfæren hver eneste dag.',
+    quiz:{q:'Hvad hedder det når vand fra havet stiger op i luften som damp?',opts:['Kondensation','Fordampning','Nedbør','Afstrømning'],correct:1,fb:'Rigtigt! Fordampning er når solen varmer vandet og forvandler det til usynlig damp, der stiger til vejrs.'},
+    choices:[{label:'Stig op som damp →',next:'cloud2'}]},
+  cloud2:{x:568,y:92,hsId:'hs-cloud2',badge:'Kondensation',title:'Dampsky',
+    desc:'Du er steget højt op i den kolde luft og slutter dig til millioner af andre dråber. Tilsammen danner I en sky, og vinden skubber jer ind over land!',
+    fact:'<b>Kondensation:</b> når vanddamp køler ned, forvandles den til bittesmå vanddråber. Skyer er lavet af millioner af sådanne dråber.',
+    quiz:{q:'Hvad sker der med vanddamp når den stiger op og møder kold luft?',opts:['Den forsvinder','Den fryser til is','Den kondenserer til dråber','Den synker ned igen'],correct:2,fb:'Korrekt! Kondensation betyder at vanddampen køler ned og bliver til bittesmå dråber, der danner skyer.'},
+    choices:[{label:'Driv ind over landet →',next:'cloud1'}]},
+  cloud1:{x:300,y:97,hsId:'hs-cloud1',badge:'Nedbør',title:'Regnsky',
+    desc:'Skyen er tung og fyldt med vand. Nu begynder det at regne! Du falder som en regndråbe mod landet nedenunder.',
+    fact:'<b>Nedbør:</b> når dråberne i en sky bliver tunge nok, falder de ned som regn, sne, slud eller hagl.',
+    quiz:{q:'Hvad kalder man vand der falder ned fra skyer?',opts:['Fordampning','Nedbør','Transpiration','Grundvand'],correct:1,fb:'Netop! Nedbør dækker over alt vand der falder fra skyer: regn, sne, slud og hagl.'},
+    choices:[{label:'Fald ned i skoven',next:'forest'},{label:'Fald ned på bjerget',next:'mountain'}]},
+  forest:{x:288,y:264,hsId:'hs-forest',badge:'Transpiration',title:'Skoven',
+    desc:'Du lander på et blad og suges ned i jorden. Træets rødder drikker dig op! Du rejser op gennem stammen til bladene og slipper fri i luften igen.',
+    fact:'<b>Transpiration:</b> planter suger vand op fra jorden og frigiver det som damp gennem porer i bladene. En stor bøg kan transpirere 400 liter om dagen!',
+    quiz:{q:'Hvad hedder det når planter frigiver vanddamp gennem bladene?',opts:['Fordampning','Nedbør','Transpiration','Kondensation'],correct:2,fb:'Rigtigt! Transpiration er planternes måde at "svede" på. De suger vand op fra rødderne og frigiver det som damp.'},
+    choices:[{label:'Stig fra bladene som damp',next:'cloud1'},{label:'Siv ned i undergrunden',next:'underground'}]},
+  mountain:{x:120,y:247,hsId:'hs-mountain',badge:'Snesmelting',title:'Bjerget',
+    desc:'Du falder som et snefnug og bliver en del af snemassen på bjergtoppen. Når foråret kommer, smelter solen dig, og du strømmer ned ad bjerget.',
+    fact:'<b>Snesmelting:</b> bjerge opbevarer vand som sne hele vinteren. Smeltevandet om foråret forsyner floder og søer i måneder af gangen.',
+    quiz:{q:'Hvad sker der med snemassen på bjerget om foråret?',opts:['Den fordamper direkte','Den smelter og løber ned i floder','Den bliver til grundvand','Den forbliver som is'],correct:1,fb:'Korrekt! Snesmeltning om foråret er afgørende for at fylde floder og søer op igen efter vinteren.'},
+    choices:[{label:'Smelt og løb ned ad bjerget →',next:'river'}]},
+  river:{x:400,y:342,hsId:'hs-river',badge:'Afstrømning',title:'Floden',
+    desc:'Du strømmer hurtigt afsted i floden, tumler over sten og bliver hurtigere for hvert meter. Floden fører dig mod havet.',
+    fact:'<b>Afstrømning:</b> floder samler vand fra regn, smeltevand og kilder og fører det ned ad bakke tilbage til havet.',
+    quiz:{q:'Hvad driver vandets bevægelse ned ad floden mod havet?',opts:['Vinden','Tyngdekraften','Solen','Planterne'],correct:1,fb:'Rigtigt! Tyngdekraften trækker vandet nedad mod havet. Derfor løber floder altid fra høje steder til lave.'},
+    choices:[{label:'Strøm ud til havet',next:'ocean'},{label:'Siv ned i undergrunden',next:'underground'}]},
+  underground:{x:285,y:462,hsId:'hs-underground',badge:'Grundvand',title:'Undergrunden',
+    desc:'Du er sivet ned gennem lag af jord og sten til en underjordisk vandreservoir. Det er mørkt, køligt og meget gammelt herinde.',
+    fact:'<b>Grundvand:</b> vand fylder hulrum mellem sten og jord under overfladen. Dette vand kan være tusindvis af år gammelt og forsyner brønde og naturlige kilder.',
+    quiz:{q:'Hvad kalder man vand der er gemt under jordens overflade i sten og jord?',opts:['Overfladevand','Grundvand','Regnvand','Havvand'],correct:1,fb:'Korrekt! Grundvand er vand der har sivet ned og samlet sig i hulrum i undergrunden — det pumper vi op fra brønde.'},
+    choices:[{label:'Bobl op gennem en kilde →',next:'river'}]}
+};
+
+const ORDER=['ocean','cloud2','cloud1','forest','mountain','river','underground'];
+let visited=new Set(),quizDone=new Set(),correctCount=0,animating=false;
+
+const wc=document.getElementById('wc'),mapSvg=document.getElementById('mapsvg'),
+      dropEl=document.getElementById('droplet'),panel=document.getElementById('panel'),
+      hint=document.getElementById('hint'),endSc=document.getElementById('endscreen'),
+      progBar=document.getElementById('progress-bar');
+
+ORDER.forEach(k=>{const d=document.createElement('div');d.className='prog-dot';d.id='dot-'+k;progBar.appendChild(d);});
+
+function setDroplet(x,y){dropEl.setAttribute('transform',`translate(${x},${y})`);}
+
+function animateTo(x,y,cb){
+  if(animating)return;animating=true;
+  const cur=dropEl.getAttribute('transform')||'';
+  const m=cur.match(/translate\(([^,]+),([^)]+)\)/);
+  let sx=m?parseFloat(m[1]):x,sy=m?parseFloat(m[2]):y;
+  const dx=x-sx,dy=y-sy,dist=Math.sqrt(dx*dx+dy*dy);
+  const dur=Math.min(1900,Math.max(500,dist*3)),t0=performance.now();
+  function step(now){
+    const t=Math.min(1,(now-t0)/dur),ease=t<0.5?2*t*t:-1+(4-2*t)*t;
+    setDroplet(sx+dx*ease,sy+dy*ease+Math.sin(t*Math.PI*4)*7*(1-t));
+    if(t<1)requestAnimationFrame(step);
+    else{setDroplet(x,y);animating=false;if(cb)cb();}
+  }
+  requestAnimationFrame(step);
+}
+
+function svgPct(svgX,svgY){
+  const rect=mapSvg.getBoundingClientRect(),vbW=800,vbH=500;
+  const scale=Math.max(rect.width/vbW,rect.height/vbH);
+  const rendW=vbW*scale,rendH=vbH*scale;
+  const offX=(rect.width-rendW)/2,offY=(rect.height-rendH)/2;
+  return{left:(offX+svgX*scale)+'px',top:(offY+svgY*scale)+'px'};
+}
+
+function addStamp(key){
+  const s=stages[key],pos=svgPct(s.x,s.y);
+  const el=document.createElement('div');
+  el.className='stamp';el.id='stamp-'+key;el.textContent='✓';
+  el.style.left=pos.left;el.style.top=pos.top;
+  wc.appendChild(el);
+}
+function markDot(key){const d=document.getElementById('dot-'+key);if(d)d.classList.add('done');}
+
+function checkAllDone(){
+  if(visited.size<ORDER.length)return;
+  setTimeout(()=>{
+    panel.classList.remove('open');
+    const pct=Math.round((correctCount/ORDER.length)*100);
+    document.getElementById('end-score').textContent=correctCount+'/'+ORDER.length;
+    let stars,msg;
+    if(pct===100){stars='⭐⭐⭐';msg='Perfekt resultat! Du svarede rigtigt på alle spørgsmål. Du er en sand vandekspert!';}
+    else if(pct>=70){stars='⭐⭐';msg='Godt klaret! Du har lært meget om vandkredsløbet. Prøv igen for at slå din rekord!';}
+    else{stars='⭐';msg='Godt forsøgt! Spil igen for at lære endnu mere om vandkredsløbet.';}
+    document.getElementById('end-stars').textContent=stars;
+    document.getElementById('end-msg').textContent=msg;
+    endSc.classList.add('show');
+  },700);
+}
+
+function showStage(key){
+  const s=stages[key],isNew=!visited.has(key);
+  if(isNew){visited.add(key);addStamp(key);markDot(key);}
+  hint.style.opacity='0';
+  const qDone=quizDone.has(key),q=s.quiz;
+  const optsHTML=q.opts.map((o,i)=>`<button class="qbtn" id="qo${i}" onclick="answerQuiz('${key}',${i},${q.correct})">${o}</button>`).join('');
+  const quizSection=qDone
+    ?`<div class="quiz-box" style="opacity:.4"><div class="quiz-q" style="font-size:var(--f-xs)">✓ Quiz allerede besvaret ved dette stop</div></div>`
+    :`<div class="quiz-box"><div class="quiz-q">🧠 ${q.q}</div><div class="quiz-opts">${optsHTML}</div><div class="quiz-fb" id="qfb"></div></div>`;
+  const choicesHTML=s.choices.map(c=>`<button class="cbtn" onclick="goTo('${c.next}')">${c.label}</button>`).join('');
+  panel.innerHTML=`<div class="p-badge">${s.badge}</div><div class="p-title">${s.title}</div><div class="p-desc">${s.desc}</div><div class="p-fact">${s.fact}</div>${quizSection}<div class="choices${qDone?' show':''}" id="choices-wrap">${choicesHTML}</div>`;
+  panel.classList.add('open');
+  panel.scrollTop=0;
+}
+
+function answerQuiz(key,chosen,correct){
+  document.querySelectorAll('.qbtn').forEach((b,i)=>{b.disabled=true;if(i===correct)b.classList.add('correct');else if(i===chosen&&chosen!==correct)b.classList.add('wrong');});
+  const fb=document.getElementById('qfb');
+  if(chosen===correct){correctCount++;fb.className='quiz-fb ok';fb.textContent='✅ '+stages[key].quiz.fb;}
+  else{fb.className='quiz-fb no';fb.textContent='❌ Ikke helt. '+stages[key].quiz.fb;}
+  fb.style.display='block';quizDone.add(key);
+  setTimeout(()=>{const cw=document.getElementById('choices-wrap');if(cw)cw.classList.add('show');checkAllDone();},900);
+}
+
+function goTo(key){
+  panel.classList.remove('open');
+  setTimeout(()=>animateTo(stages[key].x,stages[key].y,()=>showStage(key)),220);
+}
+
+function restartGame(){
+  visited.clear();quizDone.clear();correctCount=0;
+  document.querySelectorAll('.stamp').forEach(e=>e.remove());
+  ORDER.forEach(k=>{const d=document.getElementById('dot-'+k);if(d)d.classList.remove('done');});
+  endSc.classList.remove('show');panel.classList.remove('open');panel.innerHTML='';
+  hint.style.opacity='1';setDroplet(660,376);
+  setTimeout(()=>{animateTo(660,376,()=>showStage('ocean'));setTimeout(()=>{hint.style.opacity='0';},3500);},350);
+}
+
+Object.entries(stages).forEach(([key,s])=>{
+  const el=document.getElementById(s.hsId);if(!el)return;
+  const h=()=>{if(animating)return;panel.classList.remove('open');setTimeout(()=>animateTo(s.x,s.y,()=>showStage(key)),120);};
+  el.addEventListener('click',h);
+  el.addEventListener('touchend',e=>{e.preventDefault();h();},{passive:false});
+});
+
+window.addEventListener('resize',()=>{
+  ORDER.forEach(k=>{
+    const el=document.getElementById('stamp-'+k);
+    if(!el||!visited.has(k))return;
+    const pos=svgPct(stages[k].x,stages[k].y);
+    el.style.left=pos.left;el.style.top=pos.top;
+  });
+});
+
+setDroplet(660,376);
+setTimeout(()=>{animateTo(660,376,()=>showStage('ocean'));setTimeout(()=>{hint.style.opacity='0';},3500);},700);
+</script>
+</body>
+</html>

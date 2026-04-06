@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Syrer & Baser – Kemilaboratoriet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Nunito:wght@700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --acid:   #22dd88;   /* green — acid world */
+  --base:   #44aaff;   /* blue  — base world  */
+  --neutral:#f5c842;   /* gold  — neutral     */
+  --bg:     #0d1a12;
+  --panel:  rgba(8,20,14,0.96);
+  --fmono: 'Space Mono', monospace;
+  --fhead: 'Nunito', sans-serif;
+  --fbody: 'Nunito Sans', sans-serif;
+  --f-xs: clamp(10px,2.2vw,12px);
+  --f-sm: clamp(12px,2.8vw,14px);
+  --f-md: clamp(13px,3.2vw,15px);
+  --f-lg: clamp(15px,4vw,20px);
+  --f-xl: clamp(20px,5.5vw,30px);
+}
+html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fbody);-webkit-tap-highlight-color:transparent;touch-action:manipulation; }
+#wc { position:relative;width:100dvw;height:100dvh;overflow:hidden; }
+#mapsvg { position:absolute;inset:0;width:100%;height:100%; }
+
+/* bubbles */
+@keyframes rise    { 0%{transform:translateY(0) scale(1);opacity:.7} 100%{transform:translateY(-80px) scale(1.3);opacity:0} }
+@keyframes wobble  { 0%,100%{transform:translateX(0)} 50%{transform:translateX(4px)} }
+@keyframes glow    { 0%,100%{opacity:.55}50%{opacity:1} }
+@keyframes pulse   { 0%,100%{opacity:.4}50%{opacity:1} }
+@keyframes drip    { 0%{transform:translateY(0);opacity:.9}80%{transform:translateY(18px);opacity:.9}100%{transform:translateY(22px);opacity:0} }
+@keyframes twinkle { 0%,100%{opacity:.3}50%{opacity:.9} }
+
+.hs { animation:pulse 2.2s ease-in-out infinite; }
+.b1{animation:rise 2.4s ease-in infinite;} .b2{animation:rise 3.1s ease-in infinite;} .b3{animation:rise 2.8s ease-in infinite;}
+.b4{animation:rise 3.6s ease-in infinite;} .b5{animation:rise 2.1s ease-in infinite;}
+.drip1{animation:drip 2.2s ease-in infinite;} .drip2{animation:drip 3s ease-in infinite;}
+
+/* ── CHAR TOGGLE ── */
+#char-toggle {
+  position:absolute;top:max(10px,env(safe-area-inset-top,10px));
+  left:max(10px,env(safe-area-inset-left,10px));
+  z-index:25;display:flex;gap:5px;
+}
+.ctbtn {
+  font-family:var(--fmono);font-weight:700;font-size:clamp(9px,2vw,11px);
+  background:rgba(8,20,14,0.88);color:rgba(255,255,255,0.5);
+  border:1px solid rgba(34,221,136,0.25);border-radius:4px;
+  padding:4px 10px;cursor:pointer;transition:all .2s;white-space:nowrap;letter-spacing:.02em;
+}
+.ctbtn.active { background:rgba(34,221,136,0.15);color:var(--acid);border-color:var(--acid); }
+
+/* ── HINT ── */
+#hint {
+  position:absolute;top:max(10px,env(safe-area-inset-top,10px));
+  left:50%;transform:translateX(-50%);
+  background:rgba(8,20,14,0.9);color:#fff;
+  font-family:var(--fmono);font-size:var(--f-xs);
+  padding:5px 14px;border-radius:3px;pointer-events:none;
+  transition:opacity .8s;white-space:nowrap;z-index:20;
+  max-width:90vw;text-align:center;border:1px solid rgba(34,221,136,0.2);
+}
+/* ── PROGRESS ── */
+#progress-bar {
+  position:absolute;top:max(10px,env(safe-area-inset-top,10px));
+  right:max(10px,env(safe-area-inset-right,10px));
+  display:flex;gap:4px;align-items:center;z-index:20;
+}
+.prog-dot {
+  width:clamp(7px,1.8vw,10px);height:clamp(7px,1.8vw,10px);border-radius:50%;
+  background:rgba(34,221,136,0.15);border:1.5px solid rgba(34,221,136,0.3);
+  transition:background .3s,border-color .3s;
+}
+.prog-dot.done { background:var(--acid);border-color:var(--acid); }
+
+/* ── PANEL ── */
+#panel {
+  position:absolute;bottom:0;left:0;right:0;background:var(--panel);
+  border-top:1px solid rgba(34,221,136,0.15);border-radius:14px 14px 0 0;
+  padding:14px 16px;padding-bottom:max(16px,env(safe-area-inset-bottom,16px));
+  transform:translateY(110%);transition:transform .38s cubic-bezier(.22,1,.36,1);
+  z-index:30;max-height:68dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+#panel.open { transform:translateY(0); }
+#panel::before { content:'';display:block;width:36px;height:3px;background:rgba(34,221,136,0.25);border-radius:2px;margin:0 auto 12px; }
+
+.p-badge {
+  display:inline-block;font-family:var(--fmono);font-weight:700;font-size:var(--f-xs);
+  letter-spacing:.06em;text-transform:uppercase;
+  background:rgba(34,221,136,0.1);color:var(--acid);
+  padding:2px 9px;border-radius:3px;border:1px solid rgba(34,221,136,0.25);margin-bottom:5px;
+}
+.p-badge.base { background:rgba(68,170,255,0.1);color:var(--base);border-color:rgba(68,170,255,0.3); }
+.p-badge.neutral { background:rgba(245,200,66,0.1);color:var(--neutral);border-color:rgba(245,200,66,0.3); }
+.p-title { font-family:var(--fmono);font-weight:700;font-size:var(--f-lg);color:#fff;margin-bottom:3px;line-height:1.2; }
+.p-formula {
+  font-family:var(--fmono);font-size:var(--f-md);color:var(--acid);
+  margin-bottom:6px;letter-spacing:.04em;
+}
+.p-formula.base { color:var(--base); }
+.p-formula.neutral { color:var(--neutral); }
+.p-desc { font-size:var(--f-sm);color:rgba(255,255,255,0.75);line-height:1.55;margin-bottom:8px; }
+.p-fact { font-size:var(--f-xs);color:rgba(255,255,255,0.42);line-height:1.5;padding:7px 0;border-top:1px solid rgba(34,221,136,0.1);border-bottom:1px solid rgba(34,221,136,0.1);margin-bottom:10px;font-family:var(--fbody); }
+.p-fact b { color:rgba(34,221,136,0.9);font-weight:600; }
+
+/* reaction display */
+.reaction-box {
+  background:rgba(34,221,136,0.06);border:1px solid rgba(34,221,136,0.18);
+  border-radius:8px;padding:8px 12px;margin-bottom:10px;
+  font-family:var(--fmono);font-size:clamp(10px,2.5vw,13px);color:rgba(255,255,255,0.85);
+  line-height:1.7;text-align:center;
+}
+.reaction-box.base { border-color:rgba(68,170,255,0.2);background:rgba(68,170,255,0.06); }
+.reaction-box.neutral { border-color:rgba(245,200,66,0.2);background:rgba(245,200,66,0.05); }
+
+.q-progress { font-family:var(--fmono);font-size:var(--f-xs);color:rgba(34,221,136,0.4);margin-bottom:6px;letter-spacing:.04em; }
+
+.quiz-box { background:rgba(255,255,255,0.04);border:1px solid rgba(34,221,136,0.12);border-radius:10px;padding:11px 12px;margin-bottom:10px; }
+.quiz-q   { font-family:var(--fbody);font-weight:700;font-size:var(--f-sm);color:#fff;margin-bottom:9px;line-height:1.4; }
+.quiz-opts { display:grid;grid-template-columns:1fr 1fr;gap:6px; }
+.qbtn {
+  font-family:var(--fmono);font-weight:700;font-size:var(--f-xs);
+  background:rgba(34,221,136,0.06);color:rgba(255,255,255,0.85);
+  border:1px solid rgba(34,221,136,0.18);border-radius:6px;
+  padding:9px 6px;cursor:pointer;text-align:center;line-height:1.4;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+  transition:background .14s,transform .1s;
+}
+.qbtn:hover:not(:disabled) { background:rgba(34,221,136,0.18); }
+.qbtn:active:not(:disabled) { transform:scale(0.95); }
+.qbtn.correct { background:rgba(34,221,136,0.22);border-color:rgba(34,221,136,0.7); }
+.qbtn.wrong   { background:rgba(220,60,60,0.2); border-color:rgba(220,60,60,0.6); }
+.qbtn:disabled { cursor:default; }
+.quiz-fb { font-size:var(--f-xs);margin-top:8px;padding:8px 10px;border-radius:6px;line-height:1.5;display:none;font-family:var(--fbody); }
+.quiz-fb.ok { background:rgba(34,221,136,0.12);color:#7affbb; }
+.quiz-fb.no { background:rgba(220,60,60,0.12); color:#ffbebe; }
+
+.choices { display:none;flex-wrap:wrap;gap:7px; }
+.choices.show { display:flex; }
+.cbtn {
+  font-family:var(--fmono);font-weight:700;font-size:var(--f-sm);
+  background:rgba(34,221,136,0.08);color:#fff;
+  border:1px solid rgba(34,221,136,0.25);border-radius:7px;
+  padding:11px 12px;cursor:pointer;flex:1;min-width:120px;min-height:44px;
+  text-align:center;transition:background .14s,transform .1s;
+}
+.cbtn:hover  { background:rgba(34,221,136,0.2); }
+.cbtn:active { transform:scale(0.96); }
+
+.stamp {
+  position:absolute;width:clamp(14px,3.5vw,20px);height:clamp(14px,3.5vw,20px);
+  border-radius:50%;background:var(--acid);border:2px solid #fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(8px,2vw,11px);font-weight:700;color:#0d1a12;
+  pointer-events:none;transform:translate(-50%,-50%) scale(0);
+  animation:stampIn .4s cubic-bezier(.34,1.56,.64,1) forwards;z-index:25;
+}
+@keyframes stampIn { to{transform:translate(-50%,-50%) scale(1);} }
+
+#endscreen {
+  display:none;position:absolute;inset:0;background:rgba(8,16,12,0.97);
+  flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:28px 20px;padding-bottom:max(28px,env(safe-area-inset-bottom,28px));
+  z-index:50;overflow-y:auto;
+}
+#endscreen.show { display:flex; }
+.end-emoji  { font-size:clamp(36px,9vw,56px);margin-bottom:10px; }
+.end-title  { font-family:var(--fmono);font-weight:700;font-size:var(--f-xl);color:var(--acid);margin-bottom:8px; }
+.end-sub    { font-size:var(--f-md);color:rgba(255,255,255,0.62);line-height:1.55;margin-bottom:14px;max-width:380px; }
+.end-score  { font-family:var(--fmono);font-weight:700;font-size:clamp(44px,12vw,68px);color:var(--acid);line-height:1; }
+.end-score-label { font-size:var(--f-xs);color:rgba(34,221,136,0.4);margin-bottom:6px;font-family:var(--fmono); }
+.end-stars  { font-size:clamp(24px,6vw,36px);margin:4px 0 8px; }
+.end-msg    { font-size:var(--f-sm);color:rgba(255,255,255,0.5);max-width:340px;line-height:1.6;margin-bottom:22px; }
+.restart-btn {
+  font-family:var(--fmono);font-weight:700;font-size:var(--f-md);
+  background:var(--acid);color:#0d1a12;border:none;border-radius:6px;
+  padding:14px 36px;cursor:pointer;min-height:52px;
+  transition:background .14s,transform .1s;
+}
+.restart-btn:hover  { background:#44ffaa; }
+.restart-btn:active { transform:scale(0.97); }
+</style>
+</head>
+<body>
+<div id="wc">
+
+<!-- ══════════════════════════════════
+     LABORATORY MAP SVG
+     ══════════════════════════════════ -->
+<svg id="mapsvg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="labFloor" cx="50%" cy="100%" r="60%">
+      <stop offset="0%"   stop-color="#143020" stop-opacity=".8"/>
+      <stop offset="100%" stop-color="#0d1a12" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="acidGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#22dd88" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#22dd88" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="baseGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#44aaff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#44aaff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="neutralGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#f5c842" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#f5c842" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur2">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+
+  <!-- ROOM: dark lab background -->
+  <rect x="0" y="0" width="800" height="500" fill="#0a1410"/>
+  <!-- Ceiling tiles -->
+  <rect x="0"   y="0" width="200" height="70" fill="#0e1a14" rx="0"/>
+  <rect x="200" y="0" width="200" height="70" fill="#0c1812" rx="0"/>
+  <rect x="400" y="0" width="200" height="70" fill="#0e1a14" rx="0"/>
+  <rect x="600" y="0" width="200" height="70" fill="#0c1812" rx="0"/>
+  <!-- Ceiling strip lights -->
+  <rect x="80"  y="0"  width="120" height="8" fill="#b8ffcc" opacity=".18" rx="2"/>
+  <rect x="330" y="0"  width="140" height="8" fill="#b8ffcc" opacity=".18" rx="2"/>
+  <rect x="570" y="0"  width="140" height="8" fill="#b8ffcc" opacity=".18" rx="2"/>
+  <!-- light pools on floor -->
+  <ellipse cx="140" cy="460" rx="110" ry="40" fill="#22dd88" opacity=".04"/>
+  <ellipse cx="400" cy="460" rx="120" ry="40" fill="#22dd88" opacity=".04"/>
+  <ellipse cx="660" cy="460" rx="110" ry="40" fill="#22dd88" opacity=".04"/>
+
+  <!-- BACK WALL -->
+  <rect x="0" y="70" width="800" height="220" fill="#0f1e16"/>
+  <!-- Wall tiles -->
+  <line x1="0" y1="140" x2="800" y2="140" stroke="#142018" stroke-width="1"/>
+  <line x1="0" y1="210" x2="800" y2="210" stroke="#142018" stroke-width="1"/>
+  <line x1="0" y1="280" x2="800" y2="280" stroke="#142018" stroke-width="1"/>
+  <line x1="100" y1="70" x2="100" y2="290" stroke="#142018" stroke-width="1"/>
+  <line x1="200" y1="70" x2="200" y2="290" stroke="#142018" stroke-width="1"/>
+  <line x1="300" y1="70" x2="300" y2="290" stroke="#142018" stroke-width="1"/>
+  <line x1="400" y1="70" x2="400" y2="290" stroke="#142018" stroke-width="1"/>
+  <line x1="500" y1="70" x2="500" y2="290" stroke="#142018" stroke-width="1"/>
+  <line x1="600" y1="70" x2="600" y2="290" stroke="#142018" stroke-width="1"/>
+  <line x1="700" y1="70" x2="700" y2="290" stroke="#142018" stroke-width="1"/>
+
+  <!-- SHELVES on back wall -->
+  <rect x="20"  y="85"  width="220" height="7" fill="#1e3028" rx="2"/>
+  <rect x="290" y="85"  width="230" height="7" fill="#1e3028" rx="2"/>
+  <rect x="560" y="85"  width="220" height="7" fill="#1e3028" rx="2"/>
+  <rect x="20"  y="155" width="220" height="7" fill="#1e3028" rx="2"/>
+  <rect x="290" y="155" width="230" height="7" fill="#1e3028" rx="2"/>
+  <rect x="560" y="155" width="220" height="7" fill="#1e3028" rx="2"/>
+
+  <!-- SHELF ITEMS – various bottles & equipment -->
+  <!-- Left shelf row 1 -->
+  <rect x="35"  y="72" width="12" height="13" rx="2" fill="#c44"/>
+  <rect x="55"  y="70" width="14" height="15" rx="3" fill="#44c" opacity=".8"/>
+  <rect x="78"  y="73" width="10" height="12" rx="2" fill="#4a4" opacity=".9"/>
+  <rect x="95"  y="68" width="18" height="17" rx="3" fill="#884" opacity=".8"/>
+  <rect x="122" y="72" width="12" height="13" rx="2" fill="#c84" opacity=".85"/>
+  <rect x="142" y="70" width="16" height="15" rx="3" fill="#48c" opacity=".8"/>
+  <rect x="168" y="71" width="13" height="14" rx="2" fill="#4cc" opacity=".7"/>
+  <rect x="188" y="73" width="11" height="12" rx="2" fill="#a44" opacity=".9"/>
+  <rect x="207" y="69" width="15" height="16" rx="3" fill="#8c4" opacity=".8"/>
+  <!-- Middle shelf row 1 -->
+  <rect x="302" y="71" width="16" height="14" rx="3" fill="#22dd88" opacity=".6"/>
+  <rect x="326" y="70" width="14" height="15" rx="3" fill="#44aaff" opacity=".6"/>
+  <rect x="348" y="72" width="12" height="13" rx="2" fill="#f5c842" opacity=".6"/>
+  <rect x="368" y="70" width="18" height="15" rx="3" fill="#dd2244" opacity=".5"/>
+  <rect x="396" y="73" width="10" height="12" rx="2" fill="#22ccdd" opacity=".6"/>
+  <rect x="414" y="70" width="16" height="15" rx="3" fill="#884422" opacity=".7"/>
+  <rect x="438" y="72" width="12" height="13" rx="2" fill="#8844cc" opacity=".6"/>
+  <rect x="458" y="68" width="20" height="17" rx="3" fill="#22dd88" opacity=".5"/>
+  <rect x="486" y="71" width="14" height="14" rx="3" fill="#44aaff" opacity=".5"/>
+  <!-- Right shelf row 1 -->
+  <rect x="574" y="72" width="12" height="13" rx="2" fill="#44aaff" opacity=".7"/>
+  <rect x="594" y="70" width="16" height="15" rx="3" fill="#22dd88" opacity=".6"/>
+  <rect x="618" y="73" width="10" height="12" rx="2" fill="#f5c842" opacity=".6"/>
+  <rect x="636" y="69" width="18" height="16" rx="3" fill="#cc4422" opacity=".6"/>
+  <rect x="662" y="72" width="12" height="13" rx="2" fill="#4488cc" opacity=".7"/>
+  <rect x="680" y="70" width="14" height="15" rx="3" fill="#44cc88" opacity=".6"/>
+  <rect x="702" y="71" width="16" height="14" rx="3" fill="#8844dd" opacity=".5"/>
+  <rect x="726" y="73" width="12" height="12" rx="2" fill="#cc8844" opacity=".6"/>
+  <rect x="744" y="68" width="18" height="17" rx="3" fill="#44aaff" opacity=".6"/>
+  <!-- Row 2 left -->
+  <rect x="40"  y="141" width="12" height="14" rx="2" fill="#22dd88" opacity=".5"/>
+  <rect x="60"  y="139" width="16" height="16" rx="3" fill="#44aaff" opacity=".5"/>
+  <rect x="84"  y="143" width="10" height="12" rx="2" fill="#dd4422" opacity=".5"/>
+  <rect x="102" y="140" width="18" height="15" rx="3" fill="#f5c842" opacity=".5"/>
+  <rect x="128" y="142" width="12" height="13" rx="2" fill="#8844cc" opacity=".5"/>
+  <!-- Erlenmeyer flasks on shelf -->
+  <path d="M165 152 L162 140 L160 140 L157 140 L155 152 L148 162 L172 162 Z" fill="#44dd88" opacity=".5"/>
+  <rect x="158" y="138" width="7" height="4" rx="1" fill="#aaa" opacity=".4"/>
+  <path d="M200 152 L197 140 L195 140 L192 140 L190 152 L183 162 L207 162 Z" fill="#44aaff" opacity=".5"/>
+  <rect x="193" y="138" width="7" height="4" rx="1" fill="#aaa" opacity=".4"/>
+
+  <!-- MAIN WORKBENCH (horizontal, runs across) -->
+  <rect x="0"   y="288" width="800" height="22" fill="#1a2e20" rx="0"/>
+  <rect x="0"   y="308" width="800" height="6"  fill="#142018"/>
+  <!-- bench surface highlight -->
+  <rect x="0"   y="288" width="800" height="3"  fill="#2a4030" opacity=".8"/>
+
+  <!-- FLOOR -->
+  <rect x="0" y="314" width="800" height="186" fill="#0d1a12"/>
+  <!-- floor tiles -->
+  <line x1="0"   y1="360" x2="800" y2="360" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="0"   y1="420" x2="800" y2="420" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="0"   y1="480" x2="800" y2="480" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="100" y1="314" x2="100" y2="500" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="200" y1="314" x2="200" y2="500" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="300" y1="314" x2="300" y2="500" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="400" y1="314" x2="400" y2="500" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="500" y1="314" x2="500" y2="500" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="600" y1="314" x2="600" y2="500" stroke="#121e16" stroke-width="1.5"/>
+  <line x1="700" y1="314" x2="700" y2="500" stroke="#121e16" stroke-width="1.5"/>
+
+  <!-- TRAIL -->
+  <g id="trail"></g>
+
+  <!-- ══════════════════════════════════
+       STATION APPARATUS (illustrated)
+       Each station has a unique glassware setup
+       ══════════════════════════════════ -->
+
+  <!-- STATION 1: HCl – Saltsyre (simple beaker, left) -->
+  <!-- Glow -->
+  <circle cx="90" cy="255" r="50" fill="url(#acidGlow)"/>
+  <!-- Beaker -->
+  <path d="M62 220 L62 274 Q62 278 66 278 L114 278 Q118 278 118 274 L118 220 Z" fill="none" stroke="#22dd88" stroke-width="1.5" opacity=".6"/>
+  <rect x="63" y="220" width="54" height="5" rx="1" fill="#22dd88" opacity=".15"/>
+  <!-- liquid -->
+  <rect x="63" y="250" width="54" height="27" fill="#22dd88" opacity=".18" rx="0"/>
+  <!-- liquid surface shimmer -->
+  <line x1="63" y1="250" x2="117" y2="250" stroke="#22dd88" stroke-width="1" opacity=".5"/>
+  <!-- Bubbles -->
+  <circle class="b1" cx="78"  cy="265" r="3" fill="none" stroke="#22dd88" stroke-width="1" opacity=".5"/>
+  <circle class="b3" cx="96"  cy="258" r="2" fill="none" stroke="#22dd88" stroke-width="1" opacity=".4"/>
+  <circle class="b5" cx="110" cy="262" r="2.5" fill="none" stroke="#22dd88" stroke-width="1" opacity=".45"/>
+  <!-- Formula label -->
+  <text x="90" y="243" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#22dd88" opacity=".9">HCl</text>
+  <!-- Drip -->
+  <circle class="drip1" cx="90" cy="278" r="3" fill="#22dd88" opacity=".6"/>
+  <!-- Stand -->
+  <rect x="80" y="278" width="20" height="4" rx="1" fill="#2a3a2e"/>
+  <rect x="87" y="282" width="6"  height="12" rx="1" fill="#2a3a2e"/>
+
+  <!-- STATION 2: NaOH – Natriumhydroxid (Erlenmeyer, left-centre) -->
+  <circle cx="230" cy="248" r="52" fill="url(#baseGlow)"/>
+  <path d="M208 275 L200 245 L196 245 L196 240 L264 240 L264 245 L260 245 L252 275 Z" fill="none" stroke="#44aaff" stroke-width="1.5" opacity=".6"/>
+  <path d="M208 275 L200 245 L260 245 L252 275 Z" fill="#44aaff" opacity=".12"/>
+  <line x1="200" y1="255" x2="260" y2="255" stroke="#44aaff" stroke-width="1" opacity=".4"/>
+  <rect x="218" y="235" width="24" height="8" rx="2" fill="none" stroke="#44aaff" stroke-width="1" opacity=".5"/>
+  <circle class="b2" cx="218" cy="262" r="2.5" fill="none" stroke="#44aaff" stroke-width="1" opacity=".45"/>
+  <circle class="b4" cx="234" cy="268" r="2" fill="none" stroke="#44aaff" stroke-width="1" opacity=".4"/>
+  <circle class="b1" cx="248" cy="260" r="3" fill="none" stroke="#44aaff" stroke-width="1" opacity=".5"/>
+  <text x="230" y="250" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="#44aaff" opacity=".9">NaOH</text>
+  <rect x="218" y="278" width="24" height="4" rx="1" fill="#1e2e38"/>
+  <rect x="226" y="282" width="8"  height="10" rx="1" fill="#1e2e38"/>
+
+  <!-- STATION 3: H₂SO₄ – Svovlsyre (round-bottom flask, centre-left) -->
+  <circle cx="375" cy="250" r="55" fill="url(#acidGlow)"/>
+  <!-- Round bottom flask -->
+  <circle cx="375" cy="268" r="28" fill="none" stroke="#22dd88" stroke-width="1.5" opacity=".6"/>
+  <circle cx="375" cy="268" r="28" fill="#22dd88" opacity=".1"/>
+  <rect x="368" y="240" width="14" height="20" rx="3" fill="none" stroke="#22dd88" stroke-width="1.5" opacity=".5"/>
+  <rect x="360" y="236" width="30" height="6"  rx="2" fill="none" stroke="#22dd88" stroke-width="1" opacity=".4"/>
+  <!-- liquid level -->
+  <path d="M348 270 Q375 262 402 270 L402 296 Q375 296 348 296 Z" fill="#22dd88" opacity=".2"/>
+  <circle class="b3" cx="362" cy="275" r="3" fill="none" stroke="#22dd88" stroke-width="1" opacity=".5"/>
+  <circle class="b5" cx="385" cy="280" r="2" fill="none" stroke="#22dd88" stroke-width="1" opacity=".4"/>
+  <text x="375" y="258" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="#22dd88" opacity=".9">H₂SO₄</text>
+
+  <!-- STATION 4: NH₃ – Ammoniak (gas wash bottle, centre-right) -->
+  <circle cx="520" cy="252" r="50" fill="url(#baseGlow)"/>
+  <!-- Wash bottle -->
+  <path d="M500 280 L500 240 Q500 230 510 230 L530 230 Q540 230 540 240 L540 280 Z" fill="none" stroke="#44aaff" stroke-width="1.5" opacity=".6"/>
+  <rect x="501" y="240" width="38" height="38" fill="#44aaff" opacity=".1"/>
+  <line x1="500" y1="258" x2="540" y2="258" stroke="#44aaff" stroke-width="1" opacity=".4"/>
+  <rect x="510" y="225" width="20" height="8" rx="3" fill="none" stroke="#44aaff" stroke-width="1" opacity=".5"/>
+  <!-- tubes out of top -->
+  <path d="M514 225 Q506 210 498 200" fill="none" stroke="#44aaff" stroke-width="1.5" opacity=".4"/>
+  <path d="M526 225 Q534 210 542 200" fill="none" stroke="#44aaff" stroke-width="1.5" opacity=".4"/>
+  <circle class="b4" cx="510" cy="268" r="2.5" fill="none" stroke="#44aaff" stroke-width="1" opacity=".4"/>
+  <circle class="b2" cx="528" cy="272" r="2" fill="none" stroke="#44aaff" stroke-width="1" opacity=".45"/>
+  <text x="520" y="250" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="#44aaff" opacity=".9">NH₃</text>
+
+  <!-- STATION 5: H₂O (Neutral – pH 7) – Destilleret vand, beaker right -->
+  <circle cx="665" cy="252" r="52" fill="url(#neutralGlow)"/>
+  <path d="M636 218 L636 276 Q636 280 640 280 L690 280 Q694 280 694 276 L694 218 Z" fill="none" stroke="#f5c842" stroke-width="1.5" opacity=".6"/>
+  <rect x="637" y="250" width="56" height="29" fill="#f5c842" opacity=".12"/>
+  <line x1="637" y1="250" x2="693" y2="250" stroke="#f5c842" stroke-width="1" opacity=".45"/>
+  <!-- spout -->
+  <path d="M636 222 Q626 222 626 230" fill="none" stroke="#f5c842" stroke-width="1.5" opacity=".4"/>
+  <circle class="b1" cx="650" cy="262" r="2.5" fill="none" stroke="#f5c842" stroke-width="1" opacity=".45"/>
+  <circle class="b3" cx="668" cy="268" r="2" fill="none" stroke="#f5c842" stroke-width="1" opacity=".4"/>
+  <circle class="b5" cx="682" cy="260" r="3" fill="none" stroke="#f5c842" stroke-width="1" opacity=".5"/>
+  <text x="665" y="240" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="#f5c842" opacity=".9">H₂O</text>
+  <text x="665" y="253" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="#f5c842" opacity=".6">pH = 7</text>
+
+  <!-- STATION 6: Neutralisering (large Erlenmeyer, far right, on sub-bench) -->
+  <circle cx="755" cy="362" r="48" fill="url(#neutralGlow)"/>
+  <!-- Sub bench -->
+  <rect x="720" y="380" width="70" height="8" rx="1" fill="#1e3028"/>
+  <!-- Large erlenmeyer -->
+  <path d="M733 378 L722 348 L718 348 L718 344 L792 344 L792 348 L788 348 L777 378 Z" fill="none" stroke="#f5c842" stroke-width="1.5" opacity=".6"/>
+  <path d="M733 378 L722 348 L788 348 L777 378 Z" fill="#f5c842" opacity=".1"/>
+  <line x1="722" y1="360" x2="788" y2="360" stroke="#f5c842" stroke-width="1" opacity=".4"/>
+  <rect x="743" y="338" width="24" height="9" rx="2" fill="none" stroke="#f5c842" stroke-width="1" opacity=".5"/>
+  <circle class="b2" cx="740" cy="366" r="2.5" fill="none" stroke="#f5c842" stroke-width="1" opacity=".45"/>
+  <circle class="b4" cx="755" cy="370" r="2" fill="none" stroke="#f5c842" stroke-width="1" opacity=".4"/>
+  <text x="755" y="358" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#f5c842" opacity=".9">HCl+NaOH</text>
+  <text x="755" y="372" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="#f5c842" opacity=".7">NaCl+H₂O</text>
+
+  <!-- pH SCALE on back wall -->
+  <rect x="300" y="170" width="200" height="14" rx="3" fill="url(#pHGrad)"/>
+  <!-- manual gradient stops -->
+  <rect x="300" y="170" width="18" height="14" fill="#cc2222" opacity=".8" rx="3 0 0 3"/>
+  <rect x="318" y="170" width="18" height="14" fill="#dd4422" opacity=".8"/>
+  <rect x="336" y="170" width="18" height="14" fill="#ee6622" opacity=".8"/>
+  <rect x="354" y="170" width="18" height="14" fill="#eeaa22" opacity=".8"/>
+  <rect x="372" y="170" width="18" height="14" fill="#eedd22" opacity=".8"/>
+  <rect x="390" y="170" width="20" height="14" fill="#aacc22" opacity=".8"/>
+  <rect x="410" y="170" width="18" height="14" fill="#44cc44" opacity=".8"/>
+  <rect x="428" y="170" width="18" height="14" fill="#22bbcc" opacity=".8"/>
+  <rect x="446" y="170" width="18" height="14" fill="#2299dd" opacity=".8"/>
+  <rect x="464" y="170" width="18" height="14" fill="#2266cc" opacity=".8"/>
+  <rect x="482" y="170" width="18" height="14" fill="#2244bb" opacity=".8" rx="0 3 3 0"/>
+  <!-- pH numbers -->
+  <text x="309" y="196" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="rgba(255,255,255,0.55)">0</text>
+  <text x="345" y="196" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="rgba(255,255,255,0.55)">2</text>
+  <text x="381" y="196" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="rgba(255,255,255,0.55)">4</text>
+  <text x="400" y="196" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="rgba(255,255,255,0.55)">7</text>
+  <text x="418" y="196" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="rgba(255,255,255,0.55)">8</text>
+  <text x="455" y="196" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="rgba(255,255,255,0.55)">10</text>
+  <text x="491" y="196" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="rgba(255,255,255,0.55)">14</text>
+  <text x="400" y="168" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="rgba(255,255,255,0.4)">pH skala</text>
+
+  <!-- HOTSPOTS -->
+  <circle id="hs-hcl"   class="hs" cx="90"  cy="255" r="38" fill="rgba(34,221,136,0.03)"  stroke="rgba(34,221,136,0.5)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-naoh"  class="hs" cx="230" cy="258" r="38" fill="rgba(68,170,255,0.03)"  stroke="rgba(68,170,255,0.5)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-h2so4" class="hs" cx="375" cy="262" r="38" fill="rgba(34,221,136,0.03)"  stroke="rgba(34,221,136,0.5)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-nh3"   class="hs" cx="520" cy="258" r="38" fill="rgba(68,170,255,0.03)"  stroke="rgba(68,170,255,0.5)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-h2o"   class="hs" cx="665" cy="258" r="38" fill="rgba(245,200,66,0.03)"  stroke="rgba(245,200,66,0.5)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-neut"  class="hs" cx="755" cy="362" r="38" fill="rgba(245,200,66,0.03)"  stroke="rgba(245,200,66,0.45)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+
+  <!-- LABELS -->
+  <text x="90"  y="300" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="rgba(34,221,136,0.8)">Saltsyre</text>
+  <text x="230" y="300" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="rgba(68,170,255,0.8)">Natriumhydr.</text>
+  <text x="375" y="305" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="rgba(34,221,136,0.8)">Svovlsyre</text>
+  <text x="520" y="300" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="rgba(68,170,255,0.8)">Ammoniak</text>
+  <text x="665" y="300" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="rgba(245,200,66,0.8)">Vand</text>
+  <text x="755" y="397" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="rgba(245,200,66,0.8)">Neutralisering</text>
+
+  <!-- CHARACTER: molecule / flask character -->
+  <g id="char-molecule" transform="translate(90,250) scale(0.5)">
+    <g id="mol-flame" style="display:none">
+      <ellipse cx="0" cy="18" rx="4" ry="7" fill="#22dd88" opacity=".8"/>
+      <ellipse cx="0" cy="18" rx="2" ry="4" fill="#aaffdd" opacity=".9"/>
+    </g>
+    <!-- Flask body -->
+    <ellipse cx="0" cy="0" rx="16" ry="16" fill="#0d1a12" stroke="#22dd88" stroke-width="2"/>
+    <ellipse cx="0" cy="0" rx="16" ry="16" fill="#22dd88" opacity=".15"/>
+    <!-- Neck -->
+    <rect x="-5" y="-22" width="10" height="8" rx="2" fill="#0d1a12" stroke="#22dd88" stroke-width="1.5"/>
+    <!-- Cork -->
+    <rect x="-4" y="-26" width="8" height="5" rx="1" fill="#a07040"/>
+    <!-- Eyes -->
+    <circle cx="-5" cy="-2" r="3.5" fill="white"/>
+    <circle cx="5"  cy="-2" r="3.5" fill="white"/>
+    <circle cx="-4" cy="-2" r="2" fill="#0d1a12"/>
+    <circle cx="6"  cy="-2" r="2" fill="#0d1a12"/>
+    <!-- smile -->
+    <path d="M-5 6 Q0 10 5 6" fill="none" stroke="#22dd88" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Bubbles inside -->
+    <circle cx="-6" cy="4"  r="2" fill="#22dd88" opacity=".4"/>
+    <circle cx="4"  cy="7"  r="1.5" fill="#22dd88" opacity=".3"/>
+    <circle cx="-2" cy="9"  r="1" fill="#22dd88" opacity=".35"/>
+  </g>
+
+  <g id="char-beaker" transform="translate(90,250) scale(0.5)" style="display:none">
+    <g id="bkr-flame" style="display:none">
+      <ellipse cx="0" cy="20" rx="4" ry="7" fill="#22dd88" opacity=".8"/>
+      <ellipse cx="0" cy="20" rx="2" ry="4" fill="#aaffdd" opacity=".9"/>
+    </g>
+    <!-- Beaker body -->
+    <path d="M-14 14 L-14 -10 Q-14 -14 -10 -14 L10 -14 Q14 -14 14 -10 L14 14 Z" fill="#0d1a12" stroke="#44aaff" stroke-width="2"/>
+    <path d="M-13 0 L13 0 L13 14 L-13 14 Z" fill="#44aaff" opacity=".18"/>
+    <line x1="-13" y1="0" x2="13" y2="0" stroke="#44aaff" stroke-width="1" opacity=".5"/>
+    <!-- spout -->
+    <path d="M-14 -8 Q-20 -8 -20 -14" fill="none" stroke="#44aaff" stroke-width="2"/>
+    <!-- Eyes -->
+    <circle cx="-4" cy="-5" r="3" fill="white"/>
+    <circle cx="4"  cy="-5" r="3" fill="white"/>
+    <circle cx="-3" cy="-5" r="1.8" fill="#0d1a12"/>
+    <circle cx="5"  cy="-5" r="1.8" fill="#0d1a12"/>
+    <!-- smile -->
+    <path d="M-4 4 Q0 8 4 4" fill="none" stroke="#44aaff" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
+
+<!-- UI -->
+<div id="char-toggle">
+  <button class="ctbtn active" id="btn-mol"  onclick="setChar('molecule')">⚗️ Kolbe</button>
+  <button class="ctbtn"        id="btn-bkr"  onclick="setChar('beaker')">🧪 Bæger</button>
+</div>
+<div id="hint">Tryk på et apparat for at begynde eksperimentet!</div>
+<div id="progress-bar"></div>
+<div id="panel"></div>
+<div id="endscreen">
+  <div class="end-emoji">⚗️</div>
+  <div class="end-title">Eksperiment afsluttet!</div>
+  <div class="end-sub">Du har udforsket alle syrer og baser i laboratoriet!</div>
+  <div class="end-score" id="end-score">0/60</div>
+  <div class="end-score-label">rigtige svar</div>
+  <div class="end-stars" id="end-stars"></div>
+  <div class="end-msg"   id="end-msg"></div>
+  <button class="restart-btn" onclick="restartGame()">Nyt eksperiment ⚗️</button>
+</div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   CHEMISTRY DATA — correct ion notation in HTML (superscript)
+   Reactions go from simple → complex within each station
+   ══════════════════════════════════════════════════════════ */
+const stages = {
+
+  hcl: {
+    x:90, y:255, hsId:'hs-hcl', type:'acid',
+    badge:'Stærk syre', title:'Saltsyre',
+    formula:'HCl',
+    reaction:'HCl → H<sup>+</sup> + Cl<sup>−</sup>',
+    desc:'Saltsyre er en stærk syre der fuldstændig dissocierer i vand til hydronium-ioner og chlorid-ioner. Den bruges i maven til at fordøje mad!',
+    fact:'<b>Stærke syrer</b> afgiver H<sup>+</sup> fuldstændigt. HCl i vand: HCl + H₂O → H₃O<sup>+</sup> + Cl<sup>−</sup>',
+    questions:[
+      {q:'Hvilken ion giver HCl fra sig i vand?',opts:['OH⁻','Cl⁻','H⁺ (hydroniumion)','Na⁺'],c:2,fb:'HCl → H⁺ + Cl⁻. Protonen H⁺ kaldes en hydroniumion når den binder sig til vand: H₃O⁺'},
+      {q:'Er saltsyre en stærk eller svag syre?',opts:['Svag syre','Stærk syre','Hverken-eller','Det afhænger af temperaturen'],c:1,fb:'HCl er en stærk syre — den dissocierer 100% i vand og afgiver alle sine H⁺-ioner.'},
+      {q:'Hvad er pH-værdien af fortyndet HCl?',opts:['pH > 7','pH = 7','pH < 7','pH = 14'],c:2,fb:'Syrer har pH under 7. Jo stærkere syre, desto lavere pH.'},
+      {q:'Hvilken af disse er den korrekte dissociationsreaktion for HCl?',opts:['HCl → H₂ + Cl','HCl → H⁺ + Cl⁻','HCl → Na⁺ + Cl⁻','HCl → H₂O + Cl'],c:1,fb:'HCl dissocierer til en proton (H⁺) og en chloridion (Cl⁻) i vand.'},
+      {q:'Hvad hedder H₃O⁺?',opts:['Hydroxidion','Hydroniumion','Hydrogenion','Natriumion'],c:1,fb:'H₃O⁺ kaldes hydroniumion — det er H⁺ bundet til et vandmolekyle.'},
+      {q:'Hvad sker der med pH når man tilsætter mere HCl til vand?',opts:['pH stiger','pH falder','pH forbliver uændret','pH bliver 7'],c:1,fb:'Mere HCl → flere H⁺-ioner → lavere pH.'},
+      {q:'Hvad bruges saltsyre til i maven?',opts:['Fedtfordøjelse','Fordøjelse og drab af bakterier','Iltoptagelse','Vitaminfrigørelse'],c:1,fb:'Mavesyre (HCl, pH 1-2) hjælper med at nedbryde mad og dræber skadelige bakterier.'},
+      {q:'Hvilken ion er Cl⁻ et eksempel på?',opts:['Kation (positiv ion)','Anion (negativ ion)','Neutral ion','Radikal'],c:1,fb:'Cl⁻ er en anion — en negativt ladet ion. Den har ét ekstra elektron i forhold til grundstoffet Cl.'},
+      {q:'Hvad er koncentreret HCl?',opts:['Rød væske','Farveløs, røggivende væske','Blå gel','Hvidt pulver'],c:1,fb:'Koncentreret HCl er en farveløs til svagt gul, røggivende væske med en skarp lugt.'},
+      {q:'Hvad neutraliserer HCl?',opts:['En syre','En base','Rent vand','En alkohol'],c:1,fb:'En base (som NaOH) neutraliserer HCl: HCl + NaOH → NaCl + H₂O.'},
+    ],
+    choices:[{label:'Videre til NaOH →',next:'naoh'}]
+  },
+
+  naoh: {
+    x:230, y:258, hsId:'hs-naoh', type:'base',
+    badge:'Stærk base', title:'Natriumhydroxid',
+    formula:'NaOH',
+    reaction:'NaOH → Na<sup>+</sup> + OH<sup>−</sup>',
+    desc:'NaOH er en stærk base — den afgiver hydroxidioner (OH⁻) fuldstændigt. Den bruges til sæbefremstilling og rensemidler.',
+    fact:'<b>Stærke baser</b> dissocierer 100% i vand. NaOH → Na<sup>+</sup> + OH<sup>−</sup>. OH<sup>−</sup> er den basiske ion.',
+    questions:[
+      {q:'Hvilken ion er ansvarlig for basiske egenskaber?',opts:['H⁺','Cl⁻','OH⁻','Na⁺'],c:2,fb:'OH⁻ (hydroxidionen) er kendetegnet for baser. Jo flere OH⁻-ioner, desto mere basisk.'},
+      {q:'Hvad er pH for en NaOH-opløsning?',opts:['pH < 7','pH = 7','pH > 7','pH = 0'],c:2,fb:'Baser har pH over 7. Stærke baser som NaOH kan nå pH 13-14.'},
+      {q:'Hvad er den korrekte dissociation af NaOH?',opts:['NaOH → Na + OH','NaOH → Na⁺ + OH⁻','NaOH → Na²⁺ + OH⁻','NaOH → Na⁺ + O²⁻ + H⁺'],c:1,fb:'NaOH afgiver Na⁺ (natriumion) og OH⁻ (hydroxidion) i vand.'},
+      {q:'Hvad er Na⁺ et eksempel på?',opts:['Anion (negativ)','Neutral partikel','Kation (positiv ion)','Et elektron'],c:2,fb:'Na⁺ er en kation — en positivt ladet ion. Natrium har afgivet ét elektron.'},
+      {q:'Hvad bruges NaOH til i hverdagen?',opts:['Bagepulver','Madlavningsolie','Afløbsrens og sæbeproduktion','Sukkerfremstilling'],c:2,fb:'NaOH (lud) bruges i afløbsrens (opløser fedt) og til at lave sæbe via forsæbning.'},
+      {q:'Hvad er et kendetegn for alle baser (Arrhenius)?',opts:['De afgiver H⁺ i vand','De afgiver OH⁻ i vand','De danner CO₂','De er altid faste stoffer'],c:1,fb:'Ifølge Arrhenius er en base et stof der frigiver OH⁻ (hydroxidioner) i vand — som NaOH gør.'},
+      {q:'Hvad sker der med vand der tilsættes NaOH?',opts:['Vandet bliver surt','Vandet bliver basisk','Vandet forbliver neutralt','Vandet fordamper'],c:1,fb:'NaOH frigiver OH⁻-ioner der gør opløsningen basisk (pH stiger over 7).'},
+      {q:'Hvad er OH⁻\'s navn?',opts:['Hydroxidion','Oxidion','Hydrogenion','Ozonion'],c:0,fb:'OH⁻ kaldes en hydroxidion — det er karakteristisk for alle baser i Arrhenius\' definition.'},
+      {q:'Hvad er den rigtige ionbetegnelse for natriumion?',opts:['Na²⁺','Na⁻','Na⁺','Na'],c:2,fb:'Natriumion er Na⁺ — natrium afgiver ét elektron og får en positiv ladning.'},
+      {q:'Hvad neutraliserer NaOH?',opts:['En anden base','En syre','Rent vand','En alkohol'],c:1,fb:'En syre neutraliserer NaOH: NaOH + HCl → NaCl + H₂O — klassisk neutralisering.'},
+    ],
+    choices:[{label:'Videre til H₂SO₄ →',next:'h2so4'}]
+  },
+
+  h2so4: {
+    x:375, y:262, hsId:'hs-h2so4', type:'acid',
+    badge:'Diprotisk syre', title:'Svovlsyre',
+    formula:'H₂SO₄',
+    reaction:'H₂SO₄ → 2H<sup>+</sup> + SO₄<sup>2−</sup>',
+    desc:'Svovlsyre er en tobasisk (diprotisk) syre — den kan afgive to H⁺-ioner! Den er en af verdens mest producerede kemikalier.',
+    fact:'<b>Diprotisk syre:</b> H₂SO₄ → H<sup>+</sup> + HSO₄<sup>−</sup> (trin 1), HSO₄<sup>−</sup> → H<sup>+</sup> + SO₄<sup>2−</sup> (trin 2)',
+    questions:[
+      {q:'Hvilken ion producerer H₂SO₄ ved fuld dissociation?',opts:['SO₄²⁻ og 2H⁺','SO₄⁻ og H⁺','SO₃²⁻ og H₂','S²⁻ og 2H⁺'],c:0,fb:'H₂SO₄ → 2H⁺ + SO₄²⁻. Sulfatanionen SO₄²⁻ har ladning 2− fordi den har optaget to ekstra elektroner.'},
+      {q:'Hvad er ladningen på sulfatanionen SO₄²⁻?',opts:['1−','2−','2+','0'],c:1,fb:'SO₄²⁻ har ladning 2− (dobbelt negativ). Det er et eksempel på en flerladet anion.'},
+      {q:'Hvad er HSO₄⁻ (hydrogensulfation)?',opts:['Et salt','Mellemproduktet fra trin 1 af H₂SO₄s dissociation','Et grundstof','En stærk base'],c:1,fb:'HSO₄⁻ dannes i trin 1: H₂SO₄ → H⁺ + HSO₄⁻. I trin 2 dissocierer det videre: HSO₄⁻ → H⁺ + SO₄²⁻.'},
+      {q:'Hvad er H₂SO₄ klassificeret som?',opts:['Svag syre','Svag base','Stærk diprotisk syre','Neutralt stof'],c:2,fb:'H₂SO₄ er en stærk diprotisk syre — den kan afgive to protoner i to trin.'},
+      {q:'Hvad bruges svovlsyre til i industrien?',opts:['Madlavning','Fremstilling af gødning og batterisyre','Rensning af vand','Medicin'],c:1,fb:'H₂SO₄ bruges massivt til gødningsfremstilling (fosforsyre-produktion) og i bilbatterier.'},
+      {q:'Hvad er den korrekte ionsymbolet for sulfat?',opts:['SO₄⁻','SO₄²⁻','S²⁻','SO₃²⁻'],c:1,fb:'Sulfat skrives SO₄²⁻ — fire iltomater bundet til svovl med samlet ladning 2−.'},
+      {q:'Hvad er trin 1 i H₂SO₄\'s dissociation?',opts:['H₂SO₄ → 2H⁺ + SO₄²⁻','H₂SO₄ → H⁺ + HSO₄⁻','H₂SO₄ → H₂O + SO₃','H₂SO₄ → H⁺ + SO₄⁻'],c:1,fb:'Trin 1: H₂SO₄ → H⁺ + HSO₄⁻ (stærkt). Trin 2: HSO₄⁻ → H⁺ + SO₄²⁻ (svagere).'},
+      {q:'Hvad sker der hvis konc. H₂SO₄ blandes med vand?',opts:['Intet særligt','Der frigøres enorm varme (eksoterm)','Vandet fryser','Der dannes ilt'],c:1,fb:'Koncentreret H₂SO₄ + vand er stærkt eksoterm! Man skal ALTID tilsætte syren til vand, aldrig omvendt.'},
+      {q:'Hvad er pH for koncentreret H₂SO₄?',opts:['pH 7','pH 3','pH 0 eller derunder','pH 14'],c:2,fb:'Koncentreret H₂SO₄ har en pH på 0 eller endda negativ (superacid ved høj konc.)!'},
+      {q:'Hvad er den kemiske formel for svovlsyre?',opts:['H₂S','HSO₃','H₂SO₄','H₂SO₃'],c:2,fb:'H₂SO₄ er svovlsyre. H₂SO₃ er svovlsyrling (sygere og svagere).'},
+    ],
+    choices:[{label:'Videre til NH₃ →',next:'nh3'}]
+  },
+
+  nh3: {
+    x:520, y:258, hsId:'hs-nh3', type:'base',
+    badge:'Svag base', title:'Ammoniak',
+    formula:'NH₃',
+    reaction:'NH₃ + H₂O ⇌ NH₄<sup>+</sup> + OH<sup>−</sup>',
+    desc:'Ammoniak er en svag base — den reagerer delvist med vand og modtager H⁺. Ligevægtspilen ⇌ viser at reaktionen ikke er fuldstændig.',
+    fact:'<b>Svage baser</b> reagerer delvist: NH₃ + H₂O ⇌ NH₄<sup>+</sup> + OH<sup>−</sup>. NH₄<sup>+</sup> er ammoniumion.',
+    questions:[
+      {q:'Hvad sker der kemisk når NH₃ opløses i vand?',opts:['NH₃ afgiver OH⁻ direkte','NH₃ reagerer med H₂O og danner NH₄⁺ og OH⁻','NH₃ danner saltsyre','NH₃ fordamper uden reaktion'],c:1,fb:'NH₃ + H₂O ⇌ NH₄⁺ + OH⁻. Ammoniakken reagerer med vand og danner ammoniumioner og hydroxidioner.'},
+      {q:'Hvad er produktet når NH₃ modtager H⁺?',opts:['NH₂⁻','NH₄⁺','N³⁻','NO₃⁻'],c:1,fb:'NH₃ + H⁺ → NH₄⁺ (ammoniumion). NH₄⁺ har ladning 1+ fordi den har modtaget en proton.'},
+      {q:'Hvad betyder dobbeltp-pilen ⇌ i reaktionsligningen?',opts:['Reaktionen er fuldstændig','Reaktionen er umulig','Reaktionen er en ligevægt','Reaktionen er eksploderende'],c:2,fb:'⇌ viser en ligevægtsreaktion: den foregår i begge retninger, og kun en del reagerer.'},
+      {q:'Er NH₃ en stærk eller svag base?',opts:['Stærk base','Svag base','Det afhænger af pH','Det er ikke en base'],c:1,fb:'NH₃ er en svag base — kun en lille del reagerer med vand.'},
+      {q:'Hvad er ladningen på NH₄⁺?',opts:['2+','1−','1+','0'],c:2,fb:'NH₄⁺ (ammoniumion) har ladning 1+ — den har modtaget ét ekstra proton.'},
+      {q:'Hvad bruges ammoniak til i hverdagen?',opts:['Rengøringsmidler og gødning','Madlavning','Medicin mod smerter','Drikkevand'],c:0,fb:'NH₃ bruges i rengøringsmidler (multiclean), gødning (Haber-Bosch) og køleanlæg.'},
+      {q:'Hvad er NH₄⁺ (ammoniumion) et eksempel på?',opts:['En anion','En neutral partikel','En kation','Et grundstof'],c:2,fb:'NH₄⁺ er en kation — en positivt ladet ion. Ammonium dannes når NH₃ optager en proton fra vand.'},
+      {q:'Hvad er pH for en ammoniak-opløsning?',opts:['pH < 7','pH = 7','pH > 7','pH = 0'],c:2,fb:'NH₃-opløsninger har pH over 7 (basiske), men lavere end stærke baser som NaOH.'},
+      {q:'Hvad er ammoniak-gassens lugt?',opts:['Sødlig','Lugtfri','Skarp og stikkende','Blomsterduft'],c:2,fb:'Ammoniak har en meget skarp, stikkende lugt — det er det du mærker i mange toiletmidler.'},
+      {q:'Hvad er Haber-Bosch processen?',opts:['Fremstilling af svovlsyre','Industriel fremstilling af NH₃ fra N₂ og H₂','Rensning af vand','Fremstilling af HCl'],c:1,fb:'Haber-Bosch: N₂ + 3H₂ ⇌ 2NH₃. En af de vigtigste kemiske processer — grundlag for kunstgødning.'},
+    ],
+    choices:[{label:'Videre til H₂O →',next:'h2o'}]
+  },
+
+  h2o: {
+    x:665, y:258, hsId:'hs-h2o', type:'neutral',
+    badge:'Neutralt – pH 7', title:'Vand',
+    formula:'H₂O',
+    reaction:'H₂O ⇌ H<sup>+</sup> + OH<sup>−</sup>',
+    desc:'Vand er neutralt ved 25°C med pH = 7. Det kan dog reagere med både syrer og baser — og det selfdissocierer en smule, hvilket er fundamentalt for al syre-base kemi.',
+    fact:'<b>Vandets autoprotolse:</b> 2H₂O ⇌ H₃O<sup>+</sup> + OH<sup>−</sup>. Kw = [H<sup>+</sup>][OH<sup>−</sup>] = 10<sup>−14</sup>',
+    questions:[
+      {q:'Hvad er pH for rent vand ved 25°C?',opts:['pH 6','pH 7','pH 8','pH 14'],c:1,fb:'Rent vand er neutralt med pH = 7 ved 25°C. Det skyldes at [H⁺] = [OH⁻].'},
+      {q:'Hvad er vandets iontætheds-produkt Kw?',opts:['10⁻⁷','10⁻¹⁴','10⁻³','1'],c:1,fb:'Kw = [H⁺][OH⁻] = 10⁻¹⁴ ved 25°C. Dette gælder for alle vandige opløsninger.'},
+      {q:'Hvad er vandets selvautolyse (autoprotolse)?',opts:['H₂O → H₂ + O','2H₂O ⇌ H₃O⁺ + OH⁻','H₂O → H⁺ + OH','2H₂O → 2H₂ + O₂'],c:1,fb:'2H₂O ⇌ H₃O⁺ + OH⁻. Vand reagerer med sig selv i meget lille grad og danner hydronium- og hydroxidioner.'},
+      {q:'Hvad er H₃O⁺?',opts:['Hydroxidion','Hydroniumion','Vandmolekyle','Peroxidion'],c:1,fb:'H₃O⁺ er hydroniumionen — H⁺ bundet til et vandmolekyle. Det er den reelle form af H⁺ i vand.'},
+      {q:'Hvad er vandets reaktion med HCl (syre)?',opts:['H₂O er syre; giver H⁺','H₂O er base; modtager H⁺','H₂O reagerer ikke','H₂O afgiver OH⁻'],c:1,fb:'H₂O + HCl: vand modtager... nej — HCl afgiver H⁺ til H₂O: HCl + H₂O → H₃O⁺ + Cl⁻. Vand er her base.'},
+      {q:'Hvad er vandets reaktion med NH₃ (base)?',opts:['H₂O afgiver H⁺ (opfører sig som syre)','H₂O modtager H⁺','Ingen reaktion','H₂O neutraliseres'],c:0,fb:'NH₃ + H₂O ⇌ NH₄⁺ + OH⁻. Vand AFGIVER H⁺ til NH₃ — her er vand en syre.'},
+      {q:'Hvad hedder [H⁺] = [OH⁻] situationen?',opts:['Basisk','Sur','Neutral','Bufret'],c:2,fb:'Når [H⁺] = [OH⁻] = 10⁻⁷ mol/L er opløsningen neutral med pH = 7.'},
+      {q:'Hvad sker med Kw og pH for neutralt vand ved 37°C (kropstemperatur)?',opts:['Kw stiger og pH falder','Kw falder og pH stiger','Kw og pH er uændret','pH = 14'],c:0,fb:'Ved 37°C stiger Kw til ca. 2,4·10⁻¹⁴ og neutralt pH falder til ca. 6,8.'},
+      {q:'Hvad er ricopieren af pH?',opts:['pH = log[H⁺]','pH = −log[H⁺]','pH = [H⁺]·10','pH = 1/[H⁺]'],c:1,fb:'pH = −log[H⁺]. Negativt fortegn: [H⁺] = 10⁻⁷ → pH = −log(10⁻⁷) = 7.'},
+      {q:'Hvad er pOH for neutralt vand?',opts:['0','7','14','3,5'],c:1,fb:'pH + pOH = 14 (ved 25°C). Neutralt vand: pH = 7, så pOH = 14 − 7 = 7.'},
+    ],
+    choices:[{label:'Videre til neutralisering →',next:'neut'}]
+  },
+
+  neut: {
+    x:755, y:362, hsId:'hs-neut', type:'neutral',
+    badge:'Neutralisering', title:'Syre + Base',
+    formula:'HCl + NaOH',
+    reaction:'H<sup>+</sup> + OH<sup>−</sup> → H₂O',
+    desc:'Neutralisering er reaktionen når en syre møder en base. Resultatet er salt og vand. Den nettoreaktionen er altid: H⁺ + OH⁻ → H₂O.',
+    fact:'<b>Neutralisering:</b> HCl + NaOH → NaCl + H₂O. Ionisk: H<sup>+</sup> + OH<sup>−</sup> → H₂O. Saltet NaCl er ionisk: Na<sup>+</sup> og Cl<sup>−</sup>.',
+    questions:[
+      {q:'Hvad er produkterne ved neutralisering af HCl og NaOH?',opts:['H₂SO₄ + Na','NaCl + H₂O','HNaO + Cl₂','NaH + HClO'],c:1,fb:'HCl + NaOH → NaCl + H₂O. Et salt og vand er altid produkterne ved syre-base neutralisering.'},
+      {q:'Hvad er den ioniske nettoreaktionen ved al neutralisering?',opts:['Na⁺ + Cl⁻ → NaCl','H⁺ + OH⁻ → H₂O','HCl + OH⁻ → H₂O + Cl','H₂ + O → H₂O'],c:1,fb:'H⁺ + OH⁻ → H₂O er nettoreaktionen for enhver syre-base neutralisering.'},
+      {q:'Hvad er et salt?',opts:['Vand med opløst sukker','Ionisk forbindelse af kation fra base og anion fra syre','En type base','En type syre'],c:1,fb:'Et salt dannes af kationen fra basen (f.eks. Na⁺) og anionen fra syren (f.eks. Cl⁻) → NaCl.'},
+      {q:'Hvad er pH ved fuldstændig neutralisering af stærk syre med stærk base?',opts:['pH < 7','pH = 7','pH > 7','pH = 0'],c:1,fb:'Stærk syre + stærk base → neutralt salt → pH = 7 (som ved NaCl-opløsning).'},
+      {q:'Hvad er ionerne i NaCl (kogsalt)?',opts:['N³⁻ og Ca²⁺','Na⁺ og Cl⁻','Na⁻ og Cl⁺','Na²⁺ og Cl²⁻'],c:1,fb:'NaCl er opbygget af Na⁺ (natriumion, kation) og Cl⁻ (chloridion, anion).'},
+      {q:'Hvad hedder det punkt under titrering hvor syre og base er præcist neutraliserede?',opts:['Nulpunktet','Ækvivalenspunktet','Bufferzonepunktet','pH-punktet'],c:1,fb:'Ækvivalenspunktet er det punkt under titrering, hvor der er tilsat præcis nok base til at neutralisere syren.'},
+      {q:'Hvad er en indikator i syre-base kemi?',opts:['Et termometer','Et stof der ændrer farve afhængig af pH','En type syre','Et elektron-donor'],c:1,fb:'En indikator (f.eks. lakmus eller phenolphthalein) skifter farve ved bestemte pH-værdier og bruges til at aflæse pH.'},
+      {q:'Hvad er pH for en NaCl-opløsning?',opts:['pH < 7','pH = 7','pH > 7','Varierer'],c:1,fb:'NaCl er et salt fra en stærk syre og stærk base — det hydrolyserer ikke, så pH = 7.'},
+      {q:'Hvad er reaktionsentalpien for neutralisering stærk syre + stærk base?',opts:['Endoterm (kræver varme)','Eksoterm (frigiver varme)','Neutral — ingen varme','Det varierer meget'],c:1,fb:'Neutralisering H⁺ + OH⁻ → H₂O er eksoterm: ΔH ≈ −57 kJ/mol. Opløsningen varmes op.'},
+      {q:'Hvad er titrering?',opts:['En metode til at farve opløsninger','En kvantitativ metode til at bestemme koncentration ved neutralisering','En måde at destillere syrer','En metode til at måle molarmasse'],c:1,fb:'Titrering er en analytisk metode: man tilsætter præcis mængde af en base til en syre (eller omvendt) for at bestemme koncentrationen.'},
+    ],
+    choices:[{label:'↩ Tilbage til HCl',next:'hcl'}]
+  }
+};
+
+const ORDER = ['hcl','naoh','h2so4','nh3','h2o','neut'];
+const TOTAL_Q = ORDER.length * 10; // 60
+
+/* ══ STATE ══ */
+let visited=new Set(), qIndex={}, qCorrect={}, correctTotal=0, animating=false;
+let charMode='molecule', posX=90, posY=255, trailPoints=[];
+ORDER.forEach(k=>{qIndex[k]=0; qCorrect[k]=0;});
+
+/* ══ ELEMENTS ══ */
+const wc=document.getElementById('wc'), mapSvg=document.getElementById('mapsvg');
+const molEl=document.getElementById('char-molecule'), bkrEl=document.getElementById('char-beaker');
+const molFlame=document.getElementById('mol-flame'), bkrFlame=document.getElementById('bkr-flame');
+const panel=document.getElementById('panel'), hint=document.getElementById('hint');
+const endSc=document.getElementById('endscreen'), progBar=document.getElementById('progress-bar');
+const trailG=document.getElementById('trail');
+
+ORDER.forEach(k=>{
+  const d=document.createElement('div'); d.className='prog-dot'; d.id='dot-'+k; progBar.appendChild(d);
+});
+
+/* ══ CHARACTER ══ */
+function setChar(mode){
+  charMode=mode;
+  document.getElementById('btn-mol').classList.toggle('active',mode==='molecule');
+  document.getElementById('btn-bkr').classList.toggle('active',mode==='beaker');
+  molEl.style.display=mode==='molecule'?'':'none';
+  bkrEl.style.display=mode==='beaker'?'':'none';
+  applyCharTransform(posX,posY,0);
+}
+function applyCharTransform(x,y,angle){
+  const scale=0.5;
+  const el=charMode==='molecule'?molEl:bkrEl;
+  el.setAttribute('transform',`translate(${x},${y}) rotate(${angle}) scale(${scale})`);
+}
+
+/* ══ TRAIL ══ */
+function addTrailPoint(x,y){
+  trailPoints.push({x,y}); if(trailPoints.length>70)trailPoints.shift(); redrawTrail();
+}
+function redrawTrail(){
+  trailG.innerHTML=''; const total=trailPoints.length;
+  for(let i=1;i<total;i++){
+    const frac=i/total;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',trailPoints[i-1].x); line.setAttribute('y1',trailPoints[i-1].y);
+    line.setAttribute('x2',trailPoints[i].x);   line.setAttribute('y2',trailPoints[i].y);
+    line.setAttribute('stroke','#22dd88');
+    line.setAttribute('stroke-width',frac*2.2);
+    line.setAttribute('opacity',frac*0.45);
+    line.setAttribute('stroke-linecap','round');
+    trailG.appendChild(line);
+  }
+}
+function clearTrail(){trailPoints=[];trailG.innerHTML='';}
+
+/* ══ ANIMATE ══ */
+function animateTo(tx,ty,cb){
+  if(animating)return; animating=true;
+  const sx=posX,sy=posY,dx=tx-sx,dy=ty-sy;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  const dur=Math.min(2000,Math.max(600,dist*4));
+  const t0=performance.now(); let lastTrail=0;
+  const fEl=charMode==='molecule'?molFlame:bkrFlame;
+  if(fEl)fEl.style.display='';
+  function step(now){
+    const t=Math.min(1,(now-t0)/dur);
+    const ease=t<0.5?2*t*t:-1+(4-2*t)*t;
+    const arc=Math.sin(t*Math.PI)*Math.min(dist*.12,32);
+    const len=Math.sqrt(dx*dx+dy*dy)||1;
+    const cx=sx+dx*ease+(-dy/len)*arc*(1-Math.abs(ease*2-1));
+    const cy=sy+dy*ease+(dx/len)*arc*(1-Math.abs(ease*2-1));
+    posX=cx; posY=cy;
+    const prev=Math.max(0,ease-.02);
+    const vx=cx-(sx+dx*prev), vy=cy-(sy+dy*prev);
+    const ang=Math.atan2(vy,vx)*180/Math.PI+90;
+    applyCharTransform(cx,cy,ang);
+    if(now-lastTrail>30){addTrailPoint(cx,cy);lastTrail=now;}
+    if(t<1) requestAnimationFrame(step);
+    else{
+      posX=tx;posY=ty;applyCharTransform(tx,ty,0);animating=false;
+      if(fEl)fEl.style.display='none'; if(cb)cb();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+/* ══ SVG → CSS ══ */
+function svgPct(svgX,svgY){
+  const rect=mapSvg.getBoundingClientRect();
+  const scale=Math.max(rect.width/800,rect.height/500);
+  const offX=(rect.width-800*scale)/2, offY=(rect.height-500*scale)/2;
+  return{left:(offX+svgX*scale)+'px',top:(offY+svgY*scale)+'px'};
+}
+function addStamp(key){
+  const s=stages[key],pos=svgPct(s.x,s.y);
+  const el=document.createElement('div');
+  el.className='stamp';el.id='stamp-'+key;el.textContent='✓';
+  el.style.left=pos.left;el.style.top=pos.top;wc.appendChild(el);
+}
+function markDot(key){const d=document.getElementById('dot-'+key);if(d)d.classList.add('done');}
+
+/* ══ WIN CHECK ══ */
+function checkAllDone(){
+  const allV=visited.size>=ORDER.length;
+  const allQ=ORDER.every(k=>qIndex[k]>=10);
+  if(!allV||!allQ)return;
+  setTimeout(()=>{
+    panel.classList.remove('open');
+    const pct=Math.round(correctTotal/TOTAL_Q*100);
+    document.getElementById('end-score').textContent=correctTotal+'/'+TOTAL_Q;
+    let stars,msg;
+    if(pct===100)    {stars='⭐⭐⭐';msg='Perfekt! Du er en ægte kemiker og forstår alle reaktioner og ioner!';}
+    else if(pct>=70) {stars='⭐⭐'; msg='Fremragende! Du har god forståelse af syrer og baser. Prøv igen for at slå din rekord!';}
+    else             {stars='⭐';   msg='Godt forsøgt! Gentag eksperimentet og bliv endnu skarpere på kemien.';}
+    document.getElementById('end-stars').textContent=stars;
+    document.getElementById('end-msg').textContent=msg;
+    endSc.classList.add('show');
+  },700);
+}
+
+/* ══ SHOW STAGE ══ */
+function showStage(key){
+  const s=stages[key], isNew=!visited.has(key);
+  if(isNew){visited.add(key);addStamp(key);markDot(key);}
+  hint.style.opacity='0';
+  const qi=qIndex[key], allDone=qi>=10;
+
+  const typeClass=s.type==='acid'?'':'base' ? s.type : 'neutral';
+  const badgeClass=s.type==='base'?'base':s.type==='neutral'?'neutral':'';
+  const reactionClass=s.type==='base'?'base':s.type==='neutral'?'neutral':'';
+
+  let quizSection='', choicesClass='choices show';
+  if(!allDone){
+    const q=s.questions[qi];
+    const optsHTML=q.opts.map((o,i)=>`<button class="qbtn" id="qo${i}" onclick="answerQ('${key}',${i},${q.c})">${o}</button>`).join('');
+    quizSection=`
+      <div class="q-progress">Spørgsmål ${qi+1} af 10</div>
+      <div class="quiz-box">
+        <div class="quiz-q">⚗ ${q.q}</div>
+        <div class="quiz-opts">${optsHTML}</div>
+        <div class="quiz-fb" id="qfb"></div>
+      </div>`;
+    choicesClass='choices';
+  } else {
+    quizSection=`<div class="quiz-box" style="opacity:.38"><div class="quiz-q" style="font-size:var(--f-xs)">✓ Alle 10 spørgsmål besvaret — ${qCorrect[key]}/10 rigtige</div></div>`;
+  }
+
+  const choicesHTML=s.choices.map(c=>`<button class="cbtn" onclick="goTo('${c.next}')">${c.label}</button>`).join('');
+
+  panel.innerHTML=`
+    <div class="p-badge ${badgeClass}">${s.badge}</div>
+    <div class="p-title">${s.title}</div>
+    <div class="p-formula ${reactionClass}">${s.formula}</div>
+    <div class="reaction-box ${reactionClass}">${s.reaction}</div>
+    <div class="p-desc">${s.desc}</div>
+    <div class="p-fact">${s.fact}</div>
+    ${quizSection}
+    <div class="${choicesClass}" id="choices-wrap">${choicesHTML}</div>
+  `;
+  panel.classList.add('open');
+  panel.scrollTop=0;
+}
+
+/* ══ ANSWER ══ */
+function answerQ(key,chosen,correct){
+  document.querySelectorAll('.qbtn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correct)b.classList.add('correct');
+    else if(i===chosen&&chosen!==correct)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('qfb');
+  const q=stages[key].questions[qIndex[key]];
+  if(chosen===correct){correctTotal++;qCorrect[key]++;fb.className='quiz-fb ok';fb.textContent='✅ '+q.fb;}
+  else{fb.className='quiz-fb no';fb.textContent='❌ Ikke helt. '+q.fb;}
+  fb.style.display='block';
+  qIndex[key]++;
+  setTimeout(()=>{const cw=document.getElementById('choices-wrap');if(cw)cw.classList.add('show');checkAllDone();},900);
+}
+
+/* ══ NAV ══ */
+function goTo(key){
+  panel.classList.remove('open'); clearTrail();
+  setTimeout(()=>animateTo(stages[key].x,stages[key].y,()=>showStage(key)),220);
+}
+
+/* ══ RESTART ══ */
+function restartGame(){
+  visited.clear();correctTotal=0;
+  ORDER.forEach(k=>{qIndex[k]=0;qCorrect[k]=0;});
+  document.querySelectorAll('.stamp').forEach(e=>e.remove());
+  ORDER.forEach(k=>{const d=document.getElementById('dot-'+k);if(d)d.classList.remove('done');});
+  endSc.classList.remove('show');panel.classList.remove('open');panel.innerHTML='';
+  hint.style.opacity='1';clearTrail();
+  posX=90;posY=255;applyCharTransform(90,255,0);
+  const fEl=charMode==='molecule'?molFlame:bkrFlame;
+  if(fEl)fEl.style.display='none';
+  setTimeout(()=>{animateTo(90,255,()=>showStage('hcl'));setTimeout(()=>{hint.style.opacity='0';},3500);},350);
+}
+
+/* ══ HOTSPOTS ══ */
+Object.entries(stages).forEach(([key,s])=>{
+  const el=document.getElementById(s.hsId);if(!el)return;
+  const h=()=>{if(animating)return;panel.classList.remove('open');clearTrail();setTimeout(()=>animateTo(s.x,s.y,()=>showStage(key)),120);};
+  el.addEventListener('click',h);
+  el.addEventListener('touchend',e=>{e.preventDefault();h();},{passive:false});
+});
+
+/* ══ RESIZE ══ */
+window.addEventListener('resize',()=>{
+  ORDER.forEach(k=>{
+    const el=document.getElementById('stamp-'+k);
+    if(!el||!visited.has(k))return;
+    const pos=svgPct(stages[k].x,stages[k].y);
+    el.style.left=pos.left;el.style.top=pos.top;
+  });
+});
+
+/* ══ INIT ══ */
+if(molFlame)molFlame.style.display='none';
+if(bkrFlame)bkrFlame.style.display='none';
+bkrEl.style.display='none';
+applyCharTransform(90,255,0);
+setTimeout(()=>{animateTo(90,255,()=>showStage('hcl'));setTimeout(()=>{hint.style.opacity='0';},3500);},700);
+</script>
+</body>
+</html>

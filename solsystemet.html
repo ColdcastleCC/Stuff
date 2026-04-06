@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Solsystemet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --accent:#f5c842; --panel-bg:rgba(4,8,28,0.96);
+    --fh:'Nunito',sans-serif; --fb:'Nunito Sans',sans-serif;
+    --f-xs:clamp(10px,2.2vw,12px); --f-sm:clamp(12px,2.8vw,14px);
+    --f-md:clamp(13px,3.2vw,16px); --f-lg:clamp(16px,4.5vw,22px);
+    --f-xl:clamp(20px,6vw,32px);
+  }
+  html,body { width:100%;height:100%;overflow:hidden;background:#04081c;font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation; }
+  #wc { position:relative;width:100dvw;height:100dvh;overflow:hidden; }
+  #mapsvg { position:absolute;inset:0;width:100%;height:100%; }
+
+  #char-toggle {
+    position:absolute;top:max(10px,env(safe-area-inset-top,10px));
+    left:max(10px,env(safe-area-inset-left,10px));
+    z-index:25;display:flex;gap:5px;
+  }
+  .ctbtn {
+    font-family:var(--fh);font-weight:700;font-size:clamp(9px,2vw,11px);
+    background:rgba(4,8,28,0.85);color:rgba(255,255,255,0.55);
+    border:1px solid rgba(255,255,255,0.18);border-radius:20px;
+    padding:4px 10px;cursor:pointer;transition:all .2s;white-space:nowrap;
+  }
+  .ctbtn.active { background:rgba(245,200,66,0.18);color:var(--accent);border-color:rgba(245,200,66,0.6); }
+
+  #hint {
+    position:absolute;top:max(10px,env(safe-area-inset-top,10px));
+    left:50%;transform:translateX(-50%);
+    background:rgba(4,8,28,0.85);color:#fff;
+    font-family:var(--fh);font-weight:700;font-size:var(--f-xs);
+    padding:5px 14px;border-radius:30px;pointer-events:none;
+    transition:opacity 0.8s;white-space:nowrap;z-index:20;
+    max-width:90vw;text-align:center;border:1px solid rgba(255,255,255,0.1);
+  }
+  #progress-bar {
+    position:absolute;top:max(10px,env(safe-area-inset-top,10px));
+    right:max(10px,env(safe-area-inset-right,10px));
+    display:flex;gap:4px;align-items:center;z-index:20;
+  }
+  .prog-dot {
+    width:clamp(7px,1.8vw,10px);height:clamp(7px,1.8vw,10px);
+    border-radius:50%;background:rgba(255,255,255,0.15);
+    border:1.5px solid rgba(255,255,255,0.32);transition:background .3s,border-color .3s;
+  }
+  .prog-dot.done { background:var(--accent);border-color:var(--accent); }
+
+  #panel {
+    position:absolute;bottom:0;left:0;right:0;background:var(--panel-bg);
+    border-top:1px solid rgba(255,255,255,0.1);border-radius:18px 18px 0 0;
+    padding:14px 16px;padding-bottom:max(16px,env(safe-area-inset-bottom,16px));
+    transform:translateY(110%);transition:transform 0.38s cubic-bezier(.22,1,.36,1);
+    z-index:30;max-height:68dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #panel.open { transform:translateY(0); }
+  #panel::before { content:'';display:block;width:36px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:0 auto 12px; }
+
+  .p-badge { display:inline-block;font-family:var(--fh);font-weight:700;font-size:var(--f-xs);letter-spacing:.07em;text-transform:uppercase;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.62);padding:2px 9px;border-radius:20px;border:1px solid rgba(255,255,255,0.16);margin-bottom:5px; }
+  .p-title { font-family:var(--fh);font-weight:900;font-size:var(--f-lg);color:#fff;margin-bottom:4px;line-height:1.2; }
+  .p-desc  { font-size:var(--f-sm);color:rgba(255,255,255,0.78);line-height:1.5;margin-bottom:8px; }
+  .p-fact  { font-size:var(--f-xs);color:rgba(255,255,255,0.46);line-height:1.5;padding:7px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:10px; }
+  .p-fact b { color:rgba(255,255,255,0.82);font-weight:600; }
+
+  /* Quiz progress indicator */
+  .q-progress { font-family:var(--fh);font-weight:700;font-size:var(--f-xs);color:rgba(255,255,255,0.35);margin-bottom:6px; }
+
+  .quiz-box { background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.11);border-radius:12px;padding:11px 12px;margin-bottom:10px; }
+  .quiz-q   { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:#fff;margin-bottom:9px;line-height:1.4; }
+  .quiz-opts { display:grid;grid-template-columns:1fr 1fr;gap:6px; }
+  .qbtn {
+    font-family:var(--fh);font-weight:700;font-size:var(--f-xs);
+    background:rgba(255,255,255,0.07);color:#fff;
+    border:1px solid rgba(255,255,255,0.16);border-radius:8px;
+    padding:9px 6px;cursor:pointer;text-align:center;line-height:1.3;
+    min-height:44px;display:flex;align-items:center;justify-content:center;
+    transition:background .14s,transform .1s;
+  }
+  .qbtn:hover:not(:disabled) { background:rgba(255,255,255,0.18); }
+  .qbtn:active:not(:disabled) { transform:scale(0.95); }
+  .qbtn.correct { background:rgba(50,200,100,0.28);border-color:rgba(50,200,100,0.65); }
+  .qbtn.wrong   { background:rgba(220,60,60,0.28); border-color:rgba(220,60,60,0.6); }
+  .qbtn:disabled { cursor:default; }
+  .quiz-fb { font-size:var(--f-xs);margin-top:8px;padding:8px 10px;border-radius:8px;line-height:1.45;display:none; }
+  .quiz-fb.ok { background:rgba(50,200,100,0.15);color:#8affc0; }
+  .quiz-fb.no { background:rgba(220,60,60,0.15); color:#ffbebe; }
+
+  .choices { display:none;flex-wrap:wrap;gap:7px; }
+  .choices.show { display:flex; }
+  .cbtn { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);background:rgba(255,255,255,0.09);color:#fff;border:1px solid rgba(255,255,255,0.22);border-radius:9px;padding:11px 12px;cursor:pointer;flex:1;min-width:120px;min-height:44px;text-align:center;transition:background .14s,transform .1s; }
+  .cbtn:hover  { background:rgba(255,255,255,0.2); }
+  .cbtn:active { transform:scale(0.96); }
+
+  .stamp { position:absolute;width:clamp(14px,3.5vw,20px);height:clamp(14px,3.5vw,20px);border-radius:50%;background:var(--accent);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:clamp(8px,2vw,11px);font-weight:700;color:#04081c;pointer-events:none;transform:translate(-50%,-50%) scale(0);animation:stampIn .4s cubic-bezier(.34,1.56,.64,1) forwards;z-index:25; }
+  @keyframes stampIn { to { transform:translate(-50%,-50%) scale(1); } }
+
+  #endscreen { display:none;position:absolute;inset:0;background:rgba(4,8,28,0.97);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 20px;padding-bottom:max(28px,env(safe-area-inset-bottom,28px));z-index:50;overflow-y:auto; }
+  #endscreen.show { display:flex; }
+  .end-emoji  { font-size:clamp(36px,9vw,58px);margin-bottom:10px; }
+  .end-title  { font-family:var(--fh);font-weight:900;font-size:var(--f-xl);color:#fff;margin-bottom:8px; }
+  .end-sub    { font-size:var(--f-md);color:rgba(255,255,255,0.65);line-height:1.55;margin-bottom:14px;max-width:380px; }
+  .end-score  { font-family:var(--fh);font-weight:900;font-size:clamp(44px,12vw,68px);color:var(--accent);line-height:1; }
+  .end-score-label { font-size:var(--f-xs);color:rgba(255,255,255,0.38);margin-bottom:6px; }
+  .end-stars  { font-size:clamp(24px,6vw,36px);margin:4px 0 8px; }
+  .end-msg    { font-size:var(--f-sm);color:rgba(255,255,255,0.55);max-width:340px;line-height:1.6;margin-bottom:22px; }
+  .restart-btn { font-family:var(--fh);font-weight:900;font-size:var(--f-md);background:var(--accent);color:#04081c;border:none;border-radius:12px;padding:14px 36px;cursor:pointer;min-height:52px;transition:background .14s,transform .1s; }
+  .restart-btn:hover  { background:#ffe070; }
+  .restart-btn:active { transform:scale(0.97); }
+
+  @keyframes pulse   { 0%,100%{opacity:.42}50%{opacity:1} }
+  @keyframes twinkle { 0%,100%{opacity:.18}50%{opacity:1} }
+  .hs { animation:pulse 2.4s ease-in-out infinite; }
+  .s1{animation:twinkle 2.1s ease-in-out infinite;}
+  .s2{animation:twinkle 3.4s ease-in-out infinite;}
+  .s3{animation:twinkle 1.7s ease-in-out infinite;}
+  .s4{animation:twinkle 4.2s ease-in-out infinite;}
+  .s5{animation:twinkle 2.8s ease-in-out infinite;}
+</style>
+</head>
+<body>
+<div id="wc">
+<svg id="mapsvg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#ffee55" stop-opacity="0.22"/>
+      <stop offset="60%"  stop-color="#ff9900" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#ff6600" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="earthAtmo" cx="50%" cy="50%" r="50%">
+      <stop offset="60%"  stop-color="#4488ff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#4488ff" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+
+  <!-- SPACE -->
+  <rect x="0" y="0" width="800" height="500" fill="#04081c"/>
+
+  <!-- STARS -->
+  <circle class="s1" cx="42"  cy="18"  r="1.1" fill="white" opacity=".6"/>
+  <circle class="s3" cx="120" cy="45"  r="1.3" fill="white" opacity=".7"/>
+  <circle class="s2" cx="200" cy="12"  r="0.9" fill="white" opacity=".5"/>
+  <circle class="s5" cx="310" cy="38"  r="1.1" fill="white" opacity=".6"/>
+  <circle class="s4" cx="420" cy="22"  r="1.4" fill="white" opacity=".8"/>
+  <circle class="s1" cx="510" cy="55"  r="1"   fill="white" opacity=".5"/>
+  <circle class="s3" cx="620" cy="30"  r="1.2" fill="white" opacity=".7"/>
+  <circle class="s2" cx="720" cy="14"  r="1.1" fill="white" opacity=".6"/>
+  <circle class="s5" cx="780" cy="48"  r="0.9" fill="white" opacity=".4"/>
+  <circle class="s4" cx="75"  cy="80"  r="1.3" fill="white" opacity=".6"/>
+  <circle class="s1" cx="155" cy="110" r="1"   fill="white" opacity=".5"/>
+  <circle class="s2" cx="260" cy="70"  r="1.2" fill="white" opacity=".7"/>
+  <circle class="s3" cx="370" cy="90"  r="1.1" fill="white" opacity=".6"/>
+  <circle class="s5" cx="470" cy="75"  r="1.4" fill="white" opacity=".8"/>
+  <circle class="s4" cx="560" cy="100" r="0.9" fill="white" opacity=".5"/>
+  <circle class="s1" cx="660" cy="80"  r="1.2" fill="white" opacity=".7"/>
+  <circle class="s2" cx="750" cy="95"  r="1.1" fill="white" opacity=".6"/>
+  <circle class="s3" cx="30"  cy="150" r="1.1" fill="white" opacity=".5"/>
+  <circle class="s5" cx="110" cy="170" r="1.3" fill="white" opacity=".7"/>
+  <circle class="s4" cx="220" cy="140" r="1"   fill="white" opacity=".5"/>
+  <circle class="s1" cx="340" cy="160" r="1.2" fill="white" opacity=".6"/>
+  <circle class="s2" cx="490" cy="145" r="1.1" fill="white" opacity=".8"/>
+  <circle class="s3" cx="590" cy="165" r="1.4" fill="white" opacity=".6"/>
+  <circle class="s5" cx="700" cy="155" r="0.9" fill="white" opacity=".4"/>
+  <circle class="s4" cx="770" cy="180" r="1.1" fill="white" opacity=".6"/>
+  <circle class="s1" cx="55"  cy="250" r="1.2" fill="white" opacity=".5"/>
+  <circle class="s2" cx="170" cy="280" r="1"   fill="white" opacity=".6"/>
+  <circle class="s3" cx="280" cy="240" r="1.1" fill="white" opacity=".7"/>
+  <circle class="s5" cx="430" cy="260" r="1.3" fill="white" opacity=".5"/>
+  <circle class="s4" cx="640" cy="245" r="1.1" fill="white" opacity=".6"/>
+  <circle class="s1" cx="760" cy="270" r="1.2" fill="white" opacity=".7"/>
+  <circle class="s2" cx="90"  cy="350" r="1.1" fill="white" opacity=".5"/>
+  <circle class="s3" cx="200" cy="380" r="1.3" fill="white" opacity=".6"/>
+  <circle class="s5" cx="320" cy="340" r="1"   fill="white" opacity=".7"/>
+  <circle class="s4" cx="680" cy="360" r="1.2" fill="white" opacity=".5"/>
+  <circle class="s1" cx="740" cy="420" r="1.1" fill="white" opacity=".6"/>
+  <circle class="s2" cx="400" cy="450" r="1.4" fill="white" opacity=".8"/>
+  <circle class="s3" cx="50"  cy="460" r="0.9" fill="white" opacity=".5"/>
+  <circle class="s5" cx="600" cy="480" r="1.1" fill="white" opacity=".6"/>
+  <circle class="s4" cx="185" cy="32"  r="2"   fill="#fffbe6" opacity=".9"/>
+  <circle class="s1" cx="530" cy="18"  r="2.2" fill="#fffbe6" opacity=".85"/>
+  <circle class="s3" cx="710" cy="130" r="1.8" fill="#fffbe6" opacity=".9"/>
+  <circle class="s2" cx="380" cy="210" r="1.9" fill="#fffbe6" opacity=".85"/>
+  <circle class="s5" cx="140" cy="320" r="2"   fill="#fffbe6" opacity=".9"/>
+  <circle class="s4" cx="460" cy="400" r="1.7" fill="#fffbe6" opacity=".8"/>
+
+  <!-- ORBIT RINGS -->
+  <ellipse cx="400" cy="280" rx="68"  ry="18"  fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <ellipse cx="400" cy="280" rx="105" ry="28"  fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <ellipse cx="400" cy="280" rx="150" ry="42"  fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <ellipse cx="400" cy="280" rx="200" ry="56"  fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <ellipse cx="400" cy="280" rx="270" ry="76"  fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <ellipse cx="400" cy="280" rx="345" ry="98"  fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <ellipse cx="400" cy="280" rx="420" ry="120" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="0.8"/>
+  <ellipse cx="400" cy="280" rx="490" ry="140" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.8"/>
+
+  <!-- TRAIL -->
+  <g id="trail"></g>
+
+  <!-- SUN -->
+  <circle cx="400" cy="280" r="70" fill="url(#sunGlow)"/>
+  <circle cx="400" cy="280" r="40" fill="#ffcc00"/>
+  <circle cx="400" cy="280" r="36" fill="#ffdd44"/>
+  <circle cx="388" cy="270" r="8"  fill="#ffaa00" opacity=".38"/>
+  <circle cx="413" cy="286" r="6"  fill="#ffaa00" opacity=".28"/>
+
+  <!-- MERCURY -->
+  <circle cx="468" cy="262" r="7"  fill="#b0a090"/>
+  <circle cx="465" cy="259" r="3"  fill="#c8baa8" opacity=".6"/>
+
+  <!-- VENUS -->
+  <circle cx="505" cy="252" r="10" fill="#e8c98a"/>
+  <ellipse cx="507" cy="253" rx="7" ry="4" fill="rgba(255,240,180,0.28)" transform="rotate(-20,507,253)"/>
+
+  <!-- EARTH -->
+  <circle cx="550" cy="238" r="13" fill="url(#earthAtmo)"/>
+  <circle cx="550" cy="238" r="12" fill="#2255aa"/>
+  <circle cx="546" cy="234" r="5"  fill="#44aa44" opacity=".9"/>
+  <circle cx="555" cy="242" r="3"  fill="#44aa44" opacity=".7"/>
+  <circle cx="544" cy="243" r="2"  fill="#44aa44" opacity=".6"/>
+  <circle cx="550" cy="238" r="13" fill="none" stroke="#6699ff" stroke-width="1.5" opacity=".38"/>
+  <circle cx="563" cy="227" r="4"  fill="#cccccc"/>
+  <circle cx="561" cy="225" r="1.5" fill="#e0e0e0" opacity=".7"/>
+
+  <!-- MARS -->
+  <circle cx="600" cy="224" r="9"  fill="#cc5533"/>
+  <circle cx="597" cy="221" r="3"  fill="#dd7755" opacity=".6"/>
+  <circle cx="600" cy="216" r="3"  fill="white"   opacity=".5"/>
+
+  <!-- JUPITER -->
+  <circle cx="670" cy="204" r="22" fill="#c8a878"/>
+  <ellipse cx="670" cy="200" rx="22" ry="5" fill="#b89060" opacity=".6"/>
+  <ellipse cx="670" cy="207" rx="22" ry="4" fill="#d4b890" opacity=".5"/>
+  <ellipse cx="670" cy="212" rx="21" ry="3" fill="#b89060" opacity=".4"/>
+  <ellipse cx="676" cy="206" rx="5"  ry="3" fill="#aa4422" opacity=".7"/>
+
+  <!-- SATURN -->
+  <ellipse cx="400" cy="148" rx="44" ry="11" fill="none" stroke="#c8b08a" stroke-width="7" opacity=".45"/>
+  <circle  cx="400" cy="148" r="18"  fill="#e8d49a"/>
+  <ellipse cx="400" cy="145" rx="18" ry="5"  fill="#c8b070" opacity=".5"/>
+  <ellipse cx="400" cy="151" rx="18" ry="4"  fill="#d8c080" opacity=".4"/>
+  <path d="M357 151 Q400 165 443 151" fill="none" stroke="#c8b08a" stroke-width="7" opacity=".55"/>
+  <path d="M355 149 Q400 167 445 149" fill="none" stroke="#b8a070" stroke-width="3" opacity=".35"/>
+
+  <!-- URANUS -->
+  <circle cx="248" cy="174" r="13" fill="#7de8e8"/>
+  <circle cx="248" cy="174" r="13" fill="none" stroke="#5ccaca" stroke-width="0.8" opacity=".4"/>
+  <ellipse cx="248" cy="174" rx="20" ry="5" fill="none" stroke="#5ccaca" stroke-width="1.5" opacity=".4" transform="rotate(85,248,174)"/>
+  <circle cx="244" cy="170" r="5"  fill="#9af0f0" opacity=".6"/>
+
+  <!-- NEPTUNE -->
+  <circle cx="120" cy="210" r="12" fill="#3344cc"/>
+  <circle cx="120" cy="210" r="12" fill="none" stroke="#5566ee" stroke-width="1" opacity=".4"/>
+  <circle cx="116" cy="206" r="4"  fill="#5566ee" opacity=".6"/>
+  <ellipse cx="123" cy="213" rx="4" ry="2.5" fill="#2233aa" opacity=".6"/>
+
+  <!-- ASTEROID BELT -->
+  <circle cx="632" cy="214" r="1.5" fill="#887766" opacity=".7"/>
+  <circle cx="638" cy="220" r="1"   fill="#887766" opacity=".5"/>
+  <circle cx="628" cy="208" r="1.2" fill="#998877" opacity=".6"/>
+  <circle cx="644" cy="212" r="1"   fill="#887766" opacity=".4"/>
+  <circle cx="635" cy="205" r="0.8" fill="#998877" opacity=".5"/>
+
+  <!-- LABELS -->
+  <text x="400" y="330" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="11" fill="rgba(255,220,50,0.9)">Solen</text>
+  <text x="468" y="281" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="10" fill="rgba(255,255,255,0.6)">Merkur</text>
+  <text x="505" y="272" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="10" fill="rgba(255,255,255,0.6)">Venus</text>
+  <text x="550" y="261" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="10" fill="rgba(100,180,255,0.9)">Jorden</text>
+  <text x="600" y="244" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="10" fill="rgba(255,255,255,0.6)">Mars</text>
+  <text x="670" y="235" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="10" fill="rgba(255,255,255,0.6)">Jupiter</text>
+  <text x="400" y="174" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="10" fill="rgba(255,255,255,0.6)">Saturn</text>
+  <text x="248" y="196" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="10" fill="rgba(255,255,255,0.6)">Uranus</text>
+  <text x="120" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="10" fill="rgba(255,255,255,0.6)">Neptun</text>
+
+  <!-- ══ ROCKET (small – scale 0.55) ══ -->
+  <g id="char-rocket" transform="translate(400,280) scale(0.55)">
+    <g id="rocket-flame">
+      <ellipse cx="0" cy="20" rx="5" ry="9"  fill="#ff6600" opacity=".9"/>
+      <ellipse cx="0" cy="20" rx="3" ry="6"  fill="#ffcc00" opacity=".95"/>
+    </g>
+    <rect x="-7" y="-14" width="14" height="24" rx="4" fill="#dde8ff"/>
+    <path d="M-7,-14 L0,-28 L7,-14 Z" fill="#cc3344"/>
+    <circle cx="0" cy="-4" r="5" fill="#88ccff"/>
+    <circle cx="-1.5" cy="-5.5" r="2" fill="white" opacity=".55"/>
+    <path d="M-7,8 L-14,18 L-7,12 Z" fill="#cc3344"/>
+    <path d="M7,8  L14,18  L7,12  Z" fill="#cc3344"/>
+    <rect x="-7" y="-2" width="14" height="3" rx="1" fill="#cc3344" opacity=".5"/>
+    <rect x="-5" y="10" width="10" height="5" rx="2" fill="#aabbcc"/>
+  </g>
+
+  <!-- ══ ASTRONAUT (small – scale 0.5) ══ -->
+  <g id="char-astronaut" transform="translate(400,280) scale(0.5)" style="display:none">
+    <g id="astro-flame">
+      <ellipse cx="-10" cy="8" rx="3" ry="7" fill="#ff6600" opacity=".85"/>
+      <ellipse cx="-10" cy="8" rx="1.8" ry="4.5" fill="#ffcc00" opacity=".9"/>
+      <ellipse cx="10"  cy="8" rx="3" ry="7" fill="#ff6600" opacity=".85"/>
+      <ellipse cx="10"  cy="8" rx="1.8" ry="4.5" fill="#ffcc00" opacity=".9"/>
+    </g>
+    <rect x="-6" y="12" width="5" height="10" rx="2" fill="#dde4f0"/>
+    <rect x="1"  y="12" width="5" height="10" rx="2" fill="#dde4f0"/>
+    <ellipse cx="-3.5" cy="22" rx="4" ry="2.5" fill="#aab0c8"/>
+    <ellipse cx="3.5"  cy="22" rx="4" ry="2.5" fill="#aab0c8"/>
+    <rect x="-9" y="-4" width="18" height="18" rx="5" fill="#dde4f0"/>
+    <rect x="-13" y="-2" width="5" height="12" rx="2" fill="#aab0c8"/>
+    <rect x="8"   y="-2" width="5" height="12" rx="2" fill="#aab0c8"/>
+    <rect x="-5" y="2" width="10" height="6" rx="2" fill="#2255aa" opacity=".7"/>
+    <rect x="-3" y="3" width="6" height="1.5" rx="0.5" fill="#66aaff" opacity=".8"/>
+    <circle cx="0" cy="-12" r="12" fill="#dde8ff"/>
+    <ellipse cx="0" cy="-11" rx="8" ry="7" fill="#88ccff" opacity=".85"/>
+    <ellipse cx="-2" cy="-13" rx="3" ry="2" fill="white" opacity=".45"/>
+    <circle cx="0" cy="-12" r="12" fill="none" stroke="#aab8cc" stroke-width="1.5"/>
+    <rect x="-14" y="0" width="6" height="10" rx="3" fill="#dde4f0"/>
+    <rect x="8"   y="0" width="6" height="10" rx="3" fill="#dde4f0"/>
+    <circle cx="-11" cy="11" r="3.5" fill="#aab0c8"/>
+    <circle cx="11"  cy="11" r="3.5" fill="#aab0c8"/>
+  </g>
+
+  <!-- HOTSPOTS -->
+  <circle id="hs-sun"     class="hs" cx="400" cy="280" r="44" fill="rgba(255,200,0,0.03)"  stroke="rgba(255,200,0,0.45)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-mercury" class="hs" cx="468" cy="262" r="20" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.4)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-venus"   class="hs" cx="505" cy="252" r="22" fill="rgba(255,255,255,0.03)" stroke="rgba(255,220,120,0.45)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-earth"   class="hs" cx="550" cy="238" r="22" fill="rgba(100,150,255,0.03)" stroke="rgba(100,150,255,0.55)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-mars"    class="hs" cx="600" cy="224" r="20" fill="rgba(255,255,255,0.03)" stroke="rgba(255,120,80,0.45)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-jupiter" class="hs" cx="670" cy="204" r="28" fill="rgba(255,255,255,0.03)" stroke="rgba(220,180,120,0.45)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-saturn"  class="hs" cx="400" cy="148" r="28" fill="rgba(255,255,255,0.03)" stroke="rgba(220,200,140,0.45)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-uranus"  class="hs" cx="248" cy="174" r="22" fill="rgba(100,240,240,0.03)" stroke="rgba(100,230,230,0.45)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-neptune" class="hs" cx="120" cy="210" r="22" fill="rgba(60,80,220,0.03)"   stroke="rgba(80,100,240,0.45)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+</svg>
+
+<div id="char-toggle">
+  <button class="ctbtn active" id="btn-rocket"    onclick="setChar('rocket')">🚀 Raket</button>
+  <button class="ctbtn"        id="btn-astronaut" onclick="setChar('astronaut')">👨‍🚀 Rummand</button>
+</div>
+<div id="hint">Tryk på et himmellegeme for at udforske!</div>
+<div id="progress-bar"></div>
+<div id="panel"></div>
+<div id="endscreen">
+  <div class="end-emoji">🚀</div>
+  <div class="end-title">Mission fuldført!</div>
+  <div class="end-sub">Du har udforsket alle himmellegemer og besvaret alle spørgsmål!</div>
+  <div class="end-score" id="end-score">0/90</div>
+  <div class="end-score-label">rigtige svar</div>
+  <div class="end-stars" id="end-stars"></div>
+  <div class="end-msg"   id="end-msg"></div>
+  <button class="restart-btn" onclick="restartGame()">Ny mission 🚀</button>
+</div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   10 SPØRGSMÅL PER HIMMELLEGEME
+   ══════════════════════════════════════════ */
+const stages = {
+  sun: {
+    x:400,y:280,hsId:'hs-sun',badge:'Stjerne',title:'Solen',
+    desc:'Du er nået til centrum af solsystemet — Solen! Den er en kæmpe stjerne af gas, og dens tyngdekraft holder alle planeter i kredsløb.',
+    fact:'<b>Solen</b> udgør 99,8% af al masse i solsystemet. Diameteren er 1,4 millioner km. Kernen er 15 millioner grader varm.',
+    questions:[
+      {q:'Hvad holder planeterne i kredsløb om Solen?',opts:['Magnetisme','Tyngdekraft','Lys','Varme'],c:1,fb:'Solens tyngdekraft holder alle planeter i bane.'},
+      {q:'Hvad er Solen lavet af?',opts:['Sten og metal','Is og vand','Gas (primært hydrogen)','Flydende lava'],c:2,fb:'Solen er primært lavet af hydrogen, som omdannes til helium i dens kerne via fusion.'},
+      {q:'Hvor mange procent af solsystemets masse udgør Solen?',opts:['50%','75%','90%','99,8%'],c:3,fb:'Solen udgør hele 99,8% af al masse i solsystemet!'},
+      {q:'Hvad er temperaturen i Solens kerne?',opts:['1 million grader','15 millioner grader','100.000 grader','1 milliard grader'],c:1,fb:'Solens kerne er ca. 15 millioner grader varm.'},
+      {q:'Hvad kalder man den energiproces der foregår i Solen?',opts:['Fusion','Fission','Fordampning','Forbrænding'],c:0,fb:'Kernefusion smelter brintatomkerner sammen til helium og frigiver enorme mængder energi.'},
+      {q:'Hvor lang tid tager det lyset fra Solen at nå Jorden?',opts:['1 sekund','8 minutter','1 time','1 dag'],c:1,fb:'Sollyset bruger ca. 8 minutter på rejsen fra Solen til Jorden.'},
+      {q:'Hvad er Solens diameter i forhold til Jordens?',opts:['10 gange bredere','50 gange bredere','Over 100 gange bredere','500 gange bredere'],c:2,fb:'Solen er over 100 gange bredere end Jorden — du kunne stable 109 Jordet på tværs af Solen.'},
+      {q:'Hvad hedder de energiudladninger Solen sender ud?',opts:['Solvind','Solregn','Solbølger','Soltorden'],c:0,fb:'Solvinden er en strøm af ladede partikler der blæser ud fra Solen i alle retninger.'},
+      {q:'Hvad er overfladetemperaturen på Solen?',opts:['1.000 grader','5.500 grader','50.000 grader','1 million grader'],c:1,fb:'Solens overflade er ca. 5.500 grader — koldere end dens kerne men stadig ekstremt varm.'},
+      {q:'Hvornår forventes Solen at "dø"?',opts:['Om 1 million år','Om 500 millioner år','Om 5 milliarder år','Om 100 milliarder år'],c:2,fb:'Solen har ca. 5 milliarder år tilbage. Den vil til sidst udvide sig til en rød kæmpe.'},
+    ],
+    choices:[{label:'Flyv til Merkur →',next:'mercury'}]
+  },
+
+  mercury: {
+    x:468,y:262,hsId:'hs-mercury',badge:'Planet 1',title:'Merkur',
+    desc:'Merkur er den mindste og inderste planet. Ingen atmosfære: temperaturen svinger fra +430°C til −180°C.',
+    fact:'<b>Merkur</b> bruger 88 dage om at kredse om Solen. Overfladen er dækket af kratere. Ingen måner, intet vejr.',
+    questions:[
+      {q:'Hvad er Merkurs omløbstid om Solen?',opts:['24 timer','88 dage','365 dage','12 år'],c:1,fb:'Merkur bruger kun 88 jordanske dage om at kredse rundt om Solen.'},
+      {q:'Hvad er den højeste temperatur på Merkurs overflade?',opts:['+100°C','+230°C','+430°C','+600°C'],c:2,fb:'Merkur kan nå op til +430°C på den solvendte side.'},
+      {q:'Hvad er den laveste temperatur på Merkurs overflade?',opts:['0°C','−60°C','−180°C','−270°C'],c:2,fb:'Uden atmosfære til at holde på varmen falder temperaturen til −180°C på natsiden.'},
+      {q:'Hvor mange måner har Merkur?',opts:['0','1','2','3'],c:0,fb:'Merkur har ingen måner overhovedet.'},
+      {q:'Hvad ligner Merkurs overflade?',opts:['Jordens','Månens','Mars\'','Venus\''],c:1,fb:'Merkurs kraterdækkede overflade ligner meget vores Månens.'},
+      {q:'Hvad er Merkur den mindste af?',opts:['Alle objekter i rummet','Alle planeter i solsystemet','Alle bjergplaneter','Alle gasplaneter'],c:1,fb:'Merkur er den mindste af alle 8 planeter i solsystemet.'},
+      {q:'Har Merkur en atmosfære?',opts:['Ja, tyk som Jordens','Ja, men meget tynd','Næsten ingen','Nej, ingen'],c:3,fb:'Merkur har praktisk talt ingen atmosfære — kun sporlige mængder gas.'},
+      {q:'Hvad er et Merkur-år kortere end?',opts:['Et Merkur-døgn','Et jordår','Et Venusår','Et Marsår'],c:0,fb:'Et Merkur-år (88 dage) er kortere end et Merkur-døgn, som varer 59 jordanske dage.'},
+      {q:'Hvad er Merkur den nærmeste planet til?',opts:['Jupiter','Venus','Solen','Mars'],c:2,fb:'Merkur er den inderste planet og ligger tættest på Solen.'},
+      {q:'Hvilken rumrumsonde besøgte Merkur i 1970\'erne?',opts:['Voyager','Mariner 10','Pioneer','Cassini'],c:1,fb:'Mariner 10 var den første rumrumsonde der nåede Merkur, i 1974–75.'},
+    ],
+    choices:[{label:'Videre til Venus →',next:'venus'}]
+  },
+
+  venus: {
+    x:505,y:252,hsId:'hs-venus',badge:'Planet 2',title:'Venus',
+    desc:'Venus er den varmeste planet trods ikke at være tættest på Solen. Den roterer baglæns og har en giftig atmosfære.',
+    fact:'<b>Venus</b> har en overfladetemperatur på 465°C konstant. Et Venusår varer 225 dage, men en dag varer 243 jordanske dage.',
+    questions:[
+      {q:'Hvad er Venusdag på Venus i jordanske dage?',opts:['24 timer','100 dage','243 dage','365 dage'],c:2,fb:'En dag på Venus varer 243 jordanske dage — længere end et år der!'},
+      {q:'Hvad er konstant overfladetemperatur på Venus?',opts:['100°C','230°C','465°C','800°C'],c:2,fb:'Veneres overfladetemperatur er konstant ca. 465°C — varm nok til at smelte bly.'},
+      {q:'Hvad er Venus\' atmosfære primært lavet af?',opts:['Nitrogen og ilt','Kuldioxid','Metan','Brint'],c:1,fb:'Venus har en tyk atmosfære af kuldioxid, som skaber en kraftig drivhuseffekt.'},
+      {q:'Hvordan roterer Venus sammenlignet med de fleste andre planeter?',opts:['Hurtigere','Baglæns','Sidelæns','Den roterer ikke'],c:1,fb:'Venus roterer baglæns, så solen ville gå op i vest og ned i øst der.'},
+      {q:'Hvad giver Venus sin hvide/gule farve?',opts:['Sand','Svovlsyretåge','Is','Hav'],c:1,fb:'Venus er dækket af tykke lag af svovlsyreholdige skyer, der reflekterer sollyset.'},
+      {q:'Hvor mange måner har Venus?',opts:['0','1','2','13'],c:0,fb:'Venus har ingen måner — ligesom Merkur.'},
+      {q:'Er Venus større eller mindre end Jorden?',opts:['Meget større','Lidt større','Næsten ens størrelse','Meget mindre'],c:2,fb:'Venus og Jorden er næsten ens i størrelse — Venus er kun en smule mindre.'},
+      {q:'Hvad kalder man Venus iblandt på grund af dens udseende?',opts:['Den røde planet','Jordens tvilling','Den iskolde planet','Ringplaneten'],c:1,fb:'Venus kaldes "Jordens tvilling" pga. sin lignende størrelse — dog er den meget anderledes.'},
+      {q:'Hvornår er Venus synlig fra Jorden?',opts:['Kun om natten','Kun om morgenen','Morgen eller aften, nær horisonten','Aldrig med det blotte øje'],c:2,fb:'Venus er den tredje lyseste genstand på himlen og ses nær horisonten morgen og aften.'},
+      {q:'Hvad tror forskere der gemmer sig under Venus\' skyer?',opts:['Et dybt hav','Aktive vulkaner','Store iskrater','Jungletræer'],c:1,fb:'Data tyder på, at Venus har aktive vulkaner. Den har mange vulkanske strukturer på overfladen.'},
+    ],
+    choices:[{label:'Videre til Jorden →',next:'earth'}]
+  },
+
+  earth: {
+    x:550,y:238,hsId:'hs-earth',badge:'Planet 3',title:'Jorden',
+    desc:'Hjemme! Jorden er den eneste kendte planet med liv, flydende vand og en beskyttende atmosfære.',
+    fact:'<b>Jorden</b> er 71% dækket af hav. En dag varer 24 timer. Jordens alder er ca. 4,5 milliarder år.',
+    questions:[
+      {q:'Hvor stor en del af Jordens overflade er dækket af vand?',opts:['29%','50%','71%','90%'],c:2,fb:'71% af Jordens overflade er hav — det er derfor den ser blå ud fra rummet.'},
+      {q:'Hvad beskytter Jorden mod Solens stråling?',opts:['Skyer','Magnetfeltet','Havet','Bjergene'],c:1,fb:'Jordens magnetfelt afskærmer os mod solens skadelige stråling.'},
+      {q:'Hvor gammelt er livet på Jorden anslået til at være?',opts:['Tusind år','1 million år','4,5 milliarder år','Cirka 3,5 milliarder år'],c:3,fb:'De ældste fossiler af liv er ca. 3,5 milliarder år gamle — enkle bakterier.'},
+      {q:'Hvor mange måner har Jorden?',opts:['0','1','2','3'],c:1,fb:'Jorden har én måne, som vi blot kalder Månen.'},
+      {q:'Hvad er jordens atmosfære primært lavet af?',opts:['Ilt','Kuldioxid','Nitrogen','Hydrogen'],c:2,fb:'Jordens atmosfære er ca. 78% nitrogen og kun 21% ilt.'},
+      {q:'Hvad er den dybeste del af Jordens hav?',opts:['Atlanterhavsrende','Marianegraven','Middelhavet','Nordpolen'],c:1,fb:'Marianegraven i Stillehavet er ca. 11 km dyb — det dybeste punkt på Jordens overflade.'},
+      {q:'Hvad er Jordens gennemsnitlige overfladetemperatur?',opts:['0°C','15°C','30°C','45°C'],c:1,fb:'Jordens gennemsnitlige temperatur er ca. 15°C — perfekt til liv som vi kender det.'},
+      {q:'Hvad hedder den ydre del af Jordens kerne?',opts:['Mantlen','Den indre kerne','Den ydre kerne','Jordskorpen'],c:2,fb:'Den ydre kerne er flydende jern og nikkel — dens bevægelse skaber Jordens magnetfelt.'},
+      {q:'Hvad kalder vi Jordens bevægelse om sin egen akse?',opts:['Revolution','Rotation','Kredsløb','Libration'],c:1,fb:'Rotation er Jordens drejen om sin egen akse — det er det der giver os dag og nat.'},
+      {q:'Hvad er jordskorpens tykkeste punkt ca.?',opts:['5 km','20 km','70 km','200 km'],c:2,fb:'Jordskorpen er tykkest under kontinenterne — op til ca. 70 km under de store bjergkæder.'},
+    ],
+    choices:[{label:'Videre til Mars →',next:'mars'}]
+  },
+
+  mars: {
+    x:600,y:224,hsId:'hs-mars',badge:'Planet 4',title:'Mars',
+    desc:'Den røde planet! Mars har det højeste bjerg og den dybeste canyon i solsystemet, og den har to små måner.',
+    fact:'<b>Olympus Mons</b> er 22 km høj. Et Marsdøgn varer 24 t 37 min. Gennemsnitstemperaturen er −60°C.',
+    questions:[
+      {q:'Hvorfor er Mars rød?',opts:['Rødt lys fra Solen','Jernoxid (rust)','Røde planter','Varm lava'],c:1,fb:'Jernoxid — rust — på overfladen giver Mars dens karakteristiske røde farve.'},
+      {q:'Hvad hedder det højeste bjerg i solsystemet?',opts:['Mount Everest','Olympus Mons','Valles Marineris','Hellas Planitia'],c:1,fb:'Olympus Mons på Mars er 22 km høj — næsten tre gange højere end Everest.'},
+      {q:'Hvor mange måner har Mars?',opts:['0','1','2','4'],c:2,fb:'Mars har to måner: Phobos og Deimos — begge er meget små og uregelmæssig formede.'},
+      {q:'Hvad er gennemsnittemperaturen på Mars?',opts:['0°C','−20°C','−60°C','−200°C'],c:2,fb:'Mars har en gennemsnitstemperatur på ca. −60°C, men det svinger meget.'},
+      {q:'Hvad tror forskerne der gemmer sig under Mars\' overflade?',opts:['Guld','Flydende vand','Levende organismer','Olie'],c:1,fb:'Forskerne mener der er flydende vand under Mars\' polarissede overflade.'},
+      {q:'Hvad hedder den kæmpe canyon på Mars?',opts:['Grand Canyon','Valles Marineris','Hellas Basin','Ares Vallis'],c:1,fb:'Valles Marineris er 4.000 km lang og op til 7 km dyb — langt større end Grand Canyon.'},
+      {q:'Har Mars en atmosfære?',opts:['Nej','Ja, tyk som Jordens','Ja, men meget tynd','Ja, med meget ilt'],c:2,fb:'Mars har en meget tynd atmosfære, primært af kuldioxid — for tynd til at trånde i.'},
+      {q:'Hvad er et Marsdøgn i jordanske minutter?',opts:['Præcis 24 timer','24 timer og 37 minutter','25 timer','48 timer'],c:1,fb:'Et Marsdøgn — kaldet en "sol" — varer 24 timer og 37 minutter.'},
+      {q:'Hvilken farve er Mars\' himmel ved solnedgang?',opts:['Orange','Blå','Gul','Rød'],c:1,fb:'Mens Jordens himmel er blå om dagen, er Mars\' himmel blålig ved solopgang og -nedgang.'},
+      {q:'Hvilken rover kørte rundt på Mars fra 2012?',opts:['Spirit','Opportunity','Curiosity','Pathfinder'],c:2,fb:'Curiosity landede på Mars i august 2012 og udforsker stadig Gale-krateret.'},
+    ],
+    choices:[{label:'Videre til Jupiter →',next:'jupiter'}]
+  },
+
+  jupiter: {
+    x:670,y:204,hsId:'hs-jupiter',badge:'Planet 5',title:'Jupiter',
+    desc:'Jupiter er den største planet — alle andre planeter kan passe ind i den! Den er en gaskæmpe uden fast overflade.',
+    fact:'<b>Jupiter</b> er 318 gange tungere end Jorden. Den har mindst 95 måner. Et år varer 12 jordår.',
+    questions:[
+      {q:'Hvad er Jupiters store røde plet?',opts:['Et hav af lava','En kæmpe orkan','Et bjerg','En vulkan'],c:1,fb:'Den store røde plet er en kæmpe storm der har raset i over 300 år.'},
+      {q:'Hvad er Jupiter primært lavet af?',opts:['Sten og metal','Is og vand','Gas — hydrogen og helium','Sand og jord'],c:2,fb:'Jupiter er en gaskæmpe bestående primært af hydrogen og helium.'},
+      {q:'Hvor mange Jorter kan passe ind i Jupiter?',opts:['10','100','500','1.300'],c:3,fb:'Hele 1.300 Jorter kan passe ind i Jupiter!'},
+      {q:'Hvad hedder Jupiters største måne?',opts:['Io','Europa','Callisto','Ganymedes'],c:3,fb:'Ganymedes er ikke bare Jupiters største måne — den er den største måne i hele solsystemet.'},
+      {q:'Hvilken af Jupiters måner mistænkes for at have et underjordisk hav?',opts:['Io','Europa','Callisto','Ganymedes'],c:1,fb:'Europa menes at have et flydende vandhav under sit isdækkede ydre — muligvis med liv!'},
+      {q:'Hvad er Jupiters omløbstid om Solen?',opts:['1 år','5 år','12 år','84 år'],c:2,fb:'Jupiter bruger ca. 12 jordanske år om at fuldføre ét kredsløb om Solen.'},
+      {q:'Har Jupiter ringe?',opts:['Nej, kun Saturn har det','Ja, men meget svage','Ja, tykkere end Saturns','Ja, lavet af is'],c:1,fb:'Jupiter har faktisk ringe, men de er meget svage og ses kun under gunstige forhold.'},
+      {q:'Hvor mange kendte måner har Jupiter?',opts:['4','16','50','Mindst 95'],c:3,fb:'Jupiter har mindst 95 kendte måner — flest af alle planeter i solsystemet.'},
+      {q:'Hvem opdagede Jupiters fire største måner i 1610?',opts:['Newton','Galileo Galilei','Copernicus','Kepler'],c:1,fb:'Galileo opdagede de fire største måner (Io, Europa, Ganymedes, Callisto) i 1610.'},
+      {q:'Hvad er Jupiters vindhastighed i stormene?',opts:['Op til 50 km/t','Op til 150 km/t','Op til 500 km/t','Op til 620 km/t'],c:3,fb:'Vindene i Jupiters storme kan nå op til 620 km/t.'},
+    ],
+    choices:[{label:'Videre til Saturn →',next:'saturn'}]
+  },
+
+  saturn: {
+    x:400,y:148,hsId:'hs-saturn',badge:'Planet 6',title:'Saturn',
+    desc:'Saturn er berømt for sine smukke ringe af is og sten. Den er den mindst tætte planet i solsystemet.',
+    fact:'<b>Saturn</b> ville flyde på vand! Den har 146 kendte måner. Titan har søer af flydende metan.',
+    questions:[
+      {q:'Hvad er Saturns ringe lavet af?',opts:['Gas og damp','Is og sten','Støv og jord','Metal'],c:1,fb:'Saturns ringe er lavet af milliarder af is- og stenpartikler — fra sandkorn til store som huse.'},
+      {q:'Hvad er specielt ved Saturns tæthed?',opts:['Den er tungere end Solen','Den ville synke i vand','Den ville flyde på vand','Den er lettere end luft'],c:2,fb:'Saturn er den mindst tætte planet — den er så let, at den ville flyde på vand!'},
+      {q:'Hvad hedder Saturns største måne?',opts:['Enceladus','Rhea','Titan','Mimas'],c:2,fb:'Titan er Saturns største måne og er faktisk større end planeten Merkur!'},
+      {q:'Hvad er unikt ved Saturns måne Titan?',opts:['Den er lavet af is','Den har en tyk atmosfære og søer','Den er varmere end Solen','Den roterer baglæns'],c:1,fb:'Titan har en tyk nitrogenatmosfære og søer af flydende metan og etan.'},
+      {q:'Hvad er Saturns omløbstid om Solen?',opts:['12 år','29 år','84 år','165 år'],c:1,fb:'Saturn bruger ca. 29 jordanske år om at kredse rundt om Solen.'},
+      {q:'Har andre planeter ringe?',opts:['Nej, kun Saturn','Ja — alle planeterne','Ja — Jupiter, Uranus og Neptun også','Ja — kun Mars og Jupiter'],c:2,fb:'Jupiter, Uranus og Neptun har også ringe — men meget svagere end Saturns.'},
+      {q:'Hvad er tykkelsen af Saturns ringe?',opts:['Nogle hundrede meter','10 km','100 km','1.000 km'],c:0,fb:'Saturns ringe er kun nogle få hundrede meter tykke, men millioner af km brede!'},
+      {q:'Hvad er et Saturndøgn i jordanske timer?',opts:['10 timer og 33 min','24 timer','48 timer','100 timer'],c:0,fb:'Saturn roterer meget hurtigt — et Saturndøgn varer kun ca. 10 timer og 33 minutter.'},
+      {q:'Hvem opdagede Saturns ringe?',opts:['Newton','Galileo Galilei','Huygens','Cassini'],c:1,fb:'Galileo opdagede Saturns ringe i 1610, men det var Huygens der forstod hvad de var.'},
+      {q:'Hvad hedder Saturns månede der ligner en "Dødsstjerne"?',opts:['Titan','Enceladus','Mimas','Rhea'],c:2,fb:'Mimas har et gigantisk krater der gør den forvekslelig med Dødsstjernen fra Star Wars.'},
+    ],
+    choices:[{label:'Videre til Uranus →',next:'uranus'}]
+  },
+
+  uranus: {
+    x:248,y:174,hsId:'hs-uranus',badge:'Planet 7',title:'Uranus',
+    desc:'Uranus er enestående: dens akse er vippet 98°, så den næsten ligger på siden. En pol kan have 42 år med sollys.',
+    fact:'<b>Uranus</b> er en isgigant. Metanen giver den sin blågrønne farve. Den har 28 måner og 13 ringe.',
+    questions:[
+      {q:'Hvorfor er Uranus blågrøn?',opts:['Den er lavet af havvand','Metan absorberer rødt lys','Den reflekterer havet','Grønne planter'],c:1,fb:'Metan i Uranus\' atmosfære absorberer rødt lys og reflekterer blåt og grønt lys.'},
+      {q:'Hvor mange grader er Uranus\' akse vippet?',opts:['23 grader','45 grader','73 grader','98 grader'],c:3,fb:'Uranus\' rotationsakse er vippet 98° — den ligger næsten fuldstændigt på siden!'},
+      {q:'Hvad er Uranus\' omløbstid om Solen?',opts:['29 år','49 år','84 år','165 år'],c:2,fb:'Uranus bruger 84 jordanske år om at kredse rundt om Solen.'},
+      {q:'Hvad er Uranus primært lavet af?',opts:['Gas som Jupiter','Sten og metal','Is: vand, metan og ammoniak','Flydende jern'],c:2,fb:'Uranus er en isgigant — dens indre er primært iskoldt vand, metan og ammoniak.'},
+      {q:'Hvilken rumrumsonde besøgte Uranus?',opts:['Voyager 1','Voyager 2','Cassini','Pioneer 11'],c:1,fb:'Voyager 2 er den eneste sonde, der har besøgt Uranus — det skete i 1986.'},
+      {q:'Hvad er et specielt træk ved Uranus\' magnetfelt?',opts:['Det er ekstremt svagt','Det er meget stærkt','Det er stærkt skævt i forhold til rotationsaksen','Det er identisk med Jordens'],c:2,fb:'Uranus\' magnetfelt er kraftigt forskudt og skævt i forhold til planetens rotationsakse.'},
+      {q:'Hvad hedder Uranus\' største måne?',opts:['Titania','Oberon','Ariel','Miranda'],c:0,fb:'Titania er Uranus\' største måne, opkaldt efter en figur fra Shakespeares "En Skærsommernatsdrøm".'},
+      {q:'Hvad er vindhastigheden i Uranus\' atmosfære?',opts:['Op til 100 km/t','Op til 250 km/t','Op til 900 km/t','Op til 2.100 km/t'],c:2,fb:'Vindene på Uranus kan nå op til ca. 900 km/t.'},
+      {q:'Hvad er Uranus\' diameter sammenlignet med Jordens?',opts:['2 gange større','4 gange større','10 gange større','20 gange større'],c:1,fb:'Uranus er ca. 4 gange bredere end Jorden i diameter.'},
+      {q:'Hvad er årstiderne på Uranus ekstremt på grund af?',opts:['Dens afstand til Solen','Dens tippede akse','Dens manglende atmosfære','Dens ringe'],c:1,fb:'Pga. den tippede akse oplever Uranus ekstreme årstider — polerne kan have 42 år i mørke.'},
+    ],
+    choices:[{label:'Videre til Neptun →',next:'neptune'}]
+  },
+
+  neptune: {
+    x:120,y:210,hsId:'hs-neptune',badge:'Planet 8',title:'Neptun',
+    desc:'Neptun er den fjerneste og blåeste planet med de kraftigste vinde i solsystemet — op til 2.100 km/t!',
+    fact:'<b>Neptun</b>: et år varer 165 jordår. Siden opdagelsen i 1846 har den kun nået ét kredsløb. Triton kredser baglæns.',
+    questions:[
+      {q:'Hvad er Neptuns vindshastighed?',opts:['Op til 200 km/t','Op til 500 km/t','Op til 1.000 km/t','Op til 2.100 km/t'],c:3,fb:'Neptun har de kraftigste vinde i solsystemet — op til 2.100 km/t!'},
+      {q:'Hvad er Neptuns omløbstid om Solen?',opts:['84 år','100 år','165 år','248 år'],c:2,fb:'Neptun bruger 165 jordanske år om at kredse rundt om Solen.'},
+      {q:'Hvor lang tid bruger sollys på at nå Neptun?',opts:['8 minutter','1 time','Over 4 timer','1 dag'],c:2,fb:'Lyset fra Solen bruger over 4 timer på rejsen til Neptun.'},
+      {q:'Hvad hedder Neptuns største måne?',opts:['Proteus','Nereid','Triton','Larissa'],c:2,fb:'Triton er Neptuns største måne — og den kredser baglæns om planeten.'},
+      {q:'Hvad er unikt ved Neptuns måne Triton?',opts:['Den er meget stor','Den er lavet af guld','Den kredser baglæns','Den har en tyk atmosfære'],c:2,fb:'Triton kredser i modsat retning af Neptuns rotation — det er meget sjældent.'},
+      {q:'Hvad er Neptuns farve?',opts:['Rød','Grøn','Blå','Gul'],c:2,fb:'Neptun er intenst blå — endnu mere end Uranus — pga. metan i dens atmosfære.'},
+      {q:'Hvornår blev Neptun opdaget?',opts:['1776','1846','1930','1989'],c:1,fb:'Neptun blev opdaget i 1846 — baseret på matematiske beregninger af uregelmæssigheder i Uranus\' bane.'},
+      {q:'Hvilken sonde har besøgt Neptun?',opts:['Voyager 1','Pioneer 10','Voyager 2','Cassini'],c:2,fb:'Voyager 2 er den eneste sonde, der har besøgt Neptun — det skete i 1989.'},
+      {q:'Hvad er et Neptundøgn i jordanske timer?',opts:['10 timer','16 timer','24 timer','48 timer'],c:1,fb:'Et Neptundøgn varer ca. 16 timer — lidt kortere end et jorddøgn.'},
+      {q:'Hvad er Neptun klassificeret som?',opts:['Stjernen','En gaskæmpe','En isgigant','En dvergplanet'],c:2,fb:'Neptun er en isgigant (ligesom Uranus), da den indeholder store mængder is og er anderledes end Jupiter og Saturn.'},
+    ],
+    choices:[{label:'🚀 Tilbage til Solen',next:'sun'}]
+  }
+};
+
+const ORDER = ['sun','mercury','venus','earth','mars','jupiter','saturn','uranus','neptune'];
+const TOTAL_Q = ORDER.length * 10; // 90
+
+/* ══ STATE ══ */
+let visited     = new Set();
+let qIndex      = {}; // key → current question index (0–9)
+let qCorrect    = {}; // key → count correct
+let correctTotal= 0;
+let animating   = false;
+let charMode    = 'rocket';
+let posX=400, posY=280;
+let trailPoints = [];
+
+ORDER.forEach(k=>{ qIndex[k]=0; qCorrect[k]=0; });
+
+/* ══ ELEMENTS ══ */
+const wc      = document.getElementById('wc');
+const mapSvg  = document.getElementById('mapsvg');
+const rocketEl= document.getElementById('char-rocket');
+const astroEl = document.getElementById('char-astronaut');
+const panel   = document.getElementById('panel');
+const hint    = document.getElementById('hint');
+const endSc   = document.getElementById('endscreen');
+const progBar = document.getElementById('progress-bar');
+const trailG  = document.getElementById('trail');
+const flameR  = document.getElementById('rocket-flame');
+const flameA  = document.getElementById('astro-flame');
+
+ORDER.forEach(k=>{
+  const d=document.createElement('div');
+  d.className='prog-dot'; d.id='dot-'+k; progBar.appendChild(d);
+});
+
+/* ══ CHARACTER ══ */
+function setChar(mode){
+  charMode=mode;
+  document.getElementById('btn-rocket').classList.toggle('active',mode==='rocket');
+  document.getElementById('btn-astronaut').classList.toggle('active',mode==='astronaut');
+  rocketEl.style.display = mode==='rocket'?'':'none';
+  astroEl.style.display  = mode==='astronaut'?'':'none';
+  applyCharTransform(posX,posY,0);
+}
+
+function applyCharTransform(x,y,angle){
+  const scale = charMode==='rocket' ? 0.55 : 0.5;
+  const el = charMode==='rocket' ? rocketEl : astroEl;
+  el.setAttribute('transform',`translate(${x},${y}) rotate(${angle}) scale(${scale})`);
+}
+
+/* ══ TRAIL ══ */
+function addTrailPoint(x,y){
+  trailPoints.push({x,y});
+  if(trailPoints.length>80)trailPoints.shift();
+  redrawTrail();
+}
+function redrawTrail(){
+  trailG.innerHTML='';
+  const total=trailPoints.length;
+  for(let i=1;i<total;i++){
+    const frac=i/total;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',trailPoints[i-1].x); line.setAttribute('y1',trailPoints[i-1].y);
+    line.setAttribute('x2',trailPoints[i].x);   line.setAttribute('y2',trailPoints[i].y);
+    line.setAttribute('stroke',charMode==='rocket'?'#ff9900':'#88ddff');
+    line.setAttribute('stroke-width',frac*2.5);
+    line.setAttribute('opacity',frac*0.5);
+    line.setAttribute('stroke-linecap','round');
+    trailG.appendChild(line);
+  }
+}
+function clearTrail(){ trailPoints=[]; trailG.innerHTML=''; }
+
+/* ══ ANIMATE ══ */
+function animateTo(tx,ty,cb){
+  if(animating)return; animating=true;
+  const sx=posX,sy=posY,dx=tx-sx,dy=ty-sy;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  const dur=Math.min(2200,Math.max(700,dist*4));
+  const t0=performance.now(); let lastTrail=0;
+  if(flameR)flameR.style.display=''; if(flameA)flameA.style.display='';
+  function step(now){
+    const t=Math.min(1,(now-t0)/dur);
+    const ease=t<0.5?2*t*t:-1+(4-2*t)*t;
+    const arc=Math.sin(t*Math.PI)*Math.min(dist*0.15,38);
+    const len=Math.sqrt(dx*dx+dy*dy)||1;
+    const px2=-dy/len*arc, py2=dx/len*arc;
+    const blend=1-Math.abs(ease*2-1);
+    const cx=sx+dx*ease+px2*blend, cy=sy+dy*ease+py2*blend;
+    posX=cx; posY=cy;
+    const prev_ease=Math.max(0,ease-0.02);
+    const vx=cx-(sx+dx*prev_ease), vy=cy-(sy+dy*prev_ease);
+    const dynAngle=Math.atan2(vy,vx)*180/Math.PI+90;
+    applyCharTransform(cx,cy,dynAngle);
+    if(now-lastTrail>28){ addTrailPoint(cx,cy); lastTrail=now; }
+    if(t<1) requestAnimationFrame(step);
+    else {
+      posX=tx; posY=ty; applyCharTransform(tx,ty,0); animating=false;
+      if(flameR)flameR.style.display='none'; if(flameA)flameA.style.display='none';
+      if(cb)cb();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+/* ══ STAMP ══ */
+function svgPct(svgX,svgY){
+  const rect=mapSvg.getBoundingClientRect();
+  const scale=Math.max(rect.width/800,rect.height/500);
+  const offX=(rect.width-800*scale)/2, offY=(rect.height-500*scale)/2;
+  return{left:(offX+svgX*scale)+'px',top:(offY+svgY*scale)+'px'};
+}
+function addStamp(key){
+  const s=stages[key],pos=svgPct(s.x,s.y);
+  const el=document.createElement('div');
+  el.className='stamp'; el.id='stamp-'+key; el.textContent='✓';
+  el.style.left=pos.left; el.style.top=pos.top; wc.appendChild(el);
+}
+function markDot(key){ const d=document.getElementById('dot-'+key); if(d)d.classList.add('done'); }
+
+/* ══ WIN CHECK ══ */
+function checkAllDone(){
+  const allVisited=visited.size>=ORDER.length;
+  const allAnswered=ORDER.every(k=>qIndex[k]>=10);
+  if(!allVisited||!allAnswered)return;
+  setTimeout(()=>{
+    panel.classList.remove('open');
+    const pct=Math.round(correctTotal/TOTAL_Q*100);
+    document.getElementById('end-score').textContent=correctTotal+'/'+TOTAL_Q;
+    let stars,msg;
+    if(pct===100)    {stars='⭐⭐⭐';msg='Perfekt score! Du er en ægte rumforsker og kender alle hemmelighederne om solsystemet!';}
+    else if(pct>=70) {stars='⭐⭐'; msg='Fremragende! Du ved rigtig meget om solsystemet. Prøv igen for at slå din rekord!';}
+    else             {stars='⭐';   msg='God indsats! Prøv igen og bliv endnu klogere på planeterne og Solen.';}
+    document.getElementById('end-stars').textContent=stars;
+    document.getElementById('end-msg').textContent=msg;
+    endSc.classList.add('show');
+  },700);
+}
+
+/* ══ SHOW STAGE ══ */
+function showStage(key){
+  const s=stages[key];
+  const isNew=!visited.has(key);
+  if(isNew){ visited.add(key); addStamp(key); markDot(key); }
+  hint.style.opacity='0';
+
+  const qi=qIndex[key]; // which question to show (0–9)
+  const allDone=(qi>=10);
+  const s_choices=s.choices.map(c=>`<button class="cbtn" onclick="goTo('${c.next}')">${c.label}</button>`).join('');
+
+  let quizSection='', choicesClass='choices show';
+  if(!allDone){
+    const q=s.questions[qi];
+    const optsHTML=q.opts.map((o,i)=>`<button class="qbtn" id="qo${i}" onclick="answerQ('${key}',${i},${q.c})">${o}</button>`).join('');
+    quizSection=`
+      <div class="q-progress">Spørgsmål ${qi+1} af 10</div>
+      <div class="quiz-box">
+        <div class="quiz-q">🧠 ${q.q}</div>
+        <div class="quiz-opts">${optsHTML}</div>
+        <div class="quiz-fb" id="qfb"></div>
+      </div>`;
+    choicesClass='choices'; // hidden until answered
+  } else {
+    quizSection=`<div class="quiz-box" style="opacity:.4"><div class="quiz-q" style="font-size:var(--f-xs)">✓ Alle 10 spørgsmål besvaret — ${qCorrect[key]}/10 rigtige</div></div>`;
+  }
+
+  panel.innerHTML=`
+    <div class="p-badge">${s.badge}</div>
+    <div class="p-title">${s.title}</div>
+    <div class="p-desc">${s.desc}</div>
+    <div class="p-fact">${s.fact}</div>
+    ${quizSection}
+    <div class="${choicesClass}" id="choices-wrap">${s_choices}</div>
+  `;
+  panel.classList.add('open');
+  panel.scrollTop=0;
+}
+
+/* ══ ANSWER QUESTION ══ */
+function answerQ(key,chosen,correct){
+  document.querySelectorAll('.qbtn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correct)b.classList.add('correct');
+    else if(i===chosen&&chosen!==correct)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('qfb');
+  const q=stages[key].questions[qIndex[key]];
+  if(chosen===correct){
+    correctTotal++; qCorrect[key]++;
+    fb.className='quiz-fb ok'; fb.textContent='✅ '+q.fb;
+  } else {
+    fb.className='quiz-fb no'; fb.textContent='❌ Ikke helt. '+q.fb;
+  }
+  fb.style.display='block';
+  qIndex[key]++;
+  setTimeout(()=>{
+    const cw=document.getElementById('choices-wrap');
+    if(cw)cw.classList.add('show');
+    checkAllDone();
+  },900);
+}
+
+/* ══ GO TO ══ */
+function goTo(key){
+  panel.classList.remove('open');
+  clearTrail();
+  setTimeout(()=>animateTo(stages[key].x,stages[key].y,()=>showStage(key)),220);
+}
+
+/* ══ RESTART ══ */
+function restartGame(){
+  visited.clear(); correctTotal=0;
+  ORDER.forEach(k=>{ qIndex[k]=0; qCorrect[k]=0; });
+  document.querySelectorAll('.stamp').forEach(e=>e.remove());
+  ORDER.forEach(k=>{ const d=document.getElementById('dot-'+k); if(d)d.classList.remove('done'); });
+  endSc.classList.remove('show'); panel.classList.remove('open'); panel.innerHTML='';
+  hint.style.opacity='1'; clearTrail();
+  posX=400; posY=280; applyCharTransform(400,280,0);
+  if(flameR)flameR.style.display='none'; if(flameA)flameA.style.display='none';
+  setTimeout(()=>{ animateTo(400,280,()=>showStage('sun')); setTimeout(()=>{hint.style.opacity='0';},3500); },350);
+}
+
+/* ══ HOTSPOTS ══ */
+Object.entries(stages).forEach(([key,s])=>{
+  const el=document.getElementById(s.hsId); if(!el)return;
+  const h=()=>{ if(animating)return; panel.classList.remove('open'); clearTrail(); setTimeout(()=>animateTo(s.x,s.y,()=>showStage(key)),120); };
+  el.addEventListener('click',h);
+  el.addEventListener('touchend',e=>{e.preventDefault();h();},{passive:false});
+});
+
+/* ══ RESIZE ══ */
+window.addEventListener('resize',()=>{
+  ORDER.forEach(k=>{
+    const el=document.getElementById('stamp-'+k);
+    if(!el||!visited.has(k))return;
+    const pos=svgPct(stages[k].x,stages[k].y);
+    el.style.left=pos.left; el.style.top=pos.top;
+  });
+});
+
+/* ══ INIT ══ */
+if(flameR)flameR.style.display='none'; if(flameA)flameA.style.display='none';
+astroEl.style.display='none';
+applyCharTransform(400,280,0);
+setTimeout(()=>{ animateTo(400,280,()=>showStage('sun')); setTimeout(()=>{hint.style.opacity='0';},3500); },700);
+</script>
+</body>
+</html>

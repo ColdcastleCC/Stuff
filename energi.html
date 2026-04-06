@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Energiomregning – Fysiklaboratoriet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Nunito:wght@700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --kin:  #f59e0b;   /* amber  – kinetisk  */
+  --pot:  #22d3ee;   /* cyan   – potentiel */
+  --el:   #a78bfa;   /* violet – elektrisk */
+  --fos:  #fb7185;   /* rose   – fossil    */
+  --neu:  #34d399;   /* emerald – formler  */
+  --bg:   #0a0f1e;
+  --panel:rgba(6,10,24,0.97);
+  --fmono:'Space Mono',monospace;
+  --fhead:'Nunito',sans-serif;
+  --fbody:'Nunito Sans',sans-serif;
+  --f-xs:clamp(10px,2.2vw,12px);
+  --f-sm:clamp(12px,2.8vw,14px);
+  --f-md:clamp(13px,3.2vw,15px);
+  --f-lg:clamp(15px,4vw,20px);
+  --f-xl:clamp(20px,5.5vw,30px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fbody);-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#wc{position:relative;width:100dvw;height:100dvh;overflow:hidden;}
+#mapsvg{position:absolute;inset:0;width:100%;height:100%;}
+
+@keyframes pulse  {0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes float  {0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes spark  {0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(2)}}
+@keyframes stampIn{to{transform:translate(-50%,-50%) scale(1)}}
+@keyframes bolt   {0%,100%{opacity:.3}50%{opacity:1}}
+.hs{animation:pulse 2.3s ease-in-out infinite;}
+.fl{animation:float 3s ease-in-out infinite;}
+.blt{animation:bolt 1.4s ease-in-out infinite;}
+
+/* ── CHAR TOGGLE ── */
+#char-toggle{position:absolute;top:max(10px,env(safe-area-inset-top,10px));left:max(10px,env(safe-area-inset-left,10px));z-index:25;display:flex;gap:5px;}
+.ctbtn{font-family:var(--fmono);font-weight:700;font-size:clamp(9px,2vw,11px);background:rgba(6,10,24,0.88);color:rgba(255,255,255,0.5);border:1px solid rgba(167,139,250,0.25);border-radius:4px;padding:4px 10px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.ctbtn.active{background:rgba(167,139,250,0.15);color:var(--el);border-color:var(--el);}
+
+/* ── HINT ── */
+#hint{position:absolute;top:max(10px,env(safe-area-inset-top,10px));left:50%;transform:translateX(-50%);background:rgba(6,10,24,0.9);color:#fff;font-family:var(--fmono);font-size:var(--f-xs);padding:5px 14px;border-radius:3px;pointer-events:none;transition:opacity .8s;white-space:nowrap;z-index:20;max-width:90vw;text-align:center;border:1px solid rgba(167,139,250,0.2);}
+
+/* ── PROGRESS ── */
+#progress-bar{position:absolute;top:max(10px,env(safe-area-inset-top,10px));right:max(10px,env(safe-area-inset-right,10px));display:flex;gap:4px;align-items:center;z-index:20;}
+.prog-dot{width:clamp(7px,1.8vw,10px);height:clamp(7px,1.8vw,10px);border-radius:50%;background:rgba(167,139,250,0.15);border:1.5px solid rgba(167,139,250,0.3);transition:background .3s,border-color .3s;}
+.prog-dot.done{background:var(--el);border-color:var(--el);}
+
+/* ── PANEL ── */
+#panel{position:absolute;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid rgba(167,139,250,0.15);border-radius:14px 14px 0 0;padding:14px 16px;padding-bottom:max(16px,env(safe-area-inset-bottom,16px));transform:translateY(110%);transition:transform .38s cubic-bezier(.22,1,.36,1);z-index:30;max-height:72dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#panel.open{transform:translateY(0);}
+#panel::before{content:'';display:block;width:36px;height:3px;background:rgba(167,139,250,0.25);border-radius:2px;margin:0 auto 12px;}
+
+.p-badge{display:inline-block;font-family:var(--fmono);font-weight:700;font-size:var(--f-xs);letter-spacing:.06em;text-transform:uppercase;padding:2px 9px;border-radius:3px;border-width:1px;border-style:solid;margin-bottom:5px;}
+.p-title{font-family:var(--fmono);font-weight:700;font-size:var(--f-lg);color:#fff;margin-bottom:4px;line-height:1.2;}
+.p-desc{font-size:var(--f-sm);color:rgba(255,255,255,0.75);line-height:1.55;margin-bottom:8px;}
+
+/* FORMULA DISPLAY BOX */
+.formula-card{border-radius:8px;padding:10px 14px;margin-bottom:10px;border-width:1px;border-style:solid;}
+.formula-card .f-label{font-family:var(--fmono);font-size:var(--f-xs);letter-spacing:.06em;text-transform:uppercase;opacity:.6;margin-bottom:5px;}
+.formula-main{font-family:var(--fmono);font-weight:700;font-size:clamp(13px,3.5vw,18px);color:#fff;line-height:1.5;}
+.formula-vars{font-size:var(--f-xs);color:rgba(255,255,255,0.5);line-height:1.6;margin-top:5px;font-family:var(--fbody);}
+.formula-vars span{color:rgba(255,255,255,0.75);}
+
+/* QUESTION TYPES */
+.q-progress{font-family:var(--fmono);font-size:var(--f-xs);color:rgba(167,139,250,0.45);margin-bottom:6px;letter-spacing:.04em;}
+.quiz-box{background:rgba(255,255,255,0.04);border:1px solid rgba(167,139,250,0.12);border-radius:10px;padding:11px 12px;margin-bottom:10px;}
+.quiz-q{font-family:var(--fbody);font-weight:700;font-size:var(--f-sm);color:#fff;margin-bottom:9px;line-height:1.45;}
+.quiz-type-label{font-family:var(--fmono);font-size:var(--f-xs);color:rgba(167,139,250,0.55);margin-bottom:7px;letter-spacing:.04em;}
+
+/* Multiple choice */
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.qbtn{font-family:var(--fmono);font-weight:700;font-size:var(--f-xs);background:rgba(167,139,250,0.07);color:rgba(255,255,255,0.85);border:1px solid rgba(167,139,250,0.18);border-radius:6px;padding:9px 6px;cursor:pointer;text-align:center;line-height:1.4;min-height:44px;display:flex;align-items:center;justify-content:center;transition:background .14s,transform .1s;}
+.qbtn:hover:not(:disabled){background:rgba(167,139,250,0.18);}
+.qbtn:active:not(:disabled){transform:scale(0.95);}
+.qbtn.correct{background:rgba(52,211,153,0.22);border-color:rgba(52,211,153,0.65);}
+.qbtn.wrong  {background:rgba(220,60,60,0.2); border-color:rgba(220,60,60,0.6);}
+.qbtn:disabled{cursor:default;}
+
+/* Open numeric answer */
+.open-answer-wrap{display:flex;gap:8px;align-items:stretch;margin-top:2px;}
+.open-input{font-family:var(--fmono);font-weight:700;font-size:var(--f-md);background:rgba(167,139,250,0.07);color:#fff;border:1px solid rgba(167,139,250,0.3);border-radius:6px;padding:10px 12px;flex:1;min-height:44px;outline:none;-webkit-appearance:none;appearance:none;}
+.open-input:focus{border-color:rgba(167,139,250,0.7);background:rgba(167,139,250,0.12);}
+.open-input::placeholder{color:rgba(255,255,255,0.25);}
+.open-unit{font-family:var(--fmono);font-size:var(--f-sm);color:rgba(167,139,250,0.8);background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2);border-radius:6px;padding:10px 10px;display:flex;align-items:center;white-space:nowrap;}
+.submit-btn{font-family:var(--fmono);font-weight:700;font-size:var(--f-sm);background:rgba(167,139,250,0.18);color:#fff;border:1px solid rgba(167,139,250,0.35);border-radius:6px;padding:10px 14px;cursor:pointer;min-height:44px;transition:background .14s,transform .1s;white-space:nowrap;}
+.submit-btn:hover{background:rgba(167,139,250,0.3);}
+.submit-btn:active{transform:scale(0.96);}
+
+/* Formula rearrange (single MC) */
+.rearrange-opts{display:flex;flex-direction:column;gap:6px;}
+.rearrange-opts .qbtn{font-size:clamp(10px,2.5vw,13px);text-align:left;justify-content:flex-start;padding:9px 12px;}
+
+/* Feedback */
+.quiz-fb{font-size:var(--f-xs);margin-top:8px;padding:8px 10px;border-radius:6px;line-height:1.5;display:none;font-family:var(--fbody);}
+.quiz-fb.ok{background:rgba(52,211,153,0.13);color:#7affcc;}
+.quiz-fb.no{background:rgba(220,60,60,0.12);color:#ffbebe;}
+.quiz-fb.close{background:rgba(245,158,11,0.12);color:#ffd580;}
+
+/* Step-by-step hint */
+.step-hint{font-family:var(--fmono);font-size:var(--f-xs);color:rgba(255,255,255,0.38);margin-top:6px;line-height:1.6;padding:6px 8px;border-left:2px solid rgba(167,139,250,0.3);}
+
+.choices{display:none;flex-wrap:wrap;gap:7px;}
+.choices.show{display:flex;}
+.cbtn{font-family:var(--fmono);font-weight:700;font-size:var(--f-sm);background:rgba(167,139,250,0.09);color:#fff;border:1px solid rgba(167,139,250,0.25);border-radius:7px;padding:11px 12px;cursor:pointer;flex:1;min-width:120px;min-height:44px;text-align:center;transition:background .14s,transform .1s;}
+.cbtn:hover{background:rgba(167,139,250,0.2);}
+.cbtn:active{transform:scale(0.96);}
+
+.stamp{position:absolute;width:clamp(14px,3.5vw,20px);height:clamp(14px,3.5vw,20px);border-radius:50%;background:var(--el);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:clamp(8px,2vw,11px);font-weight:700;color:#0a0f1e;pointer-events:none;transform:translate(-50%,-50%) scale(0);animation:stampIn .4s cubic-bezier(.34,1.56,.64,1) forwards;z-index:25;}
+
+/* SCORE BAR */
+#score-bar{position:absolute;bottom:max(8px,env(safe-area-inset-bottom,8px));left:50%;transform:translateX(-50%);font-family:var(--fmono);font-size:var(--f-xs);color:rgba(167,139,250,0.6);z-index:20;pointer-events:none;white-space:nowrap;}
+#score-bar.hidden{display:none;}
+
+/* END */
+#endscreen{display:none;position:absolute;inset:0;background:rgba(6,10,24,0.97);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 20px;padding-bottom:max(28px,env(safe-area-inset-bottom,28px));z-index:50;overflow-y:auto;}
+#endscreen.show{display:flex;}
+.end-emoji{font-size:clamp(36px,9vw,56px);margin-bottom:10px;}
+.end-title{font-family:var(--fmono);font-weight:700;font-size:var(--f-xl);color:var(--el);margin-bottom:8px;}
+.end-sub{font-size:var(--f-md);color:rgba(255,255,255,0.6);line-height:1.55;margin-bottom:14px;max-width:380px;}
+.end-score{font-family:var(--fmono);font-weight:700;font-size:clamp(44px,12vw,68px);color:var(--el);line-height:1;}
+.end-score-label{font-size:var(--f-xs);color:rgba(167,139,250,0.4);margin-bottom:6px;font-family:var(--fmono);}
+.end-stars{font-size:clamp(24px,6vw,36px);margin:4px 0 8px;}
+.end-msg{font-size:var(--f-sm);color:rgba(255,255,255,0.5);max-width:340px;line-height:1.6;margin-bottom:22px;}
+.restart-btn{font-family:var(--fmono);font-weight:700;font-size:var(--f-md);background:var(--el);color:#0a0f1e;border:none;border-radius:6px;padding:14px 36px;cursor:pointer;min-height:52px;transition:background .14s,transform .1s;}
+.restart-btn:hover{background:#c4b5fd;}
+.restart-btn:active{transform:scale(0.97);}
+</style>
+</head>
+<body>
+<div id="wc">
+
+<!-- ══════════════════════════════════════
+     PHYSICS LAB MAP SVG
+     ══════════════════════════════════════ -->
+<svg id="mapsvg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="kinGlow"  cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f59e0b" stop-opacity=".22"/><stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/></radialGradient>
+    <radialGradient id="potGlow"  cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#22d3ee" stop-opacity=".2"/><stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+    <radialGradient id="elGlow"   cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a78bfa" stop-opacity=".22"/><stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/></radialGradient>
+    <radialGradient id="fosGlow"  cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fb7185" stop-opacity=".2"/><stop offset="100%" stop-color="#fb7185" stop-opacity="0"/></radialGradient>
+    <radialGradient id="wattGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#34d399" stop-opacity=".2"/><stop offset="100%" stop-color="#34d399" stop-opacity="0"/></radialGradient>
+    <filter id="glow3"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- ROOM -->
+  <rect x="0" y="0" width="800" height="500" fill="#0a0f1e"/>
+  <!-- ceiling grid -->
+  <line x1="0" y1="60" x2="800" y2="60" stroke="#0f1428" stroke-width="2"/>
+  <rect x="0" y="0" width="800" height="60" fill="#0c1020"/>
+  <!-- fluorescent lights -->
+  <rect x="60"  y="2"  width="120" height="6" rx="2" fill="#c4b5fd" opacity=".14"/>
+  <rect x="280" y="2"  width="130" height="6" rx="2" fill="#c4b5fd" opacity=".14"/>
+  <rect x="520" y="2"  width="130" height="6" rx="2" fill="#c4b5fd" opacity=".14"/>
+  <!-- light cone falloff -->
+  <ellipse cx="120" cy="280" rx="160" ry="60" fill="#a78bfa" opacity=".025"/>
+  <ellipse cx="345" cy="280" rx="160" ry="60" fill="#a78bfa" opacity=".025"/>
+  <ellipse cx="585" cy="280" rx="160" ry="60" fill="#a78bfa" opacity=".025"/>
+
+  <!-- BACK WALL -->
+  <rect x="0" y="60" width="800" height="230" fill="#0d1222"/>
+  <!-- wall grid -->
+  <line x1="0"   y1="130" x2="800" y2="130" stroke="#111828" stroke-width="1"/>
+  <line x1="0"   y1="200" x2="800" y2="200" stroke="#111828" stroke-width="1"/>
+  <line x1="0"   y1="270" x2="800" y2="270" stroke="#111828" stroke-width="1"/>
+  <line x1="160" y1="60"  x2="160" y2="290" stroke="#111828" stroke-width="1"/>
+  <line x1="320" y1="60"  x2="320" y2="290" stroke="#111828" stroke-width="1"/>
+  <line x1="480" y1="60"  x2="480" y2="290" stroke="#111828" stroke-width="1"/>
+  <line x1="640" y1="60"  x2="640" y2="290" stroke="#111828" stroke-width="1"/>
+
+  <!-- ENERGY FORMULA BLACKBOARD on back wall -->
+  <rect x="230" y="68" width="340" height="155" rx="4" fill="#0a1a12" stroke="#1a3a22" stroke-width="1.5"/>
+  <text x="400" y="87" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="rgba(52,211,153,0.5)" letter-spacing=".08em">ENERGI FORMLER</text>
+  <text x="248" y="106" font-family="Space Mono,monospace" font-size="10" fill="rgba(245,158,11,0.8)">Eₖ = ½mv²</text>
+  <text x="248" y="122" font-family="Space Mono,monospace" font-size="10" fill="rgba(34,211,238,0.8)">Eₚ = mgh</text>
+  <text x="248" y="138" font-family="Space Mono,monospace" font-size="10" fill="rgba(167,139,250,0.8)">P = U·I</text>
+  <text x="248" y="154" font-family="Space Mono,monospace" font-size="10" fill="rgba(167,139,250,0.8)">E = P·t</text>
+  <text x="248" y="170" font-family="Space Mono,monospace" font-size="10" fill="rgba(251,113,133,0.8)">η = E_nyttig/E_total</text>
+  <text x="248" y="186" font-family="Space Mono,monospace" font-size="10" fill="rgba(167,139,250,0.8)">U = R·I   (ohm)</text>
+  <text x="248" y="202" font-family="Space Mono,monospace" font-size="10" fill="rgba(52,211,153,0.8)">1 kWh = 3 600 000 J</text>
+
+  <!-- SHELVES / equipment top left -->
+  <rect x="10" y="78" width="190" height="6" rx="1" fill="#1a2030"/>
+  <rect x="10" y="148" width="190" height="6" rx="1" fill="#1a2030"/>
+  <!-- oscilloscope -->
+  <rect x="18" y="62" width="52" height="38" rx="2" fill="#0f1428" stroke="#2a3050" stroke-width="1"/>
+  <rect x="22" y="66" width="44" height="28" rx="1" fill="#050d18"/>
+  <!-- sine wave on oscilloscope -->
+  <path d="M24 82 Q30 72 36 82 Q42 92 48 82 Q54 72 60 82" fill="none" stroke="#a78bfa" stroke-width="1.2" opacity=".7"/>
+  <text x="44" y="99" text-anchor="middle" font-family="Space Mono,monospace" font-size="7" fill="rgba(167,139,250,0.5)">OSC</text>
+  <!-- multimeter -->
+  <rect x="78" y="65" width="38" height="34" rx="2" fill="#12180a" stroke="#283018" stroke-width="1"/>
+  <rect x="82" y="69" width="30" height="14" rx="1" fill="#081008"/>
+  <text x="97" y="79" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="#34d399" opacity=".8">3.7V</text>
+  <text x="97" y="97" text-anchor="middle" font-family="Space Mono,monospace" font-size="7" fill="rgba(52,211,153,0.4)">METER</text>
+  <!-- wires -->
+  <path d="M28 100 Q28 118 50 118" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".5"/>
+  <path d="M150 100 Q150 118 130 118" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity=".5"/>
+
+  <!-- EQUIPMENT far right shelf -->
+  <rect x="600" y="78"  width="185" height="6" rx="1" fill="#1a2030"/>
+  <rect x="600" y="148" width="185" height="6" rx="1" fill="#1a2030"/>
+  <!-- power supply -->
+  <rect x="608" y="62" width="60" height="40" rx="2" fill="#12100a" stroke="#302818" stroke-width="1"/>
+  <rect x="612" y="66" width="52" height="20" rx="1" fill="#060402"/>
+  <text x="638" y="79" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="#f59e0b" opacity=".85">12.0 V</text>
+  <circle cx="618" cy="96" r="4" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+  <circle cx="658" cy="96" r="4" fill="none" stroke="#22d3ee" stroke-width="1.5" opacity=".6"/>
+  <text x="638" y="102" text-anchor="middle" font-family="Space Mono,monospace" font-size="7" fill="rgba(245,158,11,0.4)">SUPPLY</text>
+
+  <!-- BENCH -->
+  <rect x="0"   y="288" width="800" height="20" fill="#141c28"/>
+  <rect x="0"   y="306" width="800" height="5"  fill="#0f1520"/>
+  <rect x="0"   y="288" width="800" height="3"  fill="#1e2a3c" opacity=".8"/>
+
+  <!-- FLOOR -->
+  <rect x="0" y="311" width="800" height="189" fill="#0d111e"/>
+  <line x1="0"   y1="380" x2="800" y2="380" stroke="#111520" stroke-width="1.5"/>
+  <line x1="0"   y1="450" x2="800" y2="450" stroke="#111520" stroke-width="1.5"/>
+  <line x1="100" y1="311" x2="100" y2="500" stroke="#111520" stroke-width="1.5"/>
+  <line x1="200" y1="311" x2="200" y2="500" stroke="#111520" stroke-width="1.5"/>
+  <line x1="300" y1="311" x2="300" y2="500" stroke="#111520" stroke-width="1.5"/>
+  <line x1="400" y1="311" x2="400" y2="500" stroke="#111520" stroke-width="1.5"/>
+  <line x1="500" y1="311" x2="500" y2="500" stroke="#111520" stroke-width="1.5"/>
+  <line x1="600" y1="311" x2="600" y2="500" stroke="#111520" stroke-width="1.5"/>
+  <line x1="700" y1="311" x2="700" y2="500" stroke="#111520" stroke-width="1.5"/>
+
+  <!-- TRAIL -->
+  <g id="trail"></g>
+
+  <!-- ══ STATION APPARATUS ══ -->
+
+  <!-- STATION 1: Kinetisk energi (bil/bold på bane) -->
+  <circle cx="80" cy="248" r="50" fill="url(#kinGlow)"/>
+  <!-- track -->
+  <line x1="30" y1="272" x2="135" y2="272" stroke="#f59e0b" stroke-width="1.5" opacity=".3"/>
+  <!-- car body -->
+  <rect x="50" y="255" width="50" height="20" rx="4" fill="#1a1400" stroke="#f59e0b" stroke-width="1.5" opacity=".8"/>
+  <rect x="58" y="251" width="30" height="10" rx="3" fill="#f59e0b" opacity=".25"/>
+  <!-- wheels -->
+  <circle cx="62" cy="275" r="6" fill="#0a0f1e" stroke="#f59e0b" stroke-width="1.5" opacity=".8"/>
+  <circle cx="88" cy="275" r="6" fill="#0a0f1e" stroke="#f59e0b" stroke-width="1.5" opacity=".8"/>
+  <!-- speed arrow -->
+  <path d="M100 260 L116 260" fill="none" stroke="#f59e0b" stroke-width="2" opacity=".7" marker-end="url(#arrowAmb)"/>
+  <!-- Ek label -->
+  <text x="80" y="238" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#f59e0b" opacity=".9">Eₖ = ½mv²</text>
+
+  <!-- STATION 2: Potentiel energi (bold på rampe) -->
+  <circle cx="230" cy="248" r="50" fill="url(#potGlow)"/>
+  <!-- ramp -->
+  <path d="M190 278 L270 250" fill="none" stroke="#22d3ee" stroke-width="2" opacity=".4"/>
+  <line x1="190" y1="278" x2="190" y2="285" stroke="#22d3ee" stroke-width="1" opacity=".3"/>
+  <!-- height arrow -->
+  <line x1="185" y1="252" x2="185" y2="278" stroke="#22d3ee" stroke-width="1.5" opacity=".6"/>
+  <text x="178" y="266" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="#22d3ee" opacity=".8">h</text>
+  <!-- ball on ramp -->
+  <circle cx="238" cy="255" r="9" fill="#0d1628" stroke="#22d3ee" stroke-width="1.8" opacity=".9"/>
+  <circle cx="235" cy="252" r="3" fill="#22d3ee" opacity=".3"/>
+  <!-- Ep label -->
+  <text x="230" y="238" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#22d3ee" opacity=".9">Eₚ = mgh</text>
+
+  <!-- STATION 3: Elektrisk energi / P=UI -->
+  <circle cx="390" cy="248" r="52" fill="url(#elGlow)"/>
+  <!-- circuit board suggestion -->
+  <rect x="355" y="255" width="70" height="35" rx="3" fill="#100818" stroke="#a78bfa" stroke-width="1.2" opacity=".7"/>
+  <!-- circuit traces -->
+  <path d="M362 262 L362 270 L380 270 L380 262 L398 262 L398 278 L362 278" fill="none" stroke="#a78bfa" stroke-width="1" opacity=".4"/>
+  <!-- components -->
+  <rect x="374" y="258" width="12" height="6" rx="1" fill="#a78bfa" opacity=".5"/>
+  <circle cx="408" cy="265" r="5" fill="#0a0f1e" stroke="#a78bfa" stroke-width="1.2" opacity=".7"/>
+  <!-- lightning bolt -->
+  <path class="blt" d="M385 240 L378 252 L385 252 L378 265" fill="none" stroke="#f5c842" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>
+  <text x="390" y="234" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#a78bfa" opacity=".9">P = U · I</text>
+
+  <!-- STATION 4: Fossil energi / effektivitet -->
+  <circle cx="560" cy="248" r="52" fill="url(#fosGlow)"/>
+  <!-- flame shape -->
+  <path d="M548 278 Q540 260 550 248 Q545 258 556 255 Q548 240 560 228 Q562 244 572 250 Q575 240 570 235 Q582 248 575 260 Q580 260 578 272 Q570 282 548 278 Z" fill="#fb7185" opacity=".25" stroke="#fb7185" stroke-width="1" opacity=".5"/>
+  <!-- thermometer -->
+  <rect x="575" y="250" width="8"  height="34" rx="4" fill="#0a0f1e" stroke="#fb7185" stroke-width="1.2" opacity=".7"/>
+  <rect x="577" y="265" width="4"  height="18" rx="2" fill="#fb7185" opacity=".6"/>
+  <circle cx="579" cy="284" r="5" fill="#fb7185" opacity=".7"/>
+  <text x="556" y="234" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#fb7185" opacity=".9">η = E_nyt/E_tot</text>
+
+  <!-- STATION 5: Watt / kWh / enheder -->
+  <circle cx="715" cy="248" r="52" fill="url(#wattGlow)"/>
+  <!-- power meter display -->
+  <rect x="680" y="245" width="70" height="40" rx="3" fill="#041008" stroke="#34d399" stroke-width="1.3" opacity=".8"/>
+  <text x="715" y="260" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" fill="#34d399" opacity=".9">3.6 kWh</text>
+  <text x="715" y="274" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="#34d399" opacity=".5">= 3 600 000 J</text>
+  <!-- plug -->
+  <rect x="700" y="282" width="30" height="6" rx="2" fill="#0a0f1e" stroke="#34d399" stroke-width="1" opacity=".6"/>
+  <path d="M706 288 L706 295" stroke="#34d399" stroke-width="1.5" opacity=".5"/>
+  <path d="M724 288 L724 295" stroke="#34d399" stroke-width="1.5" opacity=".5"/>
+  <text x="715" y="234" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#34d399" opacity=".9">E = P · t</text>
+
+  <!-- LABELS below bench -->
+  <text x="80"  y="308" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="rgba(245,158,11,0.7)">Kinetisk</text>
+  <text x="230" y="308" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="rgba(34,211,238,0.7)">Potentiel</text>
+  <text x="390" y="308" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="rgba(167,139,250,0.7)">Elektrisk</text>
+  <text x="560" y="308" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="rgba(251,113,133,0.7)">Fossil/Varme</text>
+  <text x="715" y="308" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="rgba(52,211,153,0.7)">Watt / kWh</text>
+
+  <!-- arrow marker -->
+  <defs>
+    <marker id="arrowAmb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+    </marker>
+  </defs>
+
+  <!-- HOTSPOTS -->
+  <circle id="hs-kin"  class="hs" cx="80"  cy="248" r="46" fill="rgba(245,158,11,0.03)"  stroke="rgba(245,158,11,0.5)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-pot"  class="hs" cx="230" cy="248" r="46" fill="rgba(34,211,238,0.03)"  stroke="rgba(34,211,238,0.5)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-el"   class="hs" cx="390" cy="248" r="48" fill="rgba(167,139,250,0.03)" stroke="rgba(167,139,250,0.5)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-fos"  class="hs" cx="560" cy="248" r="48" fill="rgba(251,113,133,0.03)" stroke="rgba(251,113,133,0.5)" stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+  <circle id="hs-watt" class="hs" cx="715" cy="248" r="48" fill="rgba(52,211,153,0.03)"  stroke="rgba(52,211,153,0.5)"  stroke-width="1.5" stroke-dasharray="4,3" cursor="pointer"/>
+
+  <!-- CHARACTER: electron/atom -->
+  <g id="char-el" transform="translate(80,248) scale(0.5)">
+    <g id="el-flame" style="display:none">
+      <ellipse cx="0" cy="20" rx="4" ry="8" fill="#a78bfa" opacity=".8"/>
+      <ellipse cx="0" cy="20" rx="2" ry="5" fill="#e9d5ff" opacity=".9"/>
+    </g>
+    <!-- nucleus -->
+    <circle cx="0" cy="0" r="10" fill="#0a0f1e" stroke="#a78bfa" stroke-width="2.5"/>
+    <circle cx="0" cy="0" r="10" fill="#a78bfa" opacity=".15"/>
+    <text x="0" y="4" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="#a78bfa">e⁻</text>
+    <!-- orbit ring -->
+    <ellipse cx="0" cy="0" rx="22" ry="9" fill="none" stroke="#a78bfa" stroke-width="1" opacity=".4"/>
+    <circle cx="22" cy="0" r="3" fill="#f5c842" opacity=".8"/>
+    <!-- second orbit -->
+    <ellipse cx="0" cy="0" rx="14" ry="22" fill="none" stroke="#a78bfa" stroke-width="1" opacity=".3"/>
+    <circle cx="0" cy="-22" r="3" fill="#34d399" opacity=".8"/>
+  </g>
+
+  <g id="char-robot" transform="translate(80,248) scale(0.5)" style="display:none">
+    <g id="rob-flame" style="display:none">
+      <ellipse cx="0" cy="22" rx="4" ry="7" fill="#a78bfa" opacity=".8"/>
+      <ellipse cx="0" cy="22" rx="2" ry="4" fill="#e9d5ff" opacity=".9"/>
+    </g>
+    <!-- legs -->
+    <rect x="-8" y="14" width="6" height="10" rx="2" fill="#1a1a2e" stroke="#a78bfa" stroke-width="1"/>
+    <rect x="2"  y="14" width="6" height="10" rx="2" fill="#1a1a2e" stroke="#a78bfa" stroke-width="1"/>
+    <!-- body -->
+    <rect x="-12" y="-4" width="24" height="20" rx="3" fill="#12102a" stroke="#a78bfa" stroke-width="1.5"/>
+    <!-- chest light -->
+    <circle cx="0" cy="6" r="4" fill="#a78bfa" opacity=".5"/>
+    <circle cx="0" cy="6" r="2" fill="#e9d5ff" opacity=".7"/>
+    <!-- arms -->
+    <rect x="-18" y="-2" width="7" height="14" rx="3" fill="#12102a" stroke="#a78bfa" stroke-width="1"/>
+    <rect x="11"  y="-2" width="7" height="14" rx="3" fill="#12102a" stroke="#a78bfa" stroke-width="1"/>
+    <!-- head -->
+    <rect x="-11" y="-18" width="22" height="16" rx="4" fill="#12102a" stroke="#a78bfa" stroke-width="1.5"/>
+    <!-- eyes -->
+    <circle cx="-4" cy="-11" r="4" fill="#0a0f1e"/>
+    <circle cx="4"  cy="-11" r="4" fill="#0a0f1e"/>
+    <circle cx="-4" cy="-11" r="2.5" fill="#a78bfa" opacity=".9"/>
+    <circle cx="4"  cy="-11" r="2.5" fill="#a78bfa" opacity=".9"/>
+    <circle cx="-3" cy="-12" r="1" fill="white" opacity=".5"/>
+    <circle cx="5"  cy="-12" r="1" fill="white" opacity=".5"/>
+    <!-- antenna -->
+    <line x1="0" y1="-18" x2="0" y2="-26" stroke="#a78bfa" stroke-width="1.5"/>
+    <circle cx="0" cy="-27" r="2" fill="#f5c842" opacity=".9"/>
+  </g>
+</svg>
+
+<div id="char-toggle">
+  <button class="ctbtn active" id="btn-el"  onclick="setChar('el')">⚛ Elektron</button>
+  <button class="ctbtn"        id="btn-rob" onclick="setChar('robot')">🤖 Robot</button>
+</div>
+<div id="hint">Tryk på en station for at starte!</div>
+<div id="progress-bar"></div>
+<div id="score-bar" id="score-bar">Score: 0 / 0</div>
+<div id="panel"></div>
+
+<div id="endscreen">
+  <div class="end-emoji">⚡</div>
+  <div class="end-title">Laboratoriet afsluttet!</div>
+  <div class="end-sub">Du har gennemgået alle energiformer og omregninger!</div>
+  <div class="end-score" id="end-score">0/50</div>
+  <div class="end-score-label">rigtige svar</div>
+  <div class="end-stars" id="end-stars"></div>
+  <div class="end-msg" id="end-msg"></div>
+  <button class="restart-btn" onclick="restartGame()">Nyt forsøg ⚡</button>
+</div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   QUESTION TYPES:
+   - 'mc'   : multiple choice (4 options)
+   - 'open' : numeric input with tolerance check
+   - 'rearr': formula rearrangement (single column MC)
+   ══════════════════════════════════════════════════════ */
+
+const stages = {
+
+  kin: {
+    x:80, y:248, hsId:'hs-kin',
+    color:'--kin', colorHex:'#f59e0b', colorRgb:'245,158,11',
+    badge:'Kinetisk energi',
+    title:'Eₖ = ½ · m · v²',
+    formula:{
+      main:'Eₖ = ½ · m · v²',
+      vars:'Eₖ = kinetisk energi [J]  ·  m = masse [kg]  ·  v = hastighed [m/s]'
+    },
+    desc:'Kinetisk energi er den energi et objekt har i kraft af sin bevægelse. En bil der kører dobbelt så stærkt har fire gange så meget kinetisk energi!',
+    questions:[
+      // simple beregning
+      {type:'open', q:'En bold med masse 0,5 kg bevæger sig med 10 m/s. Beregn den kinetiske energi.', hint:'Eₖ = ½ · m · v² = ½ · 0,5 · 10²', answer:25, tol:0.5, unit:'J', fb:'Eₖ = ½ · 0,5 · 100 = 25 J'},
+      // formel omformning
+      {type:'rearr', q:'Formlen Eₖ = ½mv² — isolér massen m:', opts:['m = Eₖ · v²/2', 'm = 2·Eₖ / v²', 'm = √(2·Eₖ/v)', 'm = Eₖ / (½·v)'], c:1, fb:'Gang begge sider med 2 og divider med v²: m = 2Eₖ / v²'},
+      // beregn med isoleret variabel
+      {type:'open', q:'Et objekt har Eₖ = 200 J og bevæger sig med 4 m/s. Find massen m.', hint:'m = 2·Eₖ / v² = 2·200 / 4²', answer:25, tol:0.5, unit:'kg', fb:'m = 2·200 / 16 = 400/16 = 25 kg'},
+      // isolér v
+      {type:'rearr', q:'Isolér hastigheden v fra Eₖ = ½mv²:', opts:['v = Eₖ / (2m)', 'v = √(Eₖ / m)', 'v = √(2·Eₖ / m)', 'v = 2·Eₖ · m'], c:2, fb:'2·Eₖ = m·v² → v² = 2Eₖ/m → v = √(2Eₖ/m)'},
+      // beregn v
+      {type:'open', q:'En bil på 1000 kg har Eₖ = 125 000 J. Hvad er dens hastighed?', hint:'v = √(2·Eₖ / m) = √(2·125000/1000)', answer:15.81, tol:0.2, unit:'m/s', fb:'v = √(250) ≈ 15,81 m/s'},
+      // mc faktasp
+      {type:'mc', q:'Hvad sker med Eₖ hvis hastigheden fordobles (massen er konstant)?', opts:['Eₖ fordobles','Eₖ firedobles','Eₖ halveres','Eₖ er uændret'], c:1, fb:'v² indgår i formlen → dobbelt v giver (2v)² = 4v² → Eₖ firedobles.'},
+      // enhed
+      {type:'mc', q:'Hvad er enheden for kinetisk energi?', opts:['Watt [W]','Newton [N]','Joule [J]','Pascal [Pa]'], c:2, fb:'Energi måles i Joule [J]. 1 J = 1 kg·m²/s²'},
+      // beregning med m/s → km/h konvertering
+      {type:'open', q:'En cyklist (80 kg inkl. cykel) kører 36 km/h. Beregn Eₖ. (Husk: 36 km/h = 10 m/s)', hint:'Eₖ = ½ · 80 · 10²', answer:4000, tol:10, unit:'J', fb:'Eₖ = ½ · 80 · 100 = 4000 J'},
+      // omformning spørgsmål
+      {type:'rearr', q:'Hvis Eₖ = 450 J og m = 2 kg, hvad er formlen du bruger til at finde v?', opts:['v = 450 / 2', 'v = √(2·450/2)', 'v = 2·450·2', 'v = 450 / (2·2²)'], c:1, fb:'v = √(2Eₖ/m) = √(2·450/2) = √450 ≈ 21,2 m/s'},
+      // afsluttende beregning
+      {type:'open', q:'Et tog på 50 000 kg kører 20 m/s. Beregn Eₖ i MJ (megajoule). Svar i MJ.', hint:'Eₖ = ½ · 50000 · 400 = ? J → del med 1 000 000', answer:10, tol:0.1, unit:'MJ', fb:'Eₖ = ½ · 50000 · 400 = 10 000 000 J = 10 MJ'},
+    ],
+    choices:[{label:'Videre til Eₚ →', next:'pot'}]
+  },
+
+  pot: {
+    x:230, y:248, hsId:'hs-pot',
+    color:'--pot', colorHex:'#22d3ee', colorRgb:'34,211,238',
+    badge:'Potentiel energi',
+    title:'Eₚ = m · g · h',
+    formula:{
+      main:'Eₚ = m · g · h',
+      vars:'Eₚ = potentiel energi [J]  ·  m = masse [kg]  ·  g = 9,82 m/s²  ·  h = højde [m]'
+    },
+    desc:'Potentiel energi er den energi et objekt har i kraft af sin position i et tyngdefelt. Jo højere et objekt er, desto mere potentiel energi har det.',
+    questions:[
+      {type:'open', q:'En sten (m = 2 kg) løftes 5 m op. Beregn Eₚ. Brug g = 9,82 m/s².', hint:'Eₚ = m · g · h = 2 · 9,82 · 5', answer:98.2, tol:1, unit:'J', fb:'Eₚ = 2 · 9,82 · 5 = 98,2 J'},
+      {type:'rearr', q:'Isolér højden h fra Eₚ = mgh:', opts:['h = Eₚ · m · g', 'h = Eₚ / (m·g)', 'h = m·g / Eₚ', 'h = √(Eₚ/mg)'], c:1, fb:'Divider begge sider med m og g: h = Eₚ / (m·g)'},
+      {type:'open', q:'En bjergbestiger (70 kg) har Eₚ = 68 740 J. Hvor højt er hun oppe? (g = 9,82)', hint:'h = Eₚ / (m·g) = 68740 / (70·9,82)', answer:100, tol:1, unit:'m', fb:'h = 68740 / 687,4 = 100 m'},
+      {type:'rearr', q:'Isolér massen m fra Eₚ = mgh:', opts:['m = Eₚ·g·h', 'm = g·h / Eₚ', 'm = Eₚ / (g·h)', 'm = √(Eₚ·g·h)'], c:2, fb:'m = Eₚ / (g·h) — del begge sider med g og h.'},
+      {type:'open', q:'En gjenstand har Eₚ = 490 J ved h = 10 m. Hvad er dens masse? (g = 9,82)', hint:'m = Eₚ / (g·h) = 490 / (9,82·10)', answer:4.99, tol:0.2, unit:'kg', fb:'m = 490 / 98,2 ≈ 4,99 kg ≈ 5 kg'},
+      {type:'mc', q:'En bold kastes op og når sin toppunkt. Hvad gælder for energien der?', opts:['Eₖ = max, Eₚ = 0', 'Eₖ = 0, Eₚ = max', 'Begge er 0', 'Begge er maksimale'], c:1, fb:'I toppunktet er hastigheden 0 → Eₖ = 0. Al energi er potentiel: Eₚ = max.'},
+      {type:'mc', q:'Hvad er g (tyngdeaccelerationen) på Jordens overflade?', opts:['9,82 m/s','9,82 m/s²','9,82 J/kg','9,82 N/m'], c:1, fb:'g ≈ 9,82 m/s² — det er accelerationen al objekter oplever i frit fald.'},
+      {type:'open', q:'Et 500 g lod (0,5 kg) hænger 3 m over gulvet. Beregn Eₚ. (g = 9,82)', hint:'Eₚ = 0,5 · 9,82 · 3', answer:14.73, tol:0.2, unit:'J', fb:'Eₚ = 0,5 · 9,82 · 3 = 14,73 J'},
+      {type:'rearr', q:'En bold ruller ned ad en bakke. Eₚ omdannes til Eₖ. Hvis al Eₚ = ½mv², hvad er v?', opts:['v = mgh', 'v = √(2gh)', 'v = g·h/m', 'v = √(gh)'], c:1, fb:'mgh = ½mv² → v² = 2gh → v = √(2gh). Bemærk: massen falder ud!'},
+      {type:'open', q:'En ski-løber (75 kg) starter fra 40 m højde. Hvad er max. hastighed i bunden? (v = √(2gh), g=9,82)', hint:'v = √(2 · 9,82 · 40)', answer:28.0, tol:0.5, unit:'m/s', fb:'v = √(784,6) ≈ 28,0 m/s (forudsætter ingen friktion)'},
+    ],
+    choices:[{label:'Videre til elektrisk →', next:'el'}]
+  },
+
+  el: {
+    x:390, y:248, hsId:'hs-el',
+    color:'--el', colorHex:'#a78bfa', colorRgb:'167,139,250',
+    badge:'Elektrisk energi',
+    title:'P = U · I',
+    formula:{
+      main:'P = U · I     U = R · I     E = P · t',
+      vars:'P = effekt [W]  ·  U = spænding [V]  ·  I = strøm [A]  ·  R = modstand [Ω]  ·  t = tid [s]  ·  E = energi [J]'
+    },
+    desc:'Elektrisk effekt P er produktet af spænding og strøm. Med Ohms lov (U = R·I) kan vi udlede alle størrelser. Energi E = P·t (effekt gange tid).',
+    questions:[
+      {type:'open', q:'En pære har spænding 230 V og trækker 0,5 A. Beregn effekten P.', hint:'P = U · I = 230 · 0,5', answer:115, tol:0.5, unit:'W', fb:'P = 230 · 0,5 = 115 W'},
+      {type:'rearr', q:'Isolér strømmen I fra P = U·I:', opts:['I = P·U', 'I = U/P', 'I = P/U', 'I = P + U'], c:2, fb:'I = P / U — divider begge sider med U.'},
+      {type:'open', q:'En motor bruger 1500 W og forsynes med 230 V. Hvad er strømmen I?', hint:'I = P / U = 1500 / 230', answer:6.52, tol:0.1, unit:'A', fb:'I = 1500 / 230 ≈ 6,52 A'},
+      {type:'rearr', q:'Isolér spændingen U fra U = R·I (Ohms lov):', opts:['U = I/R', 'U = R·I', 'U = R/I', 'U = I²·R'], c:1, fb:'U = R·I er allerede isoleret. Ohms lov: spænding = modstand × strøm.'},
+      {type:'open', q:'En modstand på 100 Ω fører en strøm på 0,3 A. Beregn spændingen U.', hint:'U = R · I = 100 · 0,3', answer:30, tol:0.5, unit:'V', fb:'U = 100 · 0,3 = 30 V'},
+      {type:'rearr', q:'Isolér modstanden R fra U = R·I:', opts:['R = U·I', 'R = I/U', 'R = U/I', 'R = U + I'], c:2, fb:'R = U / I — divider begge sider med I.'},
+      {type:'open', q:'En kedel (2000 W) kører i 5 minutter. Beregn energiforbruget E i joule. (5 min = 300 s)', hint:'E = P · t = 2000 · 300', answer:600000, tol:1000, unit:'J', fb:'E = 2000 · 300 = 600 000 J = 600 kJ'},
+      {type:'mc', q:'Hvad er enheden for elektrisk effekt?', opts:['Joule [J]','Volt [V]','Watt [W]','Ampere [A]'], c:2, fb:'Effekt P måles i Watt [W]. 1 W = 1 J/s = 1 V·A'},
+      {type:'open', q:'En ladeskærm (65 W) kører 8 timer. Beregn energi i kWh. (8 h = 28800 s; P·t i J, del med 3 600 000)', hint:'E = 65 · 28800 / 3600000', answer:0.52, tol:0.02, unit:'kWh', fb:'E = 65 · 28800 = 1 872 000 J = 1 872 000 / 3 600 000 ≈ 0,52 kWh'},
+      {type:'rearr', q:'Udtryk effekten P udelukkende med R og I (indsæt U = R·I i P = U·I):', opts:['P = R/I²', 'P = R²·I', 'P = R·I²', 'P = U·R'], c:2, fb:'P = U·I og U = R·I → P = (R·I)·I = R·I²'},
+    ],
+    choices:[{label:'Videre til fossil energi →', next:'fos'}]
+  },
+
+  fos: {
+    x:560, y:248, hsId:'hs-fos',
+    color:'--fos', colorHex:'#fb7185', colorRgb:'251,113,133',
+    badge:'Fossil / Virkningsgrad',
+    title:'η = E_nyttig / E_tilført',
+    formula:{
+      main:'η = E_nyttig / E_tilført',
+      vars:'η = virkningsgrad (0–1 eller %)  ·  E_nyttig = nyttig energi [J]  ·  E_tilført = total tilført energi [J]  ·  η kan ikke overstige 1 (100%)'
+    },
+    desc:'Fossil energi frigives ved forbrænding men går aldrig 100% til nyttig brug — noget bliver til varme. Virkningsgraden η (eta) beskriver hvor effektiv omregningen er.',
+    questions:[
+      {type:'open', q:'En motor tilføres 5000 J. Den leverer 3500 J nyttigt arbejde. Hvad er virkningsgraden η?', hint:'η = E_nyttig / E_tilført = 3500 / 5000', answer:0.7, tol:0.01, unit:'(skriv som decimaltal, f.eks. 0,70)', fb:'η = 3500/5000 = 0,70 = 70%'},
+      {type:'rearr', q:'Isolér E_nyttig fra η = E_nyttig / E_tilført:', opts:['E_nyttig = η / E_tilført', 'E_nyttig = E_tilført / η', 'E_nyttig = η · E_tilført', 'E_nyttig = η + E_tilført'], c:2, fb:'Gang begge sider med E_tilført: E_nyttig = η · E_tilført'},
+      {type:'open', q:'Et kraftværk har η = 0,40 og tilføres 1 000 000 J. Hvad er den nyttige energi?', hint:'E_nyttig = η · E_tilført = 0,40 · 1000000', answer:400000, tol:1000, unit:'J', fb:'E_nyttig = 0,40 · 1 000 000 = 400 000 J'},
+      {type:'rearr', q:'Isolér E_tilført fra η = E_nyttig / E_tilført:', opts:['E_tilført = η · E_nyttig', 'E_tilført = E_nyttig · η', 'E_tilført = E_nyttig / η', 'E_tilført = η / E_nyttig'], c:2, fb:'E_tilført = E_nyttig / η — multiplier og divider begge sider.'},
+      {type:'open', q:'En lyspære producerer 8 J lys per sekund. Virkningsgraden er η = 0,08. Hvad er E_tilført per sekund?', hint:'E_tilført = E_nyttig / η = 8 / 0,08', answer:100, tol:1, unit:'J/s = W', fb:'E_tilført = 8 / 0,08 = 100 J/s = 100 W tilføres, kun 8 W lyser.'},
+      {type:'mc', q:'Hvad sker med den energi der "mistes" i en motor med η < 1?', opts:['Den forsvinder','Den omdannes til varme','Den gemmes i motoren','Den sendes tilbage til kraftværket'], c:1, fb:'Energi kan ikke forsvinde (energibevarelse). Den "spildte" energi bliver til varme.'},
+      {type:'mc', q:'Hvad er virkningsgraden for en ideel (100% effektiv) maskine?', opts:['η = 0','η = 0,5','η = 1','η > 1'], c:2, fb:'η = 1 svarer til 100% effektivitet. I praksis er η altid < 1 pga. varmetab.'},
+      {type:'open', q:'Et solpanel (η = 0,20) modtager 500 W/m² solenergi. Hvad er effektoutputtet per m²?', hint:'P_nyttig = η · P_tilført = 0,20 · 500', answer:100, tol:1, unit:'W/m²', fb:'P_nyttig = 0,20 · 500 = 100 W/m²'},
+      {type:'rearr', q:'Hvad er det rigtige udtryk for "spildenergi"?', opts:['E_spild = E_nyttig · η', 'E_spild = E_tilført − E_nyttig', 'E_spild = η / E_tilført', 'E_spild = E_nyttig / (1−η)'], c:1, fb:'E_spild = E_tilført − E_nyttig. Det er den energi der ikke udnyttes nyttigt.'},
+      {type:'open', q:'Et biler motor (η = 0,30) forbruger benzin svarende til 80 000 J/km. Hvad er den mekaniske energi per km?', hint:'E_nyttig = η · E_tilført = 0,30 · 80000', answer:24000, tol:200, unit:'J/km', fb:'E_nyttig = 0,30 · 80 000 = 24 000 J/km. 70% går til varme.'},
+    ],
+    choices:[{label:'Videre til Watt/kWh →', next:'watt'}]
+  },
+
+  watt: {
+    x:715, y:248, hsId:'hs-watt',
+    color:'--neu', colorHex:'#34d399', colorRgb:'52,211,153',
+    badge:'Watt · kWh · enheder',
+    title:'E = P · t     1 kWh = 3 600 000 J',
+    formula:{
+      main:'E = P · t     1 kWh = 3 600 000 J',
+      vars:'E = energi [J eller kWh]  ·  P = effekt [W eller kW]  ·  t = tid [s eller h]  ·  1 kW = 1000 W  ·  1 h = 3600 s'
+    },
+    desc:'Kilowatt-time (kWh) er den praktiske energienhed på elregningen. 1 kWh = en effekt på 1000 W i 1 time = 3 600 000 joule.',
+    questions:[
+      {type:'open', q:'Omregn 1 kWh til joule.', hint:'1 kWh = 1000 W · 3600 s', answer:3600000, tol:1000, unit:'J', fb:'1 kWh = 1 kW · 1 h = 1000 W · 3600 s = 3 600 000 J'},
+      {type:'open', q:'En ovn bruger 2000 W i 1,5 timer. Beregn forbruget i kWh.', hint:'E = P·t = 2 kW · 1,5 h', answer:3, tol:0.05, unit:'kWh', fb:'E = 2 kW · 1,5 h = 3 kWh'},
+      {type:'rearr', q:'Isolér effekten P fra E = P·t:', opts:['P = E+t', 'P = t/E', 'P = E/t', 'P = E·t²'], c:2, fb:'P = E / t — divider energi med tid.'},
+      {type:'open', q:'En køleskab bruger 1,5 kWh per dag. Hvad er den gennemsnitlige effekt i watt? (1 dag = 24 h)', hint:'P = E / t = 1,5 kWh / 24 h = ? kW → W', answer:62.5, tol:1, unit:'W', fb:'P = 1,5/24 = 0,0625 kW = 62,5 W'},
+      {type:'rearr', q:'Isolér tiden t fra E = P·t:', opts:['t = P·E', 't = E/P', 't = P/E', 't = E²/P'], c:1, fb:'t = E / P — divider energi med effekt.'},
+      {type:'open', q:'En 60 W pære koster 2 kr/kWh. Hvad koster det at have den tændt 10 timer?', hint:'E = 0,06 kW · 10 h = ? kWh; Pris = E · 2', answer:1.2, tol:0.05, unit:'kr', fb:'E = 0,06 · 10 = 0,6 kWh; Pris = 0,6 · 2 = 1,20 kr'},
+      {type:'mc', q:'Hvad er 1 megawatt (MW)?', opts:['1000 W','10 000 W','100 000 W','1 000 000 W'], c:3, fb:'1 MW = 1 000 000 W = 1000 kW. "Mega" = million.'},
+      {type:'open', q:'Et vindmølle producerer 3 MW i 4 timer. Beregn energien i MWh.', hint:'E = P · t = 3 MW · 4 h', answer:12, tol:0.1, unit:'MWh', fb:'E = 3 · 4 = 12 MWh = 12 000 kWh'},
+      {type:'rearr', q:'Omregn formlen: et hus bruger E kWh på t timer. Hvad er effekten i kW?', opts:['P = E·t [kW]', 'P = t/E [kW]', 'P = E/t [kW]', 'P = E·3600/t [kW]'], c:2, fb:'P = E/t [kWh/h = kW]. Kilde: E = P·t omformet til P = E/t.'},
+      {type:'open', q:'Omregn 7 200 000 J til kWh.', hint:'kWh = J / 3 600 000', answer:2, tol:0.05, unit:'kWh', fb:'7 200 000 / 3 600 000 = 2 kWh'},
+    ],
+    choices:[{label:'↩ Start forfra', next:'kin'}]
+  }
+
+};
+
+const ORDER = ['kin','pot','el','fos','watt'];
+const TOTAL_Q = ORDER.length * 10; // 50
+
+/* ══ STATE ══ */
+let visited=new Set(), qIndex={}, qCorrect={}, correctTotal=0, totalAnswered=0, animating=false;
+let charMode='el', posX=80, posY=248, trailPoints=[];
+ORDER.forEach(k=>{qIndex[k]=0; qCorrect[k]=0;});
+
+/* ══ ELEMENTS ══ */
+const wc=document.getElementById('wc'), mapSvg=document.getElementById('mapsvg');
+const elEl=document.getElementById('char-el'), robEl=document.getElementById('char-robot');
+const elFlame=document.getElementById('el-flame'), robFlame=document.getElementById('rob-flame');
+const panel=document.getElementById('panel'), hint=document.getElementById('hint');
+const endSc=document.getElementById('endscreen'), progBar=document.getElementById('progress-bar');
+const trailG=document.getElementById('trail'), scoreBar=document.getElementById('score-bar');
+
+ORDER.forEach(k=>{
+  const d=document.createElement('div'); d.className='prog-dot'; d.id='dot-'+k; progBar.appendChild(d);
+});
+
+function updateScoreBar(){
+  scoreBar.textContent=`Score: ${correctTotal} / ${totalAnswered}`;
+}
+
+/* ══ CHARACTER ══ */
+function setChar(mode){
+  charMode=mode;
+  document.getElementById('btn-el').classList.toggle('active',mode==='el');
+  document.getElementById('btn-rob').classList.toggle('active',mode==='robot');
+  elEl.style.display=mode==='el'?'':'none';
+  robEl.style.display=mode==='robot'?'':'none';
+  applyCharTransform(posX,posY,0);
+}
+function applyCharTransform(x,y,angle){
+  const s=0.5;
+  const el=charMode==='el'?elEl:robEl;
+  el.setAttribute('transform',`translate(${x},${y}) rotate(${angle}) scale(${s})`);
+}
+
+/* ══ TRAIL ══ */
+function addTrailPoint(x,y){trailPoints.push({x,y});if(trailPoints.length>70)trailPoints.shift();redrawTrail();}
+function redrawTrail(){
+  trailG.innerHTML='';const total=trailPoints.length;
+  for(let i=1;i<total;i++){
+    const frac=i/total;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',trailPoints[i-1].x);line.setAttribute('y1',trailPoints[i-1].y);
+    line.setAttribute('x2',trailPoints[i].x);  line.setAttribute('y2',trailPoints[i].y);
+    line.setAttribute('stroke','#a78bfa');
+    line.setAttribute('stroke-width',frac*2);
+    line.setAttribute('opacity',frac*0.4);
+    line.setAttribute('stroke-linecap','round');
+    trailG.appendChild(line);
+  }
+}
+function clearTrail(){trailPoints=[];trailG.innerHTML='';}
+
+/* ══ ANIMATE ══ */
+function animateTo(tx,ty,cb){
+  if(animating)return;animating=true;
+  const sx=posX,sy=posY,dx=tx-sx,dy=ty-sy;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  const dur=Math.min(2000,Math.max(600,dist*4));
+  const t0=performance.now();let lastT=0;
+  const fEl=charMode==='el'?elFlame:robFlame;
+  if(fEl)fEl.style.display='';
+  function step(now){
+    const t=Math.min(1,(now-t0)/dur);
+    const ease=t<.5?2*t*t:-1+(4-2*t)*t;
+    const arc=Math.sin(t*Math.PI)*Math.min(dist*.12,30);
+    const len=Math.sqrt(dx*dx+dy*dy)||1;
+    const cx=sx+dx*ease+(-dy/len)*arc*(1-Math.abs(ease*2-1));
+    const cy=sy+dy*ease+(dx/len)*arc*(1-Math.abs(ease*2-1));
+    posX=cx;posY=cy;
+    const prev=Math.max(0,ease-.02);
+    const vx=cx-(sx+dx*prev),vy=cy-(sy+dy*prev);
+    applyCharTransform(cx,cy,Math.atan2(vy,vx)*180/Math.PI+90);
+    if(now-lastT>30){addTrailPoint(cx,cy);lastT=now;}
+    if(t<1)requestAnimationFrame(step);
+    else{posX=tx;posY=ty;applyCharTransform(tx,ty,0);animating=false;if(fEl)fEl.style.display='none';if(cb)cb();}
+  }
+  requestAnimationFrame(step);
+}
+
+/* ══ SVG → CSS ══ */
+function svgPct(sx,sy){
+  const rect=mapSvg.getBoundingClientRect();
+  const sc=Math.max(rect.width/800,rect.height/500);
+  const ox=(rect.width-800*sc)/2,oy=(rect.height-500*sc)/2;
+  return{left:(ox+sx*sc)+'px',top:(oy+sy*sc)+'px'};
+}
+function addStamp(key){
+  const s=stages[key],pos=svgPct(s.x,s.y);
+  const el=document.createElement('div');
+  el.className='stamp';el.id='stamp-'+key;el.textContent='✓';
+  el.style.left=pos.left;el.style.top=pos.top;wc.appendChild(el);
+}
+function markDot(key){const d=document.getElementById('dot-'+key);if(d)d.classList.add('done');}
+
+/* ══ WIN CHECK ══ */
+function checkAllDone(){
+  if(visited.size<ORDER.length||!ORDER.every(k=>qIndex[k]>=10))return;
+  setTimeout(()=>{
+    panel.classList.remove('open');
+    const pct=Math.round(correctTotal/TOTAL_Q*100);
+    document.getElementById('end-score').textContent=correctTotal+'/'+TOTAL_Q;
+    let stars,msg;
+    if(pct>=90)     {stars='⭐⭐⭐';msg='Fremragende! Du behersker energiomregningerne på højt niveau.';}
+    else if(pct>=65){stars='⭐⭐'; msg='Godt klaret! Du har styr på de fleste formler. Prøv igen for at forbedre scoren.';}
+    else            {stars='⭐';   msg='God indsats! Gennemgå formlerne og prøv igen.';}
+    document.getElementById('end-stars').textContent=stars;
+    document.getElementById('end-msg').textContent=msg;
+    endSc.classList.add('show');
+  },700);
+}
+
+/* ══ RENDER QUESTION ══ */
+function renderQuestion(key){
+  const s=stages[key];
+  const qi=qIndex[key];
+  if(qi>=10) return `<div class="quiz-box" style="opacity:.4"><div class="quiz-q">✓ Alle 10 spørgsmål ved denne station besvaret — ${qCorrect[key]}/10 rigtige</div></div>`;
+
+  const q=s.questions[qi];
+  const num=qi+1;
+
+  if(q.type==='open'){
+    return `
+      <div class="q-progress">Spørgsmål ${num}/10 · Beregning</div>
+      <div class="quiz-box">
+        <div class="quiz-type-label">📐 ÅBENT SVAR — beregn og indtast</div>
+        <div class="quiz-q">${q.q}</div>
+        ${q.hint?`<div class="step-hint">Hint: ${q.hint}</div>`:''}
+        <div class="open-answer-wrap">
+          <input class="open-input" id="open-inp" type="number" step="any" placeholder="Dit svar…" onkeydown="if(event.key==='Enter')submitOpen('${key}')">
+          <div class="open-unit">${q.unit}</div>
+          <button class="submit-btn" onclick="submitOpen('${key}')">Tjek ✓</button>
+        </div>
+        <div class="quiz-fb" id="qfb"></div>
+      </div>`;
+  }
+
+  if(q.type==='rearr'){
+    const optsHTML=q.opts.map((o,i)=>`<button class="qbtn" id="qo${i}" onclick="answerMC('${key}',${i},${q.c})">${o}</button>`).join('');
+    return `
+      <div class="q-progress">Spørgsmål ${num}/10 · Formelomformning</div>
+      <div class="quiz-box">
+        <div class="quiz-type-label">🔄 OMFORML FORMLEN — vælg det rigtige udtryk</div>
+        <div class="quiz-q">${q.q}</div>
+        <div class="rearrange-opts">${optsHTML}</div>
+        <div class="quiz-fb" id="qfb"></div>
+      </div>`;
+  }
+
+  // mc
+  const optsHTML=q.opts.map((o,i)=>`<button class="qbtn" id="qo${i}" onclick="answerMC('${key}',${i},${q.c})">${o}</button>`).join('');
+  return `
+    <div class="q-progress">Spørgsmål ${num}/10 · Multiple choice</div>
+    <div class="quiz-box">
+      <div class="quiz-type-label">💡 VÆLG DET RIGTIGE SVAR</div>
+      <div class="quiz-q">${q.q}</div>
+      <div class="quiz-opts">${optsHTML}</div>
+      <div class="quiz-fb" id="qfb"></div>
+    </div>`;
+}
+
+/* ══ SHOW STAGE ══ */
+function showStage(key){
+  const s=stages[key];
+  const isNew=!visited.has(key);
+  if(isNew){visited.add(key);addStamp(key);markDot(key);}
+  hint.style.opacity='0';
+  scoreBar.classList.remove('hidden');
+
+  const allDone=qIndex[key]>=10;
+  const choicesHTML=s.choices.map(c=>`<button class="cbtn" onclick="goTo('${c.next}')">${c.label}</button>`).join('');
+
+  const badgeStyle=`background:rgba(${s.colorRgb},0.1);color:${s.colorHex};border-color:rgba(${s.colorRgb},0.3);`;
+  const cardStyle=`background:rgba(${s.colorRgb},0.07);border-color:rgba(${s.colorRgb},0.25);`;
+  const varStyle=`color:rgba(${s.colorRgb},0.75);`;
+
+  panel.innerHTML=`
+    <div class="p-badge" style="${badgeStyle}">${s.badge}</div>
+    <div class="p-title">${s.title}</div>
+    <div class="formula-card" style="${cardStyle}">
+      <div class="f-label" style="${varStyle}">Formel</div>
+      <div class="formula-main">${s.formula.main}</div>
+      <div class="formula-vars" style="${varStyle}">${s.formula.vars}</div>
+    </div>
+    <div class="p-desc">${s.desc}</div>
+    ${renderQuestion(key)}
+    <div class="choices${allDone?' show':''}" id="choices-wrap">${choicesHTML}</div>
+  `;
+  panel.classList.add('open');
+  panel.scrollTop=0;
+  if(!allDone) setTimeout(()=>{ const inp=document.getElementById('open-inp'); if(inp){ inp.focus(); }},200);
+}
+
+/* ══ SUBMIT OPEN ANSWER ══ */
+function submitOpen(key){
+  const inp=document.getElementById('open-inp');
+  if(!inp)return;
+  // accept comma or dot
+  const raw=inp.value.replace(',','.');
+  const val=parseFloat(raw);
+  if(isNaN(val)){inp.style.borderColor='rgba(220,60,60,0.6)';return;}
+  inp.disabled=true;
+  document.querySelector('.submit-btn').disabled=true;
+
+  const q=stages[key].questions[qIndex[key]];
+  const fb=document.getElementById('qfb');
+  const diff=Math.abs(val-q.answer);
+  const relErr=Math.abs(diff/q.answer);
+
+  if(diff<=q.tol || relErr<0.02){
+    correctTotal++;qCorrect[key]++;
+    fb.className='quiz-fb ok'; fb.textContent=`✅ Korrekt! ${q.fb}`;
+    inp.style.borderColor='rgba(52,211,153,0.6)';
+  } else if(relErr<0.10){
+    fb.className='quiz-fb close'; fb.textContent=`🔶 Tæt på! Dit svar: ${val} — Facit: ${q.answer}. ${q.fb}`;
+    inp.style.borderColor='rgba(245,158,11,0.6)';
+  } else {
+    fb.className='quiz-fb no'; fb.textContent=`❌ Forkert. Facit: ${q.answer} ${q.unit}. ${q.fb}`;
+    inp.style.borderColor='rgba(220,60,60,0.5)';
+  }
+  fb.style.display='block';
+  totalAnswered++; qIndex[key]++;
+  updateScoreBar();
+  setTimeout(()=>{
+    const cw=document.getElementById('choices-wrap');
+    if(cw)cw.classList.add('show');
+    checkAllDone();
+    // refresh question (show next) after short pause if not all done
+    if(qIndex[key]<10) setTimeout(()=>refreshQuestion(key),1200);
+  },1000);
+}
+
+/* ══ ANSWER MC / REARR ══ */
+function answerMC(key,chosen,correct){
+  document.querySelectorAll('.qbtn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correct)b.classList.add('correct');
+    else if(i===chosen&&chosen!==correct)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('qfb');
+  const q=stages[key].questions[qIndex[key]];
+  if(chosen===correct){correctTotal++;qCorrect[key]++;fb.className='quiz-fb ok';fb.textContent='✅ '+q.fb;}
+  else{fb.className='quiz-fb no';fb.textContent='❌ Ikke helt. '+q.fb;}
+  fb.style.display='block';
+  totalAnswered++; qIndex[key]++;
+  updateScoreBar();
+  setTimeout(()=>{
+    const cw=document.getElementById('choices-wrap');
+    if(cw)cw.classList.add('show');
+    checkAllDone();
+    if(qIndex[key]<10) setTimeout(()=>refreshQuestion(key),1200);
+  },1000);
+}
+
+/* ══ REFRESH QUESTION INLINE ══ */
+function refreshQuestion(key){
+  const s=stages[key];
+  const allDone=qIndex[key]>=10;
+  // update just the quiz section and choices
+  const qBox=document.querySelector('.q-progress');
+  const quizBox=document.querySelector('.quiz-box');
+  const cw=document.getElementById('choices-wrap');
+  if(qBox&&quizBox){
+    const newHTML=renderQuestion(key);
+    const tmp=document.createElement('div'); tmp.innerHTML=newHTML;
+    qBox.parentNode.replaceChild(tmp,qBox.parentNode.lastElementChild.previousElementSibling||qBox);
+    // easier: just re-render the whole quiz zone
+    const container=document.querySelector('.quiz-box');
+    if(container){
+      const parent=container.parentNode;
+      // replace from q-progress to quiz-box with fresh render
+      const fresh=document.createElement('div'); fresh.innerHTML=renderQuestion(key);
+      while(fresh.firstChild)parent.insertBefore(fresh.firstChild,container);
+      parent.removeChild(container);
+      const oldProg=parent.querySelector('.q-progress');
+      if(oldProg)parent.removeChild(oldProg);
+    }
+  }
+  if(cw)cw.classList.toggle('show',allDone);
+  // simpler approach: just rebuild the panel
+  showStageRefresh(key);
+}
+
+function showStageRefresh(key){
+  // rebuild panel without scrolling to top aggressively
+  const s=stages[key];
+  const allDone=qIndex[key]>=10;
+  const choicesHTML=s.choices.map(c=>`<button class="cbtn" onclick="goTo('${c.next}')">${c.label}</button>`).join('');
+  const badgeStyle=`background:rgba(${s.colorRgb},0.1);color:${s.colorHex};border-color:rgba(${s.colorRgb},0.3);`;
+  const cardStyle=`background:rgba(${s.colorRgb},0.07);border-color:rgba(${s.colorRgb},0.25);`;
+  const varStyle=`color:rgba(${s.colorRgb},0.75);`;
+  const scrollPos=panel.scrollTop;
+  panel.innerHTML=`
+    <div class="p-badge" style="${badgeStyle}">${s.badge}</div>
+    <div class="p-title">${s.title}</div>
+    <div class="formula-card" style="${cardStyle}">
+      <div class="f-label" style="${varStyle}">Formel</div>
+      <div class="formula-main">${s.formula.main}</div>
+      <div class="formula-vars" style="${varStyle}">${s.formula.vars}</div>
+    </div>
+    <div class="p-desc">${s.desc}</div>
+    ${renderQuestion(key)}
+    <div class="choices${allDone?' show':''}" id="choices-wrap">${choicesHTML}</div>
+  `;
+  panel.scrollTop=scrollPos;
+  // focus open input if present
+  setTimeout(()=>{ const inp=document.getElementById('open-inp'); if(inp)inp.focus(); },100);
+}
+
+/* ══ NAV ══ */
+function goTo(key){
+  panel.classList.remove('open'); clearTrail();
+  setTimeout(()=>animateTo(stages[key].x,stages[key].y,()=>showStage(key)),220);
+}
+
+/* ══ RESTART ══ */
+function restartGame(){
+  visited.clear();correctTotal=0;totalAnswered=0;
+  ORDER.forEach(k=>{qIndex[k]=0;qCorrect[k]=0;});
+  document.querySelectorAll('.stamp').forEach(e=>e.remove());
+  ORDER.forEach(k=>{const d=document.getElementById('dot-'+k);if(d)d.classList.remove('done');});
+  endSc.classList.remove('show');panel.classList.remove('open');panel.innerHTML='';
+  hint.style.opacity='1';clearTrail();
+  scoreBar.classList.add('hidden');
+  posX=80;posY=248;applyCharTransform(80,248,0);
+  const fEl=charMode==='el'?elFlame:robFlame;if(fEl)fEl.style.display='none';
+  setTimeout(()=>{animateTo(80,248,()=>showStage('kin'));setTimeout(()=>{hint.style.opacity='0';},3500);},350);
+}
+
+/* ══ HOTSPOTS ══ */
+Object.entries(stages).forEach(([key,s])=>{
+  const el=document.getElementById(s.hsId);if(!el)return;
+  const h=()=>{if(animating)return;panel.classList.remove('open');clearTrail();setTimeout(()=>animateTo(s.x,s.y,()=>showStage(key)),120);};
+  el.addEventListener('click',h);
+  el.addEventListener('touchend',e=>{e.preventDefault();h();},{passive:false});
+});
+
+/* ══ RESIZE ══ */
+window.addEventListener('resize',()=>{
+  ORDER.forEach(k=>{
+    const el=document.getElementById('stamp-'+k);
+    if(!el||!visited.has(k))return;
+    const pos=svgPct(stages[k].x,stages[k].y);
+    el.style.left=pos.left;el.style.top=pos.top;
+  });
+});
+
+/* ══ INIT ══ */
+if(elFlame)elFlame.style.display='none';
+if(robFlame)robFlame.style.display='none';
+robEl.style.display='none';
+scoreBar.classList.add('hidden');
+applyCharTransform(80,248,0);
+setTimeout(()=>{animateTo(80,248,()=>showStage('kin'));setTimeout(()=>{hint.style.opacity='0';},3500);},700);
+</script>
+</body>
+</html>
