@@ -30,21 +30,28 @@ Matematik og fysik
 ---
 ### Quiz-spil
 
-- [rumrejsen.html](https://coldcastlecc.github.io/Stuff/rumrejsen.html) – Astronomispil for 7.klasse HAY
+- [rumrejsen.html](https://coldcastlecc.github.io/Stuff/rumrejsen.html) – Astronomispil
 
-- [ordmesteren.html](https://coldcastlecc.github.io/Stuff/ordmesteren.html) – Spil om ordklasser til 6.klasse HAY
+- [ordmesteren.html](https://coldcastlecc.github.io/Stuff/ordmesteren.html) – Spil om ordklasser
 
-- [komma-spillet.html](https://coldcastlecc.github.io/Stuff/komma-spillet.html) – Spil om kommaer til 6.klasse HAY
+- [komma-spillet.html](https://coldcastlecc.github.io/Stuff/komma-spillet.html) – Spil om kommaer 
 
-- [tabelmesteren.html](https://coldcastlecc.github.io/Stuff/tabelmesteren.html) – Spil om tabeller til 2.klasse HAY
+- [tabelmesteren.html](https://coldcastlecc.github.io/Stuff/tabelmesteren.html) – Spil om tabeller 
 
-- [energi-quiz.html](https://coldcastlecc.github.io/Stuff/energi-quiz.html) – Spil om energi til 8.klasse HAY
+- [energi-quiz.html](https://coldcastlecc.github.io/Stuff/energi-quiz.html) – Spil om energi 
 
-- [navneordskongen.html](https://coldcastlecc.github.io/Stuff/navneordskongen.html) – Spil om navneord til 6.klasse HAY
+- [navneordskongen.html](https://coldcastlecc.github.io/Stuff/navneordskongen.html) – Spil om navneord 
 
-- [procentkongen.html](https://coldcastlecc.github.io/Stuff/procentkongen.html) – Spil om procenter til 8.klasse HAY
+- [procentkongen.html](https://coldcastlecc.github.io/Stuff/procentkongen.html) – Spil om procenter 
 
-- [skoleflugten.html](https://coldcastlecc.github.io/Stuff/skoleflugten.html) – Spil for sjov til 6.klasse HAY
+- [skoleflugten.html](https://coldcastlecc.github.io/Stuff/skoleflugten.html) – Spil for sjov
 
+- [energi.html](https://coldcastlecc.github.io/Stuff/energi.html) – Spil om energiomregning
+
+- [syrer_baser.html](https://coldcastlecc.github.io/Stuff/syrer_baser.html) – Spil om syrer og baser 
+
+- [solsystemet.html](https://coldcastlecc.github.io/Stuff/solsystemet.html) – Spil om solsystemet (Nat/Tek) 
+
+- [vandkredslobet.html](https://coldcastlecc.github.io/Stuff/vandkredslobet.html) – Spil om vandkredløbet (Nat/Tek) 
 ---------------------
 ColdcastleCC – 2026
