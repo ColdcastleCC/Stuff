@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>TYNGDEKRAFT – En Rumrejse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --bg:    #04061a;
+  --gold:  #ffd060;
+  --blue:  #60c8ff;
+  --pink:  #ff70c0;
+  --green: #60ffb0;
+  --fh:    'Exo 2', sans-serif;
+  --fb:    'Nunito Sans', sans-serif;
+  --f-xs:  clamp(10px,2.2vw,12px);
+  --f-sm:  clamp(12px,2.8vw,14px);
+  --f-md:  clamp(13px,3.2vw,16px);
+  --f-lg:  clamp(17px,4.5vw,24px);
+  --f-xl:  clamp(22px,6vw,36px);
+  --f-2xl: clamp(30px,8vw,52px);
+}
+html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none; }
+
+/* ── CANVAS BACKGROUND ── */
+#starfield { position:fixed;inset:0;z-index:0;pointer-events:none; }
+
+/* ── SCREENS ── */
+.screen { position:fixed;inset:0;z-index:10;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:none;flex-direction:column;align-items:center;padding:0 0 80px; }
+.screen.active { display:flex; }
+
+/* ── SHARED CARD ── */
+.card { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:20px;width:100%;max-width:580px;margin:0 auto; }
+
+/* ── TITLE SCREEN ── */
+#screen-title { justify-content:center;text-align:center;padding:20px; }
+.title-logo { font-family:var(--fh);font-weight:900;font-size:var(--f-2xl);color:var(--gold);text-transform:uppercase;letter-spacing:.06em;line-height:1;margin-bottom:8px;text-shadow:0 0 60px rgba(255,208,96,0.5); }
+.title-sub  { font-family:var(--fh);font-size:var(--f-md);color:rgba(255,255,255,0.55);letter-spacing:.12em;text-transform:uppercase;margin-bottom:40px; }
+
+/* Planet chooser */
+.planet-chooser { display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:560px;margin-bottom:36px; }
+.planet-btn {
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.12);
+  border-radius:14px;padding:14px 12px;cursor:pointer;
+  transition:border-color .2s,background .2s,transform .15s;
+  min-width:clamp(70px,18vw,95px);
+}
+.planet-btn:hover { border-color:var(--gold);background:rgba(255,208,96,0.08);transform:translateY(-3px); }
+.planet-btn canvas { display:block; }
+.planet-btn .p-name { font-family:var(--fh);font-weight:700;font-size:clamp(9px,2.2vw,12px);color:rgba(255,255,255,0.8);text-align:center; }
+.planet-btn .p-g    { font-size:clamp(8px,2vw,11px);color:var(--gold);font-weight:600; }
+
+.start-btn {
+  font-family:var(--fh);font-weight:900;font-size:var(--f-md);letter-spacing:.1em;text-transform:uppercase;
+  background:var(--gold);color:#04061a;border:none;border-radius:10px;
+  padding:16px 44px;cursor:pointer;transition:background .15s,transform .1s;
+  box-shadow:0 0 40px rgba(255,208,96,0.3);
+}
+.start-btn:hover { background:#ffe080; }
+.start-btn:active { transform:scale(.97); }
+
+/* ── NAV ── */
+#nav {
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  display:flex;background:rgba(4,6,26,0.95);
+  border-top:1px solid rgba(255,255,255,0.08);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.nav-btn {
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:10px 4px;cursor:pointer;border:none;background:transparent;
+  color:rgba(255,255,255,0.35);font-family:var(--fh);font-size:clamp(9px,2vw,11px);
+  letter-spacing:.04em;text-transform:uppercase;transition:color .2s;
+}
+.nav-btn.active { color:var(--gold); }
+.nav-btn .nav-icon { font-size:clamp(18px,4.5vw,24px); }
+
+/* ── GRAVITY DEMO SCREEN ── */
+#screen-gravity { padding:16px 14px 90px; }
+.section-title { font-family:var(--fh);font-weight:900;font-size:var(--f-xl);color:var(--gold);text-align:center;margin-bottom:4px;letter-spacing:.04em; }
+.section-lead  { font-size:var(--f-sm);color:rgba(255,255,255,0.6);text-align:center;margin-bottom:20px;line-height:1.6;max-width:520px;margin-left:auto;margin-right:auto; }
+
+/* Drop demo */
+.drop-arena {
+  width:100%;max-width:540px;margin:0 auto 20px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;padding:16px;text-align:center;
+}
+.drop-arena h3 { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:var(--blue);margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase; }
+.drop-arena p  { font-size:var(--f-xs);color:rgba(255,255,255,0.5);margin-bottom:12px; }
+.drop-stage { position:relative;width:100%;height:clamp(140px,28vw,180px);overflow:hidden;border-radius:8px;background:rgba(0,0,0,.3); }
+.drop-ground { position:absolute;bottom:0;left:0;right:0;height:10px;background:rgba(96,200,255,0.25);border-radius:0 0 8px 8px; }
+.drop-obj {
+  position:absolute;width:clamp(28px,7vw,40px);height:clamp(28px,7vw,40px);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(16px,4vw,24px);
+  transition:none;cursor:default;
+  text-shadow:0 2px 6px rgba(0,0,0,.5);
+}
+.drop-btn { font-family:var(--fh);font-weight:700;font-size:var(--f-xs);letter-spacing:.06em;text-transform:uppercase;background:rgba(96,200,255,0.15);color:var(--blue);border:1px solid rgba(96,200,255,0.3);border-radius:8px;padding:8px 18px;cursor:pointer;transition:background .15s;margin-top:10px; }
+.drop-btn:hover { background:rgba(96,200,255,0.28); }
+.drop-result { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:var(--gold);margin-top:8px;min-height:22px; }
+
+/* Formula card */
+.formula-card {
+  width:100%;max-width:540px;margin:0 auto 16px;
+  background:rgba(255,208,96,0.05);border:1px solid rgba(255,208,96,0.2);
+  border-radius:14px;padding:16px 18px;
+}
+.formula-card h3 { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px; }
+.formula-eq { font-family:'Exo 2',sans-serif;font-weight:900;font-size:clamp(18px,5vw,28px);color:#fff;margin-bottom:8px;text-align:center;line-height:1.3; }
+.formula-eq .sym { color:var(--gold); }
+.formula-eq .op  { color:rgba(255,255,255,0.4); }
+.formula-vars { font-size:var(--f-xs);color:rgba(255,255,255,0.45);line-height:1.8; }
+.formula-vars b { color:rgba(255,255,255,0.75);font-weight:600; }
+
+/* Planet g table */
+.g-table { width:100%;max-width:540px;margin:0 auto 16px;border-collapse:collapse; }
+.g-table th { font-family:var(--fh);font-size:var(--f-xs);letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:7px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06); }
+.g-table td { padding:9px 10px;font-size:var(--f-sm);color:rgba(255,255,255,0.82);border-bottom:1px solid rgba(255,255,255,0.04); }
+.g-table td:first-child { font-weight:700; }
+.g-table .bar-cell { width:45%; }
+.g-bar { height:8px;border-radius:4px;background:var(--gold);opacity:.75; }
+
+/* ── JUMP GAME SCREEN ── */
+#screen-jump { padding:0;overflow:hidden; }
+#jump-canvas { display:block;width:100%;height:100dvh; }
+
+.jump-ui {
+  position:fixed;top:max(10px,env(safe-area-inset-top,10px));left:0;right:0;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:0 14px;z-index:40;pointer-events:none;
+}
+.jump-planet-name { font-family:var(--fh);font-weight:900;font-size:var(--f-md);color:var(--gold);text-shadow:0 2px 8px rgba(0,0,0,.5); }
+.jump-g-label     { font-family:var(--fh);font-size:var(--f-sm);color:rgba(255,255,255,0.6);margin-top:2px; }
+.jump-score       { font-family:var(--fh);font-weight:900;font-size:var(--f-xl);color:#fff;text-align:right;text-shadow:0 2px 8px rgba(0,0,0,.5); }
+.jump-score-label { font-size:var(--f-xs);color:rgba(255,255,255,0.4);text-align:right; }
+.jump-instruct    { position:fixed;bottom:max(20px,env(safe-area-inset-bottom,20px));left:50%;transform:translateX(-50%);font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:rgba(255,255,255,0.5);pointer-events:none;text-align:center;white-space:nowrap; }
+
+/* ── UNIVERSE SCREEN ── */
+#screen-universe { padding:16px 14px 90px; }
+.universe-cards { display:flex;flex-direction:column;gap:14px;max-width:560px;margin:0 auto; }
+.u-card { background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .2s; }
+.u-card:hover { border-color:rgba(255,255,255,0.2); }
+.u-card-header { display:flex;align-items:center;gap:14px;padding:16px; }
+.u-card-icon  { font-size:clamp(28px,7vw,40px);flex-shrink:0;line-height:1; }
+.u-card-title { font-family:var(--fh);font-weight:900;font-size:var(--f-md);color:#fff;margin-bottom:2px; }
+.u-card-sub   { font-size:var(--f-xs);color:rgba(255,255,255,0.45); }
+.u-card-body  { padding:0 16px 16px;font-size:var(--f-sm);color:rgba(255,255,255,0.7);line-height:1.65;display:none; }
+.u-card-body.open { display:block; }
+.u-card-body .highlight { background:rgba(255,208,96,0.1);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:var(--f-xs); }
+.u-card-body .formula-inline { font-family:var(--fh);font-weight:700;font-size:var(--f-md);color:var(--gold);display:block;text-align:center;margin:12px 0;letter-spacing:.04em; }
+
+/* ── QUIZ SCREEN ── */
+#screen-quiz { padding:16px 14px 90px; }
+.quiz-card { background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:20px;max-width:560px;margin:0 auto 16px; }
+.quiz-num  { font-family:var(--fh);font-size:var(--f-xs);color:rgba(255,255,255,0.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px; }
+.quiz-q    { font-family:var(--fh);font-weight:700;font-size:var(--f-md);color:#fff;line-height:1.4;margin-bottom:14px; }
+.quiz-opts { display:flex;flex-direction:column;gap:8px; }
+.qbtn {
+  font-family:var(--fh);font-weight:700;font-size:var(--f-sm);
+  background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.85);
+  border:1px solid rgba(255,255,255,0.12);border-radius:10px;
+  padding:13px 16px;cursor:pointer;text-align:left;
+  transition:background .14s,border-color .14s,transform .1s;min-height:48px;
+}
+.qbtn:hover:not(:disabled) { background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25); }
+.qbtn:active:not(:disabled) { transform:scale(.98); }
+.qbtn.correct { background:rgba(96,255,176,0.18);border-color:rgba(96,255,176,0.6);color:#60ffb0; }
+.qbtn.wrong   { background:rgba(255,80,80,0.15); border-color:rgba(255,80,80,0.5); color:#ff9090; }
+.qbtn:disabled { cursor:default; }
+.quiz-fb { margin-top:10px;padding:10px 14px;border-radius:8px;font-size:var(--f-xs);line-height:1.55;display:none; }
+.quiz-fb.ok { background:rgba(96,255,176,0.1);color:#7affc8;border:1px solid rgba(96,255,176,0.2);display:block; }
+.quiz-fb.no { background:rgba(255,80,80,0.1); color:#ffb0b0;border:1px solid rgba(255,80,80,0.2); display:block; }
+.quiz-next { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:#04061a;border:none;border-radius:10px;padding:12px 28px;cursor:pointer;margin-top:12px;display:none;transition:background .15s; }
+.quiz-next:hover { background:#ffe080; }
+.quiz-next.show  { display:inline-block; }
+.quiz-progress { display:flex;gap:5px;max-width:560px;margin:0 auto 14px; }
+.qp-dot { flex:1;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;transition:background .3s; }
+.qp-dot.done-ok { background:var(--green); }
+.qp-dot.done-no { background:rgba(255,80,80,0.6); }
+.quiz-end { max-width:560px;margin:0 auto;text-align:center;padding:30px 20px; }
+.quiz-end .big-score { font-family:var(--fh);font-weight:900;font-size:clamp(56px,14vw,80px);color:var(--gold);line-height:1; }
+.quiz-end .score-max  { font-size:var(--f-md);color:rgba(255,255,255,0.4);margin-bottom:6px; }
+.quiz-end .score-msg  { font-size:var(--f-md);color:rgba(255,255,255,0.7);margin-bottom:24px;line-height:1.6; }
+.retry-btn { font-family:var(--fh);font-weight:900;font-size:var(--f-sm);letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:#04061a;border:none;border-radius:10px;padding:14px 36px;cursor:pointer;transition:background .15s; }
+.retry-btn:hover { background:#ffe080; }
+
+/* ── NEWTON 3 SCREEN ── */
+#screen-n3 { padding:16px 14px 90px; }
+.n3-law-box {
+  width:100%;max-width:560px;margin:0 auto 20px;
+  background:rgba(255,112,192,0.06);border:2px solid rgba(255,112,192,0.3);
+  border-radius:16px;padding:20px 18px;text-align:center;
+}
+.n3-law-box .law-text {
+  font-family:var(--fh);font-weight:900;font-size:var(--f-lg);
+  color:var(--pink);line-height:1.35;margin-bottom:8px;letter-spacing:.02em;
+}
+.n3-law-box .law-sub {
+  font-size:var(--f-sm);color:rgba(255,255,255,0.6);line-height:1.6;
+}
+.n3-demo {
+  width:100%;max-width:560px;margin:0 auto 16px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);
+  border-radius:14px;overflow:hidden;
+}
+.n3-demo-header {
+  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);
+  display:flex;align-items:center;gap:10px;
+}
+.n3-demo-icon { font-size:clamp(20px,5vw,28px);flex-shrink:0; }
+.n3-demo-title { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:#fff; }
+.n3-demo-sub   { font-size:var(--f-xs);color:rgba(255,255,255,0.4);margin-top:2px; }
+.n3-cvs { display:block;width:100%;height:clamp(110px,22vw,150px);background:rgba(0,0,0,0.2); }
+.n3-demo-body { padding:10px 16px 14px; }
+.n3-demo-body p { font-size:var(--f-xs);color:rgba(255,255,255,0.6);line-height:1.6; }
+.n3-demo-body .pair-box {
+  display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;
+}
+.force-tag {
+  flex:1;min-width:120px;padding:8px 12px;border-radius:8px;
+  font-family:var(--fh);font-weight:700;font-size:var(--f-xs);line-height:1.4;
+}
+.force-tag.action { background:rgba(255,112,192,0.14);border:1px solid rgba(255,112,192,0.35);color:var(--pink); }
+.force-tag.reaction{ background:rgba(96,200,255,0.12);border:1px solid rgba(96,200,255,0.3); color:var(--blue); }
+.n3-formula-row {
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  margin:14px auto 0;max-width:560px;flex-wrap:wrap;
+}
+.n3-f-card {
+  flex:1;min-width:140px;max-width:220px;
+  background:rgba(255,208,96,0.06);border:1px solid rgba(255,208,96,0.2);
+  border-radius:10px;padding:12px 14px;text-align:center;
+}
+.n3-f-card .eq { font-family:var(--fh);font-weight:900;font-size:clamp(15px,4vw,20px);color:var(--gold);margin-bottom:4px; }
+.n3-f-card .desc { font-size:var(--f-xs);color:rgba(255,255,255,0.45);line-height:1.5; }
+.n3-f-card .eq .sym { color:var(--pink); }
+.n3-f-card .eq .sym2 { color:var(--blue); }
+.n3-calc {
+  width:100%;max-width:560px;margin:0 auto 16px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);
+  border-radius:14px;padding:16px;
+}
+.n3-calc h3 { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:var(--gold);margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase; }
+.n3-slider-row { display:flex;align-items:center;gap:10px;margin-bottom:10px; }
+.n3-slider-row label { font-size:var(--f-xs);color:rgba(255,255,255,0.55);min-width:100px;font-family:var(--fh); }
+.n3-slider-row input[type=range] { flex:1; }
+.n3-slider-row .val { font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:var(--gold);min-width:60px;text-align:right; }
+.n3-result { background:rgba(255,208,96,0.07);border:1px solid rgba(255,208,96,0.2);border-radius:8px;padding:10px 14px;font-size:var(--f-sm);line-height:1.65;color:rgba(255,255,255,0.8); }
+.n3-result b { color:var(--gold); }
+.n3-result .pink { color:var(--pink); }
+.n3-result .blue { color:var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- STARFIELD CANVAS -->
+<canvas id="starfield"></canvas>
+
+<!-- ═══════════════ TITLE SCREEN ═══════════════ -->
+<div class="screen active" id="screen-title">
+  <div style="padding:clamp(40px,10vw,70px) 16px 0;text-align:center;width:100%">
+    <div style="font-size:clamp(40px,10vw,64px);margin-bottom:12px">🪐</div>
+    <div class="title-logo">Tyngdekraft</div>
+    <div class="title-sub">En rumrejse · Fra Jordens overflade til universet</div>
+  </div>
+
+  <div style="width:100%;padding:0 12px;max-width:600px;margin:0 auto">
+    <p style="font-family:var(--fh);font-size:var(--f-sm);color:rgba(255,255,255,0.45);text-align:center;margin-bottom:16px;letter-spacing:.06em;text-transform:uppercase">Vælg en planet og se forskel på tyngdekraft →</p>
+    <div class="planet-chooser" id="planet-chooser"></div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">Start rejsen 🚀</button>
+  <p style="font-size:var(--f-xs);color:rgba(255,255,255,0.2);margin-top:14px">Tryk på en planet for at se tyngdeaccelerationen</p>
+</div>
+
+<!-- ═══════════════ GRAVITY DEMO ═══════════════ -->
+<div class="screen" id="screen-gravity">
+  <div style="width:100%;padding:24px 0 0">
+    <div class="section-title">⬇ Hvad er tyngdekraft?</div>
+    <div class="section-lead">Tyngdekraft er en tiltrækning mellem alt der har masse. Jo større massen, desto stærkere trækker den. Det er derfor du falder ned — og det er derfor Jordet kredser om Solen!</div>
+  </div>
+
+  <!-- DROP DEMO -->
+  <div class="drop-arena card">
+    <h3>🔬 Frit fald – hvad falder hurtigst?</h3>
+    <p>Galileo beviste i 1590: en sten og en fjer falder lige hurtigt — hvis der ikke er luft! Tryk og se selv.</p>
+    <div class="drop-stage" id="drop-stage">
+      <div class="drop-obj" id="drop-rock" style="left:25%;top:8px;background:radial-gradient(circle at 35% 35%,#888,#444)">🪨</div>
+      <div class="drop-obj" id="drop-feather" style="left:60%;top:8px;background:radial-gradient(circle at 35% 35%,#ffe8c0,#cc9900)">🪶</div>
+      <div class="drop-ground"></div>
+    </div>
+    <div class="drop-result" id="drop-result"></div>
+    <button class="drop-btn" id="drop-btn" onclick="runDrop()">🚀 Slip begge i vakuum!</button>
+  </div>
+
+  <!-- NEWTONS LOV -->
+  <div class="formula-card">
+    <h3>📐 Newtons tyngdekraftlov</h3>
+    <div class="formula-eq">
+      <span class="sym">F</span>
+      <span class="op"> = </span>
+      <span class="sym">G</span>
+      <span class="op"> · </span>
+      <span class="sym">m₁</span>
+      <span class="op"> · </span>
+      <span class="sym">m₂</span>
+      <span class="op"> / </span>
+      <span class="sym">r²</span>
+    </div>
+    <div class="formula-vars">
+      <b>F</b> = tyngdekraft [N]&nbsp;&nbsp;·&nbsp;&nbsp;<b>G</b> = 6,674 × 10⁻¹¹ N·m²/kg² (gravitationskonstanten)<br>
+      <b>m₁, m₂</b> = masserne af de to legemer [kg]&nbsp;&nbsp;·&nbsp;&nbsp;<b>r</b> = afstand mellem centrene [m]
+    </div>
+  </div>
+
+  <!-- g = F/m -->
+  <div class="formula-card">
+    <h3>🌍 Tyngdeacceleration g</h3>
+    <div class="formula-eq">
+      <span class="sym">g</span>
+      <span class="op"> = </span>
+      <span class="sym">G · M</span>
+      <span class="op"> / </span>
+      <span class="sym">R²</span>
+      <span class="op">&nbsp;&nbsp;→&nbsp;&nbsp;</span>
+      <span class="sym">F</span>
+      <span class="op"> = </span>
+      <span class="sym">m · g</span>
+    </div>
+    <div class="formula-vars">
+      <b>g</b> = tyngdeacceleration [m/s²]&nbsp;&nbsp;·&nbsp;&nbsp;<b>M</b> = planetens masse&nbsp;&nbsp;·&nbsp;&nbsp;<b>R</b> = planetens radius<br>
+      På Jordens overflade: <b>g = 9,82 m/s²</b>&nbsp;&nbsp;·&nbsp;&nbsp;<b>F</b> = din vægt [N] = din masse × g
+    </div>
+  </div>
+
+  <!-- PLANET g TABLE -->
+  <div style="width:100%;max-width:560px;margin:0 auto">
+    <p style="font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:rgba(255,255,255,0.5);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;padding:0 4px">g på forskellige himmellegemer</p>
+  </div>
+  <div style="width:100%;max-width:560px;margin:0 auto;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;padding:4px 0">
+    <table class="g-table" id="g-table"></table>
+  </div>
+
+  <!-- FRIT FALD FORMEL -->
+  <div class="formula-card" style="margin-top:16px">
+    <h3>⏱ Frit fald — afstand og tid</h3>
+    <div class="formula-eq">
+      <span class="sym">s</span>
+      <span class="op"> = </span>
+      <span class="sym">½ · g · t²</span>
+    </div>
+    <div class="formula-vars" style="margin-bottom:10px">
+      <b>s</b> = falddistance [m]&nbsp;&nbsp;·&nbsp;&nbsp;<b>g</b> = tyngdeacceleration [m/s²]&nbsp;&nbsp;·&nbsp;&nbsp;<b>t</b> = tid [s]
+    </div>
+    <div style="background:rgba(96,200,255,0.08);border:1px solid rgba(96,200,255,0.2);border-radius:8px;padding:10px 12px;font-size:var(--f-xs);color:rgba(255,255,255,0.65);line-height:1.65">
+      <b style="color:var(--blue)">Eksempel:</b> Du slipper en bold fra 10 m på Jorden (g = 9,82):<br>
+      10 = ½ · 9,82 · t² &nbsp;→&nbsp; t² = 20/9,82 ≈ 2,04 &nbsp;→&nbsp; t ≈ <b style="color:var(--gold)">1,43 sekunder</b><br><br>
+      Samme bold fra Månen (g = 1,62): t ≈ <b style="color:var(--gold)">3,51 sekunder</b> — over dobbelt så lang tid!
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════ NEWTONS 3. LOV ═══════════════ -->
+<div class="screen" id="screen-n3">
+  <div style="width:100%;padding:24px 0 0">
+    <div class="section-title" style="color:var(--pink)">⚡ Newtons 3. Lov</div>
+    <div class="section-lead">Den mest misforståede lov i fysik — og den sjoveste!</div>
+  </div>
+
+  <!-- THE LAW -->
+  <div class="n3-law-box">
+    <div class="law-text">"Enhver kraft har en modsatrettet<br>og lige stor modkraft"</div>
+    <div class="law-sub">For enhver <span style="color:var(--pink)">aktionskraft</span> findes en nøjagtigt lige stor, modsat rettet <span style="color:var(--blue)">reaktionskraft</span>.<br>De to kræfter virker altid på <b style="color:#fff">forskellige legemer</b>.</div>
+  </div>
+
+  <!-- FORMULA ROW -->
+  <div class="n3-formula-row">
+    <div class="n3-f-card">
+      <div class="eq"><span class="sym">F<sub>A→B</sub></span> <span style="color:rgba(255,255,255,.4)">=</span> <span style="color:var(--gold)">−</span><span class="sym2">F<sub>B→A</sub></span></div>
+      <div class="desc">Aktionskraft = − Reaktionskraft<br>Samme størrelse, modsat retning</div>
+    </div>
+    <div class="n3-f-card">
+      <div class="eq"><span class="sym">|F<sub>A</sub>|</span> <span style="color:rgba(255,255,255,.4)">=</span> <span class="sym2">|F<sub>B</sub>|</span></div>
+      <div class="desc">Krafternes størrelser er ens.<br>F = m·a gælder for <i>hvert</i> legeme.</div>
+    </div>
+  </div>
+
+  <!-- DEMO 1: Raket -->
+  <div class="n3-demo">
+    <div class="n3-demo-header">
+      <div class="n3-demo-icon">🚀</div>
+      <div>
+        <div class="n3-demo-title">Raketfremstød</div>
+        <div class="n3-demo-sub">Newtons 3. lov i praksis</div>
+      </div>
+    </div>
+    <canvas class="n3-cvs" id="cvs-rocket"></canvas>
+    <div class="n3-demo-body">
+      <p>Raketten skyder gas ud bagud med stor kraft. Gassen skubber <i>med samme kraft</i> fremad på raketten. Der er ingen "noget at skubbe fra" behov — kræfterne virker på <b style="color:#fff">henholdsvis gas og raket</b>.</p>
+      <div class="pair-box">
+        <div class="force-tag action">🚀 Raket skubber gas bagud<br><b>Aktionskraft →</b></div>
+        <div class="force-tag reaction">💨 Gas skubber raket fremad<br><b>← Reaktionskraft</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEMO 2: Bold mod mur -->
+  <div class="n3-demo">
+    <div class="n3-demo-header">
+      <div class="n3-demo-icon">⚽</div>
+      <div>
+        <div class="n3-demo-title">Bold mod mur</div>
+        <div class="n3-demo-sub">Klik/tryk for at sparke bolden!</div>
+      </div>
+    </div>
+    <canvas class="n3-cvs" id="cvs-ball" style="cursor:pointer"></canvas>
+    <div class="n3-demo-body">
+      <p>Bolden rammer muren og trykker på den. Muren trykker med <b style="color:#fff">præcis samme kraft</b> tilbage på bolden og sender den retur. Muren ryster en smule — den mærker kraften!</p>
+      <div class="pair-box">
+        <div class="force-tag action">⚽ Bold trykker mod mur<br><b>Aktionskraft →</b></div>
+        <div class="force-tag reaction">🧱 Mur trykker bold tilbage<br><b>← Reaktionskraft</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEMO 3: Svømmer -->
+  <div class="n3-demo">
+    <div class="n3-demo-header">
+      <div class="n3-demo-icon">🏊</div>
+      <div>
+        <div class="n3-demo-title">Svømmeren & vandet</div>
+        <div class="n3-demo-sub">Fremdrift ved at skubbe bagud</div>
+      </div>
+    </div>
+    <canvas class="n3-cvs" id="cvs-swim"></canvas>
+    <div class="n3-demo-body">
+      <p>En svømmer skubber vand bagud med hænderne. Vandet skubber svømmeren fremad med præcis samme kraft. Det gælder også årer, propeller og fuglefjer!</p>
+      <div class="pair-box">
+        <div class="force-tag action">🏊 Svømmer skubber vand bagud<br><b>Aktionskraft →</b></div>
+        <div class="force-tag reaction">💧 Vand skubber svømmer frem<br><b>← Reaktionskraft</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEMO 4: Jord og æble -->
+  <div class="n3-demo">
+    <div class="n3-demo-header">
+      <div class="n3-demo-icon">🍎</div>
+      <div>
+        <div class="n3-demo-title">Jordens tyngdekraft — begge veje!</div>
+        <div class="n3-demo-sub">Den mest overraskende konsekvens</div>
+      </div>
+    </div>
+    <canvas class="n3-cvs" id="cvs-apple"></canvas>
+    <div class="n3-demo-body">
+      <p>Jordet trækker æblet ned med kraften F = m·g. Men æblet trækker Jordet <b style="color:#fff">opad med nøjagtigt samme kraft!</b> Vi ser det ikke fordi Jordens acceleration a = F/M er astronomisk lille.</p>
+      <div class="pair-box">
+        <div class="force-tag action">🌍 Jord trækker æble ned<br><b>F = m_æble · g ↓</b></div>
+        <div class="force-tag reaction">🍎 Æble trækker Jord op<br><b>F = M_jord · a_jord ↑</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="n3-calc">
+    <h3>🔢 Regn selv med kræftepar</h3>
+    <div class="n3-slider-row">
+      <label>Masse (m)</label>
+      <input type="range" id="n3-mass" min="1" max="200" value="60" step="1" oninput="updateN3Calc()">
+      <div class="val" id="n3-mass-val">60 kg</div>
+    </div>
+    <div class="n3-slider-row">
+      <label>Planet g</label>
+      <input type="range" id="n3-g" min="1" max="280" value="98" step="1" oninput="updateN3Calc()">
+      <div class="val" id="n3-g-val">9,8 m/s²</div>
+    </div>
+    <div class="n3-result" id="n3-result"></div>
+  </div>
+
+  <!-- WHY IT DOESNT CANCEL -->
+  <div class="formula-card" style="max-width:560px;margin:0 auto 16px">
+    <h3 style="color:var(--pink)">❓ Hvorfor ophæver de ikke hinanden?</h3>
+    <div style="font-size:var(--f-sm);color:rgba(255,255,255,0.7);line-height:1.65;margin-top:4px">
+      Det klassiske spørgsmål! Kræftepar fra 3. lov virker på <b style="color:#fff">to forskellige legemer</b>, og ophæver derfor ikke hinanden.<br><br>
+      <b style="color:var(--gold)">Eksempel:</b> Du skubber en vogn. Vognen skubber dig tilbage. De to kræfter virker henholdsvis på vognen og på dig — ikke det samme legeme. Vognen accelererer (F/m_vogn) og du accelererer (F/m_dig) — i modsatte retninger.<br><br>
+      Kræfter ophæver kun hinanden, hvis de virker på <b style="color:#fff">det samme legeme</b> — det er Newtons <span style="color:var(--blue)">1. og 2. lov</span>.
+    </div>
+  </div>
+
+  <!-- ALL 3 LAWS SUMMARY -->
+  <div style="width:100%;max-width:560px;margin:0 auto 16px;display:flex;flex-direction:column;gap:10px;padding:0 0">
+    <p style="font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:rgba(255,255,255,0.4);letter-spacing:.08em;text-transform:uppercase;padding:0 4px">Newtons tre love — overblik</p>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px">
+      <div style="font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:var(--blue);margin-bottom:4px">1. lov — Inertiens lov</div>
+      <div style="font-size:var(--f-xs);color:rgba(255,255,255,0.6);line-height:1.55">Et legeme forbliver i hvile eller bevæger sig med konstant hastighed, medmindre en <b style="color:#fff">ydre kraft</b> virker på det.</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px">
+      <div style="font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:var(--gold);margin-bottom:4px">2. lov — Kraftloven</div>
+      <div style="font-size:var(--f-sm);font-family:var(--fh);color:var(--gold);margin-bottom:4px">F = m · a</div>
+      <div style="font-size:var(--f-xs);color:rgba(255,255,255,0.6);line-height:1.55">En nettokraft F på et legeme giver det en acceleration a proportional med kraften og omvendt proportional med massen.</div>
+    </div>
+    <div style="background:rgba(255,112,192,0.07);border:1px solid rgba(255,112,192,0.25);border-radius:10px;padding:12px 14px">
+      <div style="font-family:var(--fh);font-weight:700;font-size:var(--f-sm);color:var(--pink);margin-bottom:4px">3. lov — Aktions-/reaktionsloven ← Vi er her</div>
+      <div style="font-size:var(--f-sm);font-family:var(--fh);color:var(--pink);margin-bottom:4px">F<sub>A→B</sub> = −F<sub>B→A</sub></div>
+      <div style="font-size:var(--f-xs);color:rgba(255,255,255,0.6);line-height:1.55">Enhver kraft har en nøjagtigt lige stor, modsat rettet modkraft. Kræfterne virker på <b style="color:#fff">to forskellige legemer</b>.</div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════ JUMP GAME ═══════════════ -->
+<div class="screen" id="screen-jump">
+  <canvas id="jump-canvas"></canvas>
+  <div class="jump-ui">
+    <div>
+      <div class="jump-planet-name" id="jp-name">Jorden</div>
+      <div class="jump-g-label" id="jp-g">g = 9,82 m/s²</div>
+    </div>
+    <div>
+      <div class="jump-score" id="jp-score">0</div>
+      <div class="jump-score-label">meter</div>
+    </div>
+  </div>
+  <div class="jump-instruct" id="jump-instruct">Tryk eller klik for at hoppe · Hold nede for højere hop</div>
+</div>
+
+<!-- ═══════════════ UNIVERSE ═══════════════ -->
+<div class="screen" id="screen-universe">
+  <div style="width:100%;padding:24px 0 0">
+    <div class="section-title">🌌 Universet & tyngdekraft</div>
+    <div class="section-lead">Tyngdekraft er den kraft der former alt — fra æbler der falder til galakser der roterer. Tryk på et kort for at udforske.</div>
+  </div>
+  <div class="universe-cards" id="universe-cards"></div>
+</div>
+
+<!-- ═══════════════ QUIZ ═══════════════ -->
+<div class="screen" id="screen-quiz">
+  <div style="width:100%;padding:24px 0 0">
+    <div class="section-title">🧠 Quizzen</div>
+    <div class="section-lead">Test din viden om tyngdekraft og universet</div>
+  </div>
+  <div class="quiz-progress" id="quiz-progress"></div>
+  <div id="quiz-area"></div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="nav-btn active" id="nav-n3" onclick="showScreen('n3')">
+    <span class="nav-icon">⚡</span>3. Lov
+  </button>
+  <button class="nav-btn" id="nav-grav" onclick="showScreen('gravity')">
+    <span class="nav-icon">⬇</span>Tyngdekraft
+  </button>
+  <button class="nav-btn" id="nav-jump" onclick="showScreen('jump')">
+    <span class="nav-icon">🕹</span>Hop-spil
+  </button>
+  <button class="nav-btn" id="nav-uni" onclick="showScreen('universe')">
+    <span class="nav-icon">🌌</span>Universet
+  </button>
+  <button class="nav-btn" id="nav-quiz" onclick="showScreen('quiz')">
+    <span class="nav-icon">🧠</span>Quiz
+  </button>
+</nav>
+
+<script>
+/* ═══════════ PLANET DATA ═══════════ */
+const PLANETS = [
+  { name:'Merkur',  g:3.70, color:'#b8a090', r:18,  emoji:'☿',  fact:'Trods sin lille masse er g ikke 0 — bare 0,38× Jordens.' },
+  { name:'Venus',   g:8.87, color:'#e8c88a', r:22,  emoji:'♀',  fact:'Venus\' g er næsten som Jordens pga. dens størrelse.' },
+  { name:'Jorden',  g:9.82, color:'#4488cc', r:24,  emoji:'🌍', fact:'g = 9,82 m/s² på overfladen. Du vejer 1 kg·g = 9,82 N per kg.' },
+  { name:'Månen',   g:1.62, color:'#cccccc', r:16,  emoji:'🌕', fact:'På Månen vejer du kun 1/6 af din jordvægt!' },
+  { name:'Mars',    g:3.72, color:'#cc5533', r:20,  emoji:'🔴', fact:'Mars\' g er 0,38× Jordens — samme som Merkur tilfældigvis!' },
+  { name:'Jupiter', g:24.8, color:'#c8a870', r:34,  emoji:'🟠', fact:'Jupiter har g = 24,8 m/s²! Du ville veje 2,5× mere.' },
+  { name:'Saturn',  g:10.4, color:'#e8d48a', r:30,  emoji:'🪐', fact:'Saturn er stor men ikke superdense, så g ≈ Jordens.' },
+  { name:'Solen',   g:274,  color:'#ffcc00', r:38,  emoji:'☀', fact:'På Solens overflade er g = 274 m/s²! Ingenting kan stå der.' },
+];
+
+/* ═══════════ STARFIELD ═══════════ */
+const sfCvs = document.getElementById('starfield');
+const sfCtx = sfCvs.getContext('2d');
+let stars = [];
+function initStars() {
+  sfCvs.width = window.innerWidth; sfCvs.height = window.innerHeight;
+  stars = Array.from({length:220}, () => ({
+    x: Math.random()*sfCvs.width, y: Math.random()*sfCvs.height,
+    r: Math.random()*1.6+0.3,
+    a: Math.random(), da: (Math.random()-.5)*0.008,
+  }));
+}
+function animStars() {
+  sfCtx.clearRect(0,0,sfCvs.width,sfCvs.height);
+  stars.forEach(s => {
+    s.a += s.da; if(s.a<=0||s.a>=1) s.da=-s.da; s.a=Math.max(0.05,Math.min(1,s.a));
+    sfCtx.beginPath(); sfCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    sfCtx.fillStyle=`rgba(255,255,255,${s.a})`; sfCtx.fill();
+  });
+  requestAnimationFrame(animStars);
+}
+initStars(); animStars();
+window.addEventListener('resize', () => { initStars(); if(jumpActive) resizeJump(); });
+
+/* ═══════════ PLANET CHOOSER on title ═══════════ */
+const chooser = document.getElementById('planet-chooser');
+let chosenPlanet = PLANETS[2]; // Earth default
+PLANETS.forEach((p, i) => {
+  const btn = document.createElement('div');
+  btn.className = 'planet-btn';
+  btn.id = 'pb-' + i;
+  const cvs = document.createElement('canvas');
+  const size = Math.min(50, Math.max(36, p.r * 1.6));
+  cvs.width = size; cvs.height = size;
+  const ctx = cvs.getContext('2d');
+  ctx.beginPath(); ctx.arc(size/2, size/2, p.r*0.75, 0, Math.PI*2);
+  ctx.fillStyle = p.color; ctx.fill();
+  ctx.beginPath(); ctx.arc(size/2*0.7, size/2*0.7, p.r*0.22, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fill();
+  btn.appendChild(cvs);
+  const nm = document.createElement('div'); nm.className='p-name'; nm.textContent=p.name;
+  const gv = document.createElement('div'); gv.className='p-g'; gv.textContent=`g = ${p.g} m/s²`;
+  btn.appendChild(nm); btn.appendChild(gv);
+  btn.onclick = () => {
+    document.querySelectorAll('.planet-btn').forEach(b=>b.style.borderColor='');
+    btn.style.borderColor = 'var(--gold)';
+    chosenPlanet = p;
+    updateJumpPlanet(p);
+  };
+  chooser.appendChild(btn);
+});
+// default highlight Earth
+document.getElementById('pb-2').style.borderColor = 'var(--gold)';
+
+/* ═══════════ G TABLE ═══════════ */
+const gTable = document.getElementById('g-table');
+gTable.innerHTML = `<tr><th>Planet</th><th>g (m/s²)</th><th class="bar-cell">Relativt til Jordens</th><th>Vejer du 60 kg?</th></tr>`;
+PLANETS.forEach(p => {
+  const tr = document.createElement('tr');
+  const pct = Math.min(100, (p.g/274)*100);
+  tr.innerHTML = `
+    <td>${p.emoji} ${p.name}</td>
+    <td><b style="color:var(--gold)">${p.g}</b></td>
+    <td class="bar-cell"><div class="g-bar" style="width:${pct}%;background:${p.color}"></div></td>
+    <td>${(60*p.g).toFixed(0)} N</td>`;
+  gTable.appendChild(tr);
+});
+
+/* ═══════════ DROP DEMO ═══════════ */
+let dropRunning = false;
+function runDrop() {
+  if(dropRunning) return;
+  dropRunning = true;
+  const rock = document.getElementById('drop-rock');
+  const feather = document.getElementById('drop-feather');
+  const stage = document.getElementById('drop-stage');
+  const result = document.getElementById('drop-result');
+  const btn = document.getElementById('drop-btn');
+  btn.disabled = true;
+  result.textContent = '';
+  const stageH = stage.clientHeight;
+  const objH = rock.clientHeight;
+  const groundH = 10;
+  const maxTop = stageH - objH - groundH;
+  const startTop = 8;
+  rock.style.top = startTop+'px';
+  feather.style.top = startTop+'px';
+  const g = 9.82; // visual
+  let t = 0;
+  const interval = setInterval(() => {
+    t += 0.05;
+    const y = startTop + 0.5 * g * t * t * 12; // *12 for visual speed
+    const clampY = Math.min(y, maxTop);
+    rock.style.top = clampY+'px';
+    feather.style.top = clampY+'px';
+    if(clampY >= maxTop) {
+      clearInterval(interval);
+      result.textContent = '💥 Begge lander på SAMME tid! Massen betyder ikke noget for faldtiden.';
+      setTimeout(() => {
+        rock.style.top = startTop+'px'; feather.style.top = startTop+'px';
+        btn.disabled = false; dropRunning = false; result.textContent = '';
+      }, 2500);
+    }
+  }, 30);
+}
+
+/* ═══════════ JUMP GAME ═══════════ */
+const jumpCvs = document.getElementById('jump-canvas');
+const jCtx = jumpCvs.getContext('2d');
+let jumpActive = false;
+let jState = { x:0,y:0,vy:0,onGround:false,pressing:false,pressTime:0,maxHeight:0,score:0,camY:0,platforms:[],stars:[] };
+let jPlanet = PLANETS[2];
+let jAnimId = null;
+
+const GROUND_COLOR = '#223312';
+const PLAT_COLORS = ['#334', '#243', '#334', '#342', '#253'];
+
+function updateJumpPlanet(p) {
+  jPlanet = p;
+  document.getElementById('jp-name').textContent = p.name;
+  document.getElementById('jp-g').textContent = `g = ${p.g} m/s²`;
+}
+updateJumpPlanet(chosenPlanet);
+
+function resizeJump() {
+  jumpCvs.width = window.innerWidth;
+  jumpCvs.height = window.innerHeight;
+}
+
+function initJump() {
+  resizeJump();
+  const W = jumpCvs.width, H = jumpCvs.height;
+  jState = {
+    x: W/2, y: H - 60, vy: 0, vx: 0,
+    onGround: true, pressing: false, pressTime: 0,
+    score: 0, maxHeight: 0,
+    camY: 0,
+    platforms: [{ x:0, y:H-20, w:W, h:20, ground:true }],
+    collectibles: [],
+    bgStars: Array.from({length:80}, ()=>({ x:Math.random()*W, y:Math.random()*H*5, r:Math.random()*1.5+.3, a:Math.random() })),
+  };
+  // Generate platforms above
+  let py = H - 130;
+  for(let i=0;i<40;i++) {
+    const pw = 60 + Math.random()*80;
+    const px = Math.random()*(W - pw);
+    jState.platforms.push({ x:px, y:py, w:pw, h:12, ground:false, color: PLAT_COLORS[i%5] });
+    py -= 80 + Math.random()*60;
+    // star collectible
+    if(Math.random()>.5) jState.collectibles.push({ x:px+pw/2, y:py+50, collected:false });
+  }
+  document.getElementById('jp-score').textContent = '0';
+  document.getElementById('jump-instruct').style.opacity = '1';
+}
+
+function jumpLoop() {
+  if(!jumpActive) return;
+  const W=jumpCvs.width, H=jumpCvs.height;
+  const g_scale = jPlanet.g / 9.82; // relative to Earth
+  const GRAVITY = 0.35 * g_scale;
+  const JUMP_POWER = 9 + (jState.pressing && !jState.onGround ? 0 : 0);
+  const MAX_PRESS = 20;
+
+  // Physics
+  if(jState.onGround && jState.pressing) {
+    jState.pressTime++;
+  }
+  if(!jState.pressing && jState.pressTime > 0 && jState.onGround) {
+    const power = 6 + (jState.pressTime/MAX_PRESS)*7;
+    jState.vy = -(Math.min(power, 13));
+    jState.pressTime = 0;
+    jState.onGround = false;
+    document.getElementById('jump-instruct').style.opacity = '0';
+  }
+  jState.vy += GRAVITY;
+  jState.y += jState.vy;
+  // slight drift
+  jState.x += Math.sin(Date.now()/2000)*0.3;
+  jState.x = Math.max(20, Math.min(W-20, jState.x));
+
+  // Camera
+  const screenY = H*0.5;
+  if(jState.y - jState.camY < screenY) jState.camY = jState.y - screenY;
+
+  // Platform collision
+  jState.onGround = false;
+  const CHAR_H = 32, CHAR_W = 20;
+  for(const p of jState.platforms) {
+    if(jState.vy > 0 &&
+       jState.x > p.x && jState.x < p.x+p.w &&
+       jState.y+CHAR_H/2 > p.y && jState.y+CHAR_H/2 < p.y+p.h+8) {
+      jState.y = p.y - CHAR_H/2;
+      jState.vy = 0;
+      jState.onGround = true;
+    }
+  }
+
+  // Score = max height above ground
+  const groundY = H - 20;
+  const height = Math.max(0, Math.round((groundY - jState.y) / 10));
+  if(height > jState.score) {
+    jState.score = height;
+    document.getElementById('jp-score').textContent = jState.score;
+  }
+
+  // Collect stars
+  for(const c of jState.collectibles) {
+    if(!c.collected && Math.abs(jState.x-c.x)<20 && Math.abs(jState.y-c.y)<20) {
+      c.collected = true; jState.score += 5;
+      document.getElementById('jp-score').textContent = jState.score;
+    }
+  }
+
+  // === DRAW ===
+  // Sky bg
+  const skyGrad = jCtx.createLinearGradient(0,0,0,H);
+  skyGrad.addColorStop(0,'#010210');
+  skyGrad.addColorStop(1,'#030820');
+  jCtx.fillStyle=skyGrad; jCtx.fillRect(0,0,W,H);
+
+  // bg stars
+  for(const s of jState.bgStars) {
+    const sy = s.y - jState.camY*0.3;
+    if(sy<-5||sy>H+5) continue;
+    jCtx.beginPath(); jCtx.arc(s.x, sy, s.r, 0, Math.PI*2);
+    jCtx.fillStyle=`rgba(255,255,255,${s.a})`; jCtx.fill();
+  }
+
+  // Planet in bg
+  const planetR = Math.min(W,H)*0.22;
+  jCtx.save(); jCtx.globalAlpha=0.12;
+  jCtx.beginPath(); jCtx.arc(W*0.82, H*0.25, planetR, 0, Math.PI*2);
+  jCtx.fillStyle=jPlanet.color; jCtx.fill();
+  jCtx.restore();
+
+  // Platforms
+  for(const p of jState.platforms) {
+    const dy = p.y - jState.camY;
+    if(dy<-20||dy>H+20) continue;
+    jCtx.fillStyle = p.ground ? GROUND_COLOR : (p.color||'#334');
+    jCtx.beginPath();
+    if(p.ground) jCtx.fillRect(p.x, dy, p.w, p.h);
+    else { jCtx.roundRect(p.x, dy, p.w, p.h, 4); jCtx.fill(); }
+    // glow edge
+    jCtx.strokeStyle='rgba(126,232,162,0.3)'; jCtx.lineWidth=1;
+    if(!p.ground){ jCtx.beginPath(); jCtx.roundRect(p.x,dy,p.w,p.h,4); jCtx.stroke(); }
+  }
+
+  // Collectibles
+  for(const c of jState.collectibles) {
+    if(c.collected) continue;
+    const cy = c.y - jState.camY;
+    if(cy<-10||cy>H+10) continue;
+    jCtx.save();
+    jCtx.fillStyle='rgba(255,208,96,0.9)';
+    const sz=8, t2=Date.now()/800;
+    jCtx.beginPath();
+    for(let k=0;k<5;k++){
+      const a=k*Math.PI*2/5 - Math.PI/2;
+      const bx=c.x+Math.cos(a)*sz, by=cy+Math.sin(a)*sz;
+      k===0?jCtx.moveTo(bx,by):jCtx.lineTo(bx,by);
+      const ia=(k+0.5)*Math.PI*2/5-Math.PI/2;
+      jCtx.lineTo(c.x+Math.cos(ia)*sz*0.45, cy+Math.sin(ia)*sz*0.45);
+    }
+    jCtx.closePath(); jCtx.fill();
+    jCtx.restore();
+  }
+
+  // Character
+  const cx=jState.x, cy2=jState.y-jState.camY;
+  const squish = jState.onGround && jState.pressTime>0 ? 1+jState.pressTime/MAX_PRESS*0.3 : 1;
+  jCtx.save();
+  jCtx.translate(cx, cy2);
+  // spacesuit body
+  jCtx.scale(1/squish, squish);
+  jCtx.fillStyle='#dde4f0';
+  jCtx.beginPath(); jCtx.ellipse(0,0,14,18,0,0,Math.PI*2); jCtx.fill();
+  jCtx.strokeStyle='#aab0cc'; jCtx.lineWidth=1.5; jCtx.stroke();
+  // helmet
+  jCtx.fillStyle='#dde8ff'; jCtx.beginPath(); jCtx.arc(0,-14,12,0,Math.PI*2); jCtx.fill();
+  jCtx.strokeStyle='#aab8cc'; jCtx.lineWidth=1; jCtx.stroke();
+  // visor
+  jCtx.fillStyle='rgba(96,200,255,0.8)'; jCtx.beginPath(); jCtx.ellipse(0,-13,7,6,0,0,Math.PI*2); jCtx.fill();
+  // chest light
+  jCtx.fillStyle='rgba(96,255,176,0.7)'; jCtx.beginPath(); jCtx.arc(0,2,3,0,Math.PI*2); jCtx.fill();
+  // jetpack flame when jumping
+  if(!jState.onGround && jState.vy<0) {
+    jCtx.fillStyle='rgba(255,150,60,0.8)'; jCtx.beginPath(); jCtx.ellipse(0,20,4,8,0,0,Math.PI*2); jCtx.fill();
+    jCtx.fillStyle='rgba(255,230,100,0.6)'; jCtx.beginPath(); jCtx.ellipse(0,18,2,5,0,0,Math.PI*2); jCtx.fill();
+  }
+  jCtx.restore();
+
+  // HUD charge bar when pressing
+  if(jState.pressing && jState.onGround && jState.pressTime>0) {
+    const barW = 60, barH = 6;
+    const fill = (jState.pressTime/MAX_PRESS)*barW;
+    jCtx.fillStyle='rgba(0,0,0,0.4)'; jCtx.roundRect(cx-barW/2, cy2-40, barW, barH, 3); jCtx.fill();
+    const grad=jCtx.createLinearGradient(cx-barW/2,0,cx+barW/2,0);
+    grad.addColorStop(0,'#60ffb0'); grad.addColorStop(1,'#ffd060');
+    jCtx.fillStyle=grad; jCtx.beginPath(); jCtx.roundRect(cx-barW/2, cy2-40, fill, barH, 3); jCtx.fill();
+  }
+
+  jAnimId = requestAnimationFrame(jumpLoop);
+}
+
+// Jump input
+function jumpPress() { jState.pressing = true; }
+function jumpRelease() { jState.pressing = false; }
+jumpCvs.addEventListener('mousedown', jumpPress);
+jumpCvs.addEventListener('mouseup',   jumpRelease);
+jumpCvs.addEventListener('touchstart', e=>{ e.preventDefault(); jumpPress(); }, {passive:false});
+jumpCvs.addEventListener('touchend',   e=>{ e.preventDefault(); jumpRelease(); }, {passive:false});
+
+/* ═══════════ UNIVERSE CARDS ═══════════ */
+const uData = [
+  { icon:'🍎', title:'Newton og æblet', sub:'Historien bag opdagelsen',
+    body:`I 1687 publicerede Isaac Newton sin berømte <b>Principia Mathematica</b>, hvori han beskrev tyngdekraft matematisk for første gang. Ifølge legenden inspirerede et faldende æble ham til at spørge: <i>Hvad hvis den kraft der trækker æblet ned, også trækker i Månen?</i>
+    <div class="highlight">Newtons geni var at forstå, at himmellegemer og daglige genstande adlyder <b>den samme lov</b>. Tyngdekraft er universel.</div>
+    Han beregnede at Månens "fald" mod Jordens centrum stemte præcis overens med hans formel — og revolutionerede dermed astronomien.` },
+
+  { icon:'⚫', title:'Sorte huller', sub:'Tyngdekraftens ekstreme grænse',
+    body:`Et sort hul er et sted i rummet, hvor tyngdekraften er så stærk, at <b>ikke engang lys kan undslippe</b>.
+    <span class="formula-inline">Schwarzschild-radius: r = 2GM/c²</span>
+    <div class="highlight">Jordens sort-hul-radius ville være ~9 mm! Solens ville være ~3 km. Vores Sol vil dog aldrig blive et sort hul — det kræver en stjerne der er mindst 20× større.</div>
+    Begrebet "begivenhedshorisont" er grænsen — inden for den kan intet undslippe. Tid flyder langsommere tæt på et sort hul (Einsteins relativitetsteori).` },
+
+  { icon:'🌊', title:'Tidevand', sub:'Månens tyngdekraft mærker vi hver dag',
+    body:`Tidevand skyldes at <b>Månens tyngdekraft trækker stærkere i den side af Jordet der vender mod Månen</b> end i den modsatte side.
+    <div class="highlight">Det skaber to "vandpukler" — ét mod Månen og ét på den modsatte side. Jordens rotation under disse pukler giver os de daglige tidevand.</div>
+    Solen bidrager også (~46% af Månens effekt). Når Sol, Jord og Måne er på linje, får vi "springflod" — de højeste tidevand.` },
+
+  { icon:'🌀', title:'Galakser og mørkt stof', sub:'Tyngdekraft i det store billede',
+    body:`Galakser roterer ikke som forventet. Stjerner langt fra centrum bevæger sig <b>for hurtigt</b> — de burde rives løs. Noget usynligt holder dem i bane.
+    <span class="formula-inline">Mørkt stof: ~27% af universets indhold</span>
+    <div class="highlight">Mørkt stof interagerer kun via tyngdekraft — vi kan ikke se eller røre det. Det udgør anslået 5× mere masse end al synlig materie tilsammen.</div>
+    Mørk energi (~68%) er endnu mere mystisk og driver universets accelererede udvidelse mod tyngdekraftens modstand.` },
+
+  { icon:'🛰', title:'Kredsløb og vægtløshed', sub:'Fald i det uendelige',
+    body:`Astronauter på ISS er <b>ikke vægtløse fordi der ikke er tyngdekraft</b> — g er ca. 8,7 m/s² deroppe (91% af g på jordoverfladen)!
+    <span class="formula-inline">Kredsløbsfart: v = √(g·R)</span>
+    <div class="highlight">De er i konstant frit fald mod Jordet — men de bevæger sig vandret så hurtigt (7,7 km/s!), at Jordens krumning "forsvinder" under dem. De falder altid, men rammer aldrig.</div>
+    Det er ægte inertial vægtløshed — alt ombord falder sammen og oplever ingen relativ kraft.` },
+
+  { icon:'🌍', title:'Jordens tyngdekraft varierer', sub:'g er ikke ens overalt',
+    body:`g på Jordens overflade varierer faktisk lidt fra sted til sted!
+    <div class="highlight">• Ved polerne: g ≈ 9,83 m/s² (tættest på Jordens center, der er en smule flad)<br>• Ved ækvator: g ≈ 9,78 m/s² (centrifugaleffekt fra Jordens rotation)<br>• I bjergene: g er lidt lavere end ved havniveau</div>
+    I 2009 lavede ESA's GOCE-satellit det mest præcise kort over Jordens tyngdefelt nogensinde — kaldet "geoiden". Det viste at Jordens tyngdefelt er overraskende ujævnt pga. variationer i jordskorpens tæthed.` },
+];
+
+const uContainer = document.getElementById('universe-cards');
+uData.forEach((u, i) => {
+  const card = document.createElement('div');
+  card.className = 'u-card';
+  card.innerHTML = `
+    <div class="u-card-header">
+      <div class="u-card-icon">${u.icon}</div>
+      <div>
+        <div class="u-card-title">${u.title}</div>
+        <div class="u-card-sub">${u.sub}</div>
+      </div>
+      <div style="margin-left:auto;font-size:18px;color:rgba(255,255,255,0.3);transition:transform .2s" id="uarr-${i}">▼</div>
+    </div>
+    <div class="u-card-body" id="ubody-${i}">${u.body}</div>`;
+  card.querySelector('.u-card-header').onclick = () => {
+    const body = document.getElementById('ubody-'+i);
+    const arr  = document.getElementById('uarr-'+i);
+    const open = body.classList.toggle('open');
+    arr.style.transform = open ? 'rotate(180deg)' : '';
+  };
+  uContainer.appendChild(card);
+});
+
+/* ═══════════ QUIZ DATA ═══════════ */
+const QUIZ = [
+  { q:'Hvad er tyngdeaccelerationen g på Jordens overflade?', opts:['9,82 m/s²','9,82 m/s','9,82 kg','9,82 N'], c:0, fb:'g = 9,82 m/s² er accelerationen alle faldende objekter oplever nær Jordens overflade (uden luftmodstand).' },
+  { q:'Hvad er formlen for tyngdekraft F?', opts:['F = m + g','F = m · g','F = m / g','F = g / m'], c:1, fb:'F = m · g. Kraft = masse × tyngdeacceleration. En 10 kg sten vejer 10 × 9,82 = 98,2 N.' },
+  { q:'En bold tabes fra 20 m. Hvad er falddistancen efter 1 sekund? (s = ½ · g · t²)', opts:['4,91 m','9,82 m','19,6 m','1 m'], c:0, fb:'s = ½ · 9,82 · 1² = 4,91 m. Efter 2 sek: s = ½ · 9,82 · 4 = 19,64 m.' },
+  { q:'Hvad er tyngdeaccelerationen på Månen?', opts:['9,82 m/s²','5,0 m/s²','1,62 m/s²','0,1 m/s²'], c:2, fb:'g_måne ≈ 1,62 m/s² — ca. 1/6 af Jordens. Astronauter kan springe meget højere på Månen!' },
+  { q:'Du vejer 60 kg. Hvad er din vægt (kraft) i newton på Jordet?', opts:['60 N','588 N','9,82 N','600 N'], c:1, fb:'F = m · g = 60 kg × 9,82 m/s² = 589,2 N ≈ 588 N. "Masse" er kg, "vægt" er egentlig en kraft i newton.' },
+  { q:'Hvad sker med tyngdekraften F, hvis afstanden r fordobles? (F = G·m₁·m₂/r²)', opts:['F halveres','F firedobles','F falder til ¼','F ændres ikke'], c:2, fb:'r indgår som r² — dobbelt afstand giver 4× svagere kraft. Det er det omvendte kvadratlov.' },
+  { q:'Hvad er den korrekte enhed for tyngdekraft?', opts:['Kilogram [kg]','Meter per sekund [m/s]','Newton [N]','Joule [J]'], c:2, fb:'Newton [N] = kg·m/s². Masse er kg, men kraft (tyngdekraft = vægt) er i newton.' },
+  { q:'Galileo beviste at i vakuum falder alle genstande...', opts:['tungere genstande hurtigere','lettere genstande hurtigere','med samme acceleration','afhængigt af form'], c:2, fb:'I vakuum (ingen luft) falder en fjer og en bowlingkugle med PRÆCIS samme acceleration g. Kun luftmodstand giver forskel.' },
+  { q:'Hvad er Newtons universelle gravitationskonstant G?', opts:['9,82','6,674 × 10⁻¹¹ N·m²/kg²','3 × 10⁸ m/s','1,62 m/s²'], c:1, fb:'G = 6,674 × 10⁻¹¹ N·m²/kg². Det er en naturkonstant der fortæller os, at tyngdekraft er en utrolig svag fundamental kraft.' },
+  { q:'Hvorfor er astronauter på ISS "vægtløse"?', opts:['Der er ingen tyngdekraft i rummet','ISS er for langt fra Jordet','De er i konstant frit fald og falder "forbi" Jordens krumning','Rumdragt ophæver tyngdekraft'], c:2, fb:'ISS er i konstant frit fald — men bevæger sig vandret så hurtigt (7,7 km/s) at Jordet aldrig møder dem. Det er ægte inertial vægtløshed.' },
+  { q:'Hvad er tyngdeaccelerationen på Jupiter?', opts:['9,82 m/s²','14,8 m/s²','24,8 m/s²','50 m/s²'], c:2, fb:'g_jupiter ≈ 24,8 m/s². Du ville opleve 2,5× din normale tyngdekraft og næppe kunne stå oprejst!' },
+
+  // Newton 3 questions
+  { q:'Hvad siger Newtons 3. lov?', opts:['F = m·a','Alle legemer tiltrækker hinanden','Enhver kraft har en modsat og lige stor modkraft','Legemer i hvile forbliver i hvile'], c:2, fb:'Newtons 3. lov: For enhver aktionskraft findes en nøjagtigt lige stor, modsat rettet reaktionskraft.' },
+  { q:'Du sparker en bold mod en mur. Muren skubber bolden tilbage. Hvad er sandt?', opts:['Muren skubber hårdere end bolden sparker','Bolden og muren skubber lige hårdt på hinanden','Bolden skubber hårdere end muren','Kræfterne ophæver hinanden og intet sker'], c:1, fb:'Newtons 3. lov: aktionskraft = reaktionskraft i størrelse. Bolden og muren udøver nøjagtigt ens store kræfter på hinanden — i modsatte retninger.' },
+  { q:'En raket i rummet kan bevæge sig selvom der ikke er noget at "skubbe fra". Hvorfor?', opts:['Rummet har en usynlig overflade at skubbe fra','Raketten skubber gas ud, og gassen skubber raketten frem (3. lov)','Raketten bruger solvindens kraft','Raketten suger sig selv fremad'], c:1, fb:'Newtons 3. lov: Raketten skubber gas bagud (aktionskraft), og gassen skubber raketten fremad (reaktionskraft). Kræfterne virker på gas og raket — to forskellige legemer.' },
+  { q:'Jordet trækker dig ned med F = 600 N. Hvor stor er den kraft du trækker Jordet op med?', opts:['0 N — du er for lille til at trække Jordet','Meget lille, ca. 0,001 N','600 N — nøjagtigt den samme','Afhænger af din masse'], c:2, fb:'3. lov: du trækker Jordet op med nøjagtig 600 N! Jordens acceleration er dog mikroskopisk fordi a = F/M = 600/6×10²⁴ ≈ 10⁻²² m/s².' },
+  { q:'Hvorfor ophæver aktions- og reaktionskraften ikke hinanden?', opts:['De peger i samme retning','De virker på to forskellige legemer','De er ikke like store','Det gør de — det er derfor intet bevæger sig'], c:1, fb:'Kræftepar fra 3. lov virker ALTID på to forskellige legemer. Ophævelse kræver at kræfterne virker på det SAMME legeme — som i Newtons 1. og 2. lov.' },
+  { q:'En hest trækker en vogn. Vognen trækker hesten tilbage med samme kraft (3. lov). Alligevel bevæger vognen sig. Hvorfor?', opts:['3. lov gælder ikke her','Hesten er stærkere end vognen','Nettokraften på vognen er fremad — hestekraften minus friktionen','Vognen er lettere'], c:2, fb:'3. lov-kræfteparret virker på hest og vogn — to legemer. Nettokraften på VOGNEN alene er: hestekraft fremad minus friktion bagud. Hvis den er positiv, accelererer vognen (2. lov).' },
+  { q:'Hvad er den korrekte formel for 3. lovs kræftepar?', opts:['F_A + F_B = 0','F_A×B = F_B×A','F_A→B = −F_B→A','F = m·a'], c:2, fb:'F_A→B = −F_B→A. Kræfterne er ens i størrelse (|F| = |F|) men modsatrettede (minustegnet). De to kræfter virker altid i et par.' },
+  { q:'En svømmer skubber vand bagud. Hvad sker der ifølge Newtons 3. lov?', opts:['Vandet forsvinder bagud og svømmeren bremses','Vandet skubber svømmeren fremad med samme kraft','Vandet og svømmeren begge stopper','Ingen af delene — kun tyngdekraft virker i vand'], c:1, fb:'Svømmeren skubber vand bagud (aktionskraft). Vandet skubber svømmeren fremad med præcis samme kraft (reaktionskraft). Det er princippet bag svømning, årer og propeller.' },
+  { q:'Hvad er kredsløbsfart? Formlen er v = √(g·R)', opts:['Hastighed nødvendig for at undslippe tyngdekraft','Hastighed for at kredsløb stabilt om en planet','Hastighed af lys','Gennemsnitlig satellitfart'], c:1, fb:'Kredsløbsfart er den hastighed et objekt skal have for at falde "rundt om" planeten uden at ramme den — konstant fald i en cirkel.' },
+];
+
+/* ═══════════ QUIZ LOGIC ═══════════ */
+let quizIndex = 0, quizResults = [];
+
+function buildQuizProgress() {
+  const bar = document.getElementById('quiz-progress');
+  bar.innerHTML = '';
+  QUIZ.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className='qp-dot'; d.id='qpd-'+i;
+    if(i<quizResults.length) d.classList.add(quizResults[i]?'done-ok':'done-no');
+    bar.appendChild(d);
+  });
+}
+
+function renderQuiz() {
+  buildQuizProgress();
+  if(quizIndex >= QUIZ.length) {
+    const score = quizResults.filter(Boolean).length;
+    const pct = Math.round(score/QUIZ.length*100);
+    let msg = pct>=90?'🏆 Fremragende! Du er en sand tyngdekraft-ekspert!'
+             :pct>=65?'⭐ Godt klaret! Du kender det meste om tyngdekraft.'
+                    :'💪 Godt forsøgt! Læs kortene igen og prøv igen.';
+    document.getElementById('quiz-area').innerHTML=`
+      <div class="quiz-end">
+        <div class="big-score">${score}</div>
+        <div class="score-max">af ${QUIZ.length} rigtige (${pct}%)</div>
+        <div class="score-msg">${msg}</div>
+        <button class="retry-btn" onclick="retryQuiz()">Prøv igen 🔄</button>
+      </div>`;
+    return;
+  }
+  const q = QUIZ[quizIndex];
+  const opts = q.opts.map((o,i)=>`<button class="qbtn" id="qb${i}" onclick="answerQuiz(${i})">${o}</button>`).join('');
+  document.getElementById('quiz-area').innerHTML=`
+    <div class="quiz-card">
+      <div class="quiz-num">Spørgsmål ${quizIndex+1} / ${QUIZ.length}</div>
+      <div class="quiz-q">${q.q}</div>
+      <div class="quiz-opts">${opts}</div>
+      <div class="quiz-fb" id="quiz-fb"></div>
+      <button class="quiz-next" id="quiz-next" onclick="nextQuiz()">Næste →</button>
+    </div>`;
+}
+
+function answerQuiz(chosen) {
+  const q = QUIZ[quizIndex];
+  document.querySelectorAll('.qbtn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.c) b.classList.add('correct');
+    else if(i===chosen&&chosen!==q.c) b.classList.add('wrong');
+  });
+  const fb=document.getElementById('quiz-fb');
+  const correct=chosen===q.c;
+  quizResults.push(correct);
+  buildQuizProgress();
+  fb.className='quiz-fb '+(correct?'ok':'no');
+  fb.textContent=(correct?'✅ ':'❌ ')+q.fb;
+  const nb=document.getElementById('quiz-next');
+  if(nb) nb.classList.add('show');
+}
+
+function nextQuiz() { quizIndex++; renderQuiz(); }
+function retryQuiz() { quizIndex=0; quizResults=[]; renderQuiz(); }
+
+
+/* ═══════════ NEWTON 3 DEMOS ═══════════ */
+function initN3Demos() {
+  drawRocket(); drawBall(); drawSwim(); drawApple();
+}
+
+// ── Rocket animation ──
+let rocketT = 0, rocketId = null;
+function drawRocket() {
+  const cvs = document.getElementById('cvs-rocket');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+  const W = cvs.offsetWidth, H = cvs.offsetHeight || 130;
+  cvs.width = W; cvs.height = H;
+  cancelAnimationFrame(rocketId);
+  function frame() {
+    rocketT += 0.018;
+    ctx.clearRect(0,0,W,H);
+    // space bg
+    ctx.fillStyle = '#04061a'; ctx.fillRect(0,0,W,H);
+    // stars
+    for(let i=0;i<30;i++){const sx=(i*137)%W,sy=(i*91)%H;ctx.fillStyle='rgba(255,255,255,0.4)';ctx.beginPath();ctx.arc(sx,sy,.8,0,Math.PI*2);ctx.fill();}
+    const rx = W*0.45 + Math.sin(rocketT*0.3)*W*0.18;
+    const ry = H*0.48;
+    // gas plume (left) - particles
+    for(let i=0;i<8;i++){
+      const age=(rocketT*3+i*0.4)%1;
+      const px=rx-40-age*80, py=ry+(Math.sin(age*Math.PI+i)*12*age);
+      const alpha=1-age;
+      ctx.beginPath();ctx.arc(px,py,3*(1-age*0.5),0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,${150+Math.floor(100*age)},50,${alpha})`;ctx.fill();
+    }
+    // gas arrow (left)
+    ctx.strokeStyle='rgba(255,150,60,0.7)';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(rx-20,ry);ctx.lineTo(rx-55,ry);
+    ctx.stroke();ctx.setLineDash([]);
+    // arrowhead
+    ctx.fillStyle='rgba(255,150,60,0.8)';ctx.beginPath();ctx.moveTo(rx-58,ry);ctx.lineTo(rx-48,ry-5);ctx.lineTo(rx-48,ry+5);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,150,60,0.7)';ctx.font=`bold ${Math.max(9,W*0.022)}px Exo 2,sans-serif`;ctx.textAlign='center';ctx.fillText('Gas bagud',rx-38,ry-12);
+    // rocket body
+    ctx.fillStyle='#dde8ff'; ctx.beginPath(); ctx.roundRect(rx-18,ry-12,36,24,4); ctx.fill();
+    ctx.fillStyle='#cc3344'; ctx.beginPath(); ctx.moveTo(rx+18,ry); ctx.lineTo(rx+30,ry-6); ctx.lineTo(rx+30,ry+6); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(96,200,255,0.8)'; ctx.beginPath(); ctx.ellipse(rx-4,ry,5,8,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#aab0cc'; ctx.beginPath(); ctx.moveTo(rx-14,ry+12); ctx.lineTo(rx-22,ry+20); ctx.lineTo(rx-6,ry+14); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(rx-14,ry-12); ctx.lineTo(rx-22,ry-20); ctx.lineTo(rx-6,ry-14); ctx.closePath(); ctx.fill();
+    // reaction arrow (right)
+    ctx.strokeStyle='rgba(96,200,255,0.7)';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(rx+20,ry);ctx.lineTo(rx+55,ry);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(96,200,255,0.8)';ctx.beginPath();ctx.moveTo(rx+58,ry);ctx.lineTo(rx+48,ry-5);ctx.lineTo(rx+48,ry+5);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(96,200,255,0.7)';ctx.textAlign='center';ctx.fillText('Raket frem',rx+38,ry-12);
+    // labels
+    ctx.fillStyle='rgba(255,112,192,0.75)';ctx.font=`bold ${Math.max(8,W*0.018)}px Exo 2,sans-serif`;ctx.textAlign='center';
+    ctx.fillText('AKTIONSKRAFT',rx-38,H-8);
+    ctx.fillStyle='rgba(96,200,255,0.7)';
+    ctx.fillText('REAKTIONSKRAFT',rx+44,H-8);
+    rocketId = requestAnimationFrame(frame);
+  }
+  rocketId = requestAnimationFrame(frame);
+}
+
+// ── Ball animation ──
+let ballX=0, ballVx=0, ballBouncing=false, ballId=null, wallShake=0;
+function drawBall() {
+  const cvs = document.getElementById('cvs-ball');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+  const W = cvs.offsetWidth, H = cvs.offsetHeight||130;
+  cvs.width=W; cvs.height=H;
+  ballX=W*0.15; ballVx=0; ballBouncing=false; wallShake=0;
+  cvs.onclick = cvs.ontouchend = (e)=>{e.preventDefault();if(!ballBouncing){ballX=W*0.15;ballVx=W*0.012;ballBouncing=true;}};
+  cancelAnimationFrame(ballId);
+  const WALL_X=W*0.85, RAD=H*0.18;
+  let arrowAlpha=0, actionAlpha=0, reactAlpha=0;
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#04061a';ctx.fillRect(0,0,W,H);
+    // pitch lines
+    ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,H*0.6);ctx.lineTo(x+20,H*0.9);ctx.stroke();}
+    if(ballBouncing){
+      ballX+=ballVx;
+      if(ballX+RAD >= WALL_X-6){
+        wallShake=10; actionAlpha=1; reactAlpha=1;
+        ballVx=-Math.abs(ballVx)*0.85;
+      }
+      if(Math.abs(ballVx)<0.5)ballBouncing=false;
+      wallShake*=0.85;
+    } else { arrowAlpha=Math.min(1,arrowAlpha+0.03); actionAlpha*=0.97; reactAlpha*=0.97; }
+    // wall
+    const wx=WALL_X+Math.sin(wallShake*0.8)*wallShake;
+    ctx.fillStyle='#2a3a4a';ctx.fillRect(wx,H*0.1,14,H*0.8);
+    for(let y=H*0.12;y<H*0.88;y+=18){
+      ctx.fillStyle='rgba(180,140,100,0.6)';
+      const bw=14,bh=8;
+      ctx.fillRect(wx+(y%36<18?0:0),y,bw,bh);
+      ctx.strokeStyle='#1a2a36';ctx.lineWidth=.5;ctx.strokeRect(wx,y,bw,bh);
+    }
+    ctx.strokeStyle=`rgba(255,100,60,${actionAlpha})`;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(ballX+RAD,H*0.45);ctx.lineTo(wx-6,H*0.45);ctx.stroke();
+    ctx.fillStyle=`rgba(255,100,60,${actionAlpha})`;
+    ctx.beginPath();ctx.moveTo(wx-4,H*0.45);ctx.lineTo(wx-14,H*0.45-6);ctx.lineTo(wx-14,H*0.45+6);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=`rgba(96,200,255,${reactAlpha})`;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(wx-6,H*0.62);ctx.lineTo(ballX+RAD+10,H*0.62);ctx.stroke();
+    ctx.fillStyle=`rgba(96,200,255,${reactAlpha})`;
+    ctx.beginPath();ctx.moveTo(ballX+RAD+8,H*0.62);ctx.lineTo(ballX+RAD+18,H*0.62-6);ctx.lineTo(ballX+RAD+18,H*0.62+6);ctx.closePath();ctx.fill();
+    // hint arrow
+    if(!ballBouncing&&arrowAlpha>0){
+      ctx.strokeStyle=`rgba(255,208,96,${arrowAlpha*0.6})`;ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+      ctx.beginPath();ctx.moveTo(W*0.08,H*.5);ctx.lineTo(W*0.25,H*.5);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=`rgba(255,208,96,${arrowAlpha*0.6})`;ctx.font=`${Math.max(9,W*0.022)}px Exo 2,sans-serif`;
+      ctx.textAlign='center';ctx.fillText('Tryk for at sparke!',W*0.3,H*0.3);
+    }
+    // ball
+    const grad=ctx.createRadialGradient(ballX-RAD*.3,H*.45-RAD*.3,RAD*.05,ballX,H*.45,RAD);
+    grad.addColorStop(0,'#ffffff');grad.addColorStop(.4,'#88cc44');grad.addColorStop(1,'#225500');
+    ctx.beginPath();ctx.arc(ballX,H*.45,RAD,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=1;ctx.stroke();
+    ballId=requestAnimationFrame(frame);
+  }
+  ballId=requestAnimationFrame(frame);
+}
+
+// ── Swimmer animation ──
+let swimT=0,swimId=null;
+function drawSwim(){
+  const cvs=document.getElementById('cvs-swim');
+  if(!cvs)return;
+  const ctx=cvs.getContext('2d');
+  const W=cvs.offsetWidth,H=cvs.offsetHeight||130;
+  cvs.width=W;cvs.height=H;
+  cancelAnimationFrame(swimId);
+  function frame(){
+    swimT+=0.025;
+    ctx.clearRect(0,0,W,H);
+    // water bg
+    const wg=ctx.createLinearGradient(0,0,0,H);
+    wg.addColorStop(0,'#0a2040');wg.addColorStop(1,'#041020');
+    ctx.fillStyle=wg;ctx.fillRect(0,0,W,H);
+    // wave lines
+    for(let k=0;k<4;k++){
+      ctx.strokeStyle=`rgba(96,200,255,${0.06+k*0.03})`;ctx.lineWidth=1;
+      ctx.beginPath();
+      for(let x=0;x<W;x+=4){ctx.lineTo(x,H*0.3+Math.sin(x*0.04+swimT+k)*6+k*14);}
+      ctx.stroke();
+    }
+    const sx=W*0.35+Math.sin(swimT*0.4)*W*0.2;
+    const sy=H*0.5;
+    // water particles pushed back
+    for(let i=0;i<6;i++){
+      const age=(swimT*2+i*.5)%1;
+      const px=sx+50+age*80,py=sy+(Math.sin(age*Math.PI+i)*8*age);
+      ctx.beginPath();ctx.arc(px,py,3*(1-age*.6),0,Math.PI*2);
+      ctx.fillStyle=`rgba(96,200,255,${(1-age)*0.7})`;ctx.fill();
+    }
+    // action arrow (right - water pushed back)
+    ctx.strokeStyle='rgba(255,112,192,0.7)';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(sx+20,sy+14);ctx.lineTo(sx+60,sy+14);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,112,192,0.8)';ctx.beginPath();ctx.moveTo(sx+64,sy+14);ctx.lineTo(sx+54,sy+9);ctx.lineTo(sx+54,sy+19);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,112,192,0.7)';ctx.font=`bold ${Math.max(8,W*0.019)}px Exo 2,sans-serif`;ctx.textAlign='center';ctx.fillText('Vand bagud',sx+42,sy+28);
+    // reaction arrow (left - swimmer forward)
+    ctx.strokeStyle='rgba(96,200,255,0.7)';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(sx-20,sy-2);ctx.lineTo(sx-60,sy-2);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(96,200,255,0.8)';ctx.beginPath();ctx.moveTo(sx-64,sy-2);ctx.lineTo(sx-54,sy-7);ctx.lineTo(sx-54,sy+3);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(96,200,255,0.7)';ctx.textAlign='center';ctx.fillText('Svømmer frem',sx-42,sy-12);
+    // swimmer body (simple)
+    ctx.fillStyle='#dde4f0';ctx.beginPath();ctx.ellipse(sx,sy,20,9,0.2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#aab0cc';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='#dde8ff';ctx.beginPath();ctx.arc(sx-22,sy-2,8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(96,200,255,0.8)';ctx.beginPath();ctx.ellipse(sx-22,sy-1,5,4,0,0,Math.PI*2);ctx.fill();
+    // arms
+    const armA=Math.sin(swimT*2)*0.6;
+    ctx.strokeStyle='#dde4f0';ctx.lineWidth=4;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(sx+10,sy);ctx.lineTo(sx+28+Math.cos(armA)*10,sy+Math.sin(armA)*8);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(sx+10,sy);ctx.lineTo(sx+28-Math.cos(armA)*10,sy-Math.sin(armA)*8);ctx.stroke();
+    swimId=requestAnimationFrame(frame);
+  }
+  swimId=requestAnimationFrame(frame);
+}
+
+// ── Apple/Earth animation ──
+let appleT=0,appleId=null;
+function drawApple(){
+  const cvs=document.getElementById('cvs-apple');
+  if(!cvs)return;
+  const ctx=cvs.getContext('2d');
+  const W=cvs.offsetWidth,H=cvs.offsetHeight||130;
+  cvs.width=W;cvs.height=H;
+  cancelAnimationFrame(appleId);
+  let appleY=H*0.18, earthY=H*0.82, appleVy=0, earthVy=0, falling=false, landed=false, t2=0;
+  function reset(){appleY=H*0.18;earthY=H*0.82;appleVy=0;earthVy=0;falling=true;landed=false;t2=0;}
+  reset();
+  function frame(){
+    appleT+=0.02;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#04061a';ctx.fillRect(0,0,W,H);
+    for(let i=0;i<20;i++){const sx=(i*173)%W,sy=(i*101)%H;ctx.fillStyle='rgba(255,255,255,0.35)';ctx.beginPath();ctx.arc(sx,sy,.8,0,Math.PI*2);ctx.fill();}
+    if(falling&&!landed){
+      t2+=0.016;
+      const g_vis=60;
+      appleVy+=g_vis*0.016;
+      earthVy-=g_vis*0.016*0.000000001;
+      appleY+=appleVy*0.016;
+      earthY+=earthVy;
+      if(appleY+12>=earthY-30){landed=true;setTimeout(reset,1600);}
+    }
+    // earth
+    ctx.beginPath();ctx.arc(W/2,earthY,30,0,Math.PI*2);
+    ctx.fillStyle='#2255aa';ctx.fill();
+    ctx.beginPath();ctx.ellipse(W/2-6,earthY-6,10,7,0.3,0,Math.PI*2);ctx.fillStyle='#44aa44';ctx.fill();
+    ctx.beginPath();ctx.ellipse(W/2+5,earthY+4,7,5,-0.2,0,Math.PI*2);ctx.fillStyle='#44aa44';ctx.fill();
+    ctx.strokeStyle='rgba(96,200,255,0.3)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(W/2,earthY,31,0,Math.PI*2);ctx.stroke();
+    // earth arrow (up - tiny)
+    ctx.strokeStyle='rgba(96,200,255,0.6)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(W/2+36,earthY);ctx.lineTo(W/2+36,earthY-16);ctx.stroke();
+    ctx.fillStyle='rgba(96,200,255,0.7)';ctx.beginPath();ctx.moveTo(W/2+36,earthY-18);ctx.lineTo(W/2+31,earthY-10);ctx.lineTo(W/2+41,earthY-10);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(96,200,255,0.6)';ctx.font=`${Math.max(8,W*0.018)}px Exo 2,sans-serif`;ctx.textAlign='left';ctx.fillText('a_jord ≈ 10⁻²²',W/2+40,earthY-6);
+    // apple arrow (down)
+    ctx.strokeStyle='rgba(255,112,192,0.7)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(W/2-36,appleY+14);ctx.lineTo(W/2-36,appleY+36);ctx.stroke();
+    ctx.fillStyle='rgba(255,112,192,0.8)';ctx.beginPath();ctx.moveTo(W/2-36,appleY+38);ctx.lineTo(W/2-41,appleY+28);ctx.lineTo(W/2-31,appleY+28);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,112,192,0.7)';ctx.textAlign='right';ctx.fillText('F=m·g ↓',W/2-40,appleY+22);
+    // apple
+    ctx.beginPath();ctx.arc(W/2,appleY,12,0,Math.PI*2);
+    ctx.fillStyle='#cc3322';ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='#44aa22';ctx.beginPath();ctx.moveTo(W/2,appleY-12);ctx.quadraticCurveTo(W/2+6,appleY-20,W/2+10,appleY-16);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.3)';ctx.beginPath();ctx.ellipse(W/2-4,appleY-5,3,5,-0.3,0,Math.PI*2);ctx.fill();
+    appleId=requestAnimationFrame(frame);
+  }
+  appleId=requestAnimationFrame(frame);
+}
+
+/* ═══════════ N3 CALCULATOR ═══════════ */
+function updateN3Calc(){
+  const m=parseInt(document.getElementById('n3-mass').value);
+  const g100=parseInt(document.getElementById('n3-g').value);
+  const g=g100/10;
+  document.getElementById('n3-mass-val').textContent=m+' kg';
+  document.getElementById('n3-g-val').textContent=g.toFixed(1)+' m/s²';
+  const F=(m*g).toFixed(1);
+  const aEarth=(m*g/5.972e24).toExponential(2);
+  document.getElementById('n3-result').innerHTML=`
+    <b>Aktionskraft</b> (planet trækker dig ned):<br>
+    <span class="pink">F = ${m} kg × ${g.toFixed(1)} m/s² = <b>${F} N</b></span><br><br>
+    <b>Reaktionskraft</b> (du trækker planeten op):<br>
+    <span class="blue">F = ${F} N opad — nøjagtigt ens!</span><br><br>
+    Planetens acceleration: a = F/M ≈ <b>${aEarth} m/s²</b> — umulig at måle!
+  `;
+}
+
+/* ═══════════ SCREEN MANAGER ═══════════ */
+let currentScreen = 'title';
+
+function showScreen(name) {
+  // stop jump if leaving
+  if(currentScreen==='jump' && name!=='jump') {
+    jumpActive=false;
+    if(jAnimId) cancelAnimationFrame(jAnimId);
+  }
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  const nb = document.getElementById('nav-'+name);
+  if(nb) nb.classList.add('active');
+
+  if(name==='n3') {
+    setTimeout(()=>{initN3Demos();updateN3Calc();},50);
+  }
+  if(name==='jump') {
+    jumpActive=true;
+    initJump();
+    updateJumpPlanet(chosenPlanet);
+    jAnimId = requestAnimationFrame(jumpLoop);
+  }
+  if(name==='quiz') renderQuiz();
+  document.getElementById('nav').style.display = name==='title'?'none':'flex';
+  currentScreen = name;
+}
+
+function startGame() {
+  document.getElementById('nav').style.display='flex';
+  showScreen('n3');
+}
+
+/* ═══════════ INIT ═══════════ */
+document.getElementById('nav').style.display='none';
+</script>
+</body>
+</html>
