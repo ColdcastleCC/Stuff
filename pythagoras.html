@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Pythagoras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d1f2d;
+  --c1:#ff6b6b; --c2:#ffd93d; --c3:#6bcb77; --c4:#4d96ff;
+  --white:#f0f4ff; --muted:rgba(240,244,255,0.48);
+  --fh:'Fredoka One',cursive; --fb:'Nunito',sans-serif;
+  --xs:clamp(11px,2.4vw,13px); --sm:clamp(13px,3vw,15px); --md:clamp(15px,3.5vw,18px);
+  --lg:clamp(19px,5vw,26px); --xl:clamp(24px,6.5vw,34px); --xxl:clamp(32px,8.5vw,50px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scr.on{display:flex;}
+
+/* ══ HOME ══ */
+#s-home{align-items:center;justify-content:flex-start;padding:clamp(20px,5vw,36px) 16px 50px;}
+.home-title{font-family:var(--fh);font-size:var(--xxl);color:var(--white);text-align:center;margin-bottom:4px;text-shadow:0 0 40px rgba(77,150,255,.5);}
+.home-sub{font-size:var(--sm);color:var(--muted);text-align:center;margin-bottom:10px;}
+.formula-badge{font-family:var(--fh);font-size:var(--lg);color:var(--c2);text-align:center;margin-bottom:32px;background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.2);border-radius:12px;padding:10px 24px;display:inline-block;}
+.level-cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:500px;}
+.lcard{border-radius:18px;padding:18px 20px;cursor:pointer;transition:transform .18s,box-shadow .18s;position:relative;overflow:hidden;}
+.lcard:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(0,0,0,.35);}
+.lcard.locked{opacity:.4;cursor:default;}
+.lcard .li{display:flex;align-items:center;gap:14px;}
+.lcard .licon{font-size:clamp(30px,7.5vw,42px);flex-shrink:0;line-height:1;}
+.lcard .linfo{flex:1;}
+.lcard .ltitle{font-family:var(--fh);font-size:var(--md);color:#fff;margin-bottom:2px;}
+.lcard .ldesc{font-size:var(--xs);color:rgba(255,255,255,.7);line-height:1.45;}
+.lcard .lbadge{flex-shrink:0;font-family:var(--fh);font-size:var(--sm);background:rgba(0,0,0,.22);padding:6px 12px;border-radius:20px;color:#fff;}
+.lcard .pbar{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(0,0,0,.2);}
+.lcard .pfill{height:100%;border-radius:0 0 18px 18px;background:rgba(255,255,255,.5);transition:width .4s;}
+.lcard .llock{position:absolute;top:14px;right:16px;font-size:22px;}
+.lc1{background:linear-gradient(135deg,#ff6b6b,#ff8e53);}
+.lc2{background:linear-gradient(135deg,#ffd93d,#ff9f43);}
+.lc3{background:linear-gradient(135deg,#6bcb77,#00b4d8);}
+.lc4{background:linear-gradient(135deg,#4d96ff,#9b59b6);}
+
+/* ══ GAME ══ */
+#s-game{background:var(--bg);}
+.gbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.35);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));}
+.bk{font-family:var(--fh);font-size:var(--xs);color:rgba(255,255,255,.55);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 12px;cursor:pointer;}
+.bk:hover{color:#fff;}
+.glvl{font-family:var(--fh);font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.gpill{font-family:var(--fh);font-size:var(--xs);background:rgba(255,255,255,.1);border-radius:20px;padding:6px 12px;color:var(--white);}
+.gstrip{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.gstrip-fill{height:100%;transition:width .4s;}
+
+/* question area — scrollable */
+.qwrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;padding:14px 14px 24px;gap:12px;}
+
+/* triangle canvas */
+#tri-cvs{display:block;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);}
+
+/* question card */
+.qcard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px 20px;width:100%;max-width:440px;text-align:center;}
+.qnum{font-family:var(--fh);font-size:var(--xs);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.qtext{font-family:var(--fh);font-size:var(--md);color:var(--white);line-height:1.5;}
+.qtip{font-size:var(--xs);color:var(--muted);margin-top:8px;line-height:1.55;}
+.qtip b{color:var(--white);}
+
+/* answer */
+.ans-wrap{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.ans-label{font-family:var(--fh);font-size:var(--xs);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.ans-row{display:flex;align-items:center;gap:10px;}
+.ans-unit{font-family:var(--fh);font-size:var(--md);color:var(--muted);}
+.ainp{font-family:var(--fh);font-size:var(--xl);width:clamp(110px,28vw,150px);background:rgba(255,255,255,.1);border:2.5px solid rgba(255,255,255,.2);border-radius:12px;color:var(--white);text-align:center;padding:10px 6px;outline:none;-webkit-appearance:none;appearance:none;transition:border-color .2s;}
+.ainp:focus{border-color:var(--c2);background:rgba(255,217,61,.1);}
+.ainp.ok{border-color:var(--c3);background:rgba(107,203,119,.12);}
+.ainp.err{border-color:var(--c1);animation:shake .35s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+
+.chkbtn{font-family:var(--fh);font-size:var(--md);background:var(--c2);color:#1a0d00;border:none;border-radius:14px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;min-width:160px;transition:background .14s,transform .1s;}
+.chkbtn:hover{background:#ffe660;}
+.chkbtn:active{transform:scale(.97);}
+.chkbtn:disabled{opacity:.3;cursor:default;}
+
+.feedback{width:100%;max-width:440px;border-radius:14px;padding:12px 16px;font-size:var(--sm);line-height:1.6;display:none;}
+.feedback.ok{background:rgba(107,203,119,.18);border:1px solid rgba(107,203,119,.4);color:#b8ffcc;display:block;}
+.feedback.no{background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.35);color:#ffd0d0;display:block;}
+.feedback .steps{margin-top:7px;font-size:var(--xs);line-height:1.75;opacity:.85;}
+.feedback .steps b{color:#fff;}
+
+.nxtbtn{font-family:var(--fh);font-size:var(--md);background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:13px 32px;cursor:pointer;display:none;letter-spacing:.04em;transition:background .14s;}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(255,255,255,.22);}
+
+/* ══ DONE ══ */
+#s-done{align-items:center;justify-content:center;text-align:center;padding:30px 16px 60px;}
+.done-icon{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bounce 1s ease infinite alternate;}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.done-h{font-family:var(--fh);font-size:var(--xxl);color:var(--white);margin-bottom:8px;}
+.done-score{font-family:var(--fh);font-size:clamp(50px,13vw,76px);color:var(--c2);line-height:1;margin-bottom:6px;}
+.done-stars{font-size:clamp(28px,7vw,42px);margin-bottom:16px;}
+.done-sub{font-size:var(--md);color:var(--muted);max-width:370px;line-height:1.6;margin-bottom:28px;}
+.dbtn{font-family:var(--fh);font-size:var(--md);border:none;border-radius:14px;padding:15px 40px;cursor:pointer;letter-spacing:.04em;transition:background .14s;display:block;margin:0 auto 10px;}
+.dbtn.nxt{background:var(--c3);color:#0d2010;}
+.dbtn.nxt:hover{background:#8fffa0;}
+.dbtn.retry{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);}
+.dbtn.retry:hover{background:rgba(255,255,255,.22);}
+.done-need{font-size:var(--xs);color:var(--muted);margin-top:14px;line-height:1.6;}
+
+/* ══ INTRO ══ */
+#s-intro{background:var(--bg);align-items:stretch;}
+.intro-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(0,0,0,.35);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));}
+.intro-skip{font-family:var(--fh);font-size:var(--xs);color:var(--muted);background:none;border:none;cursor:pointer;padding:6px 10px;}
+.intro-skip:hover{color:var(--white);}
+.intro-pips{display:flex;gap:7px;align-items:center;}
+.pip{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s;}
+.pip.on{background:var(--c2);transform:scale(1.3);}
+.intro-slides{flex:1;overflow:hidden;position:relative;}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:20px 18px 30px;}
+.slide.on{display:flex;}
+.slide-icon{font-size:clamp(44px,11vw,70px);margin-bottom:10px;line-height:1;filter:drop-shadow(0 0 18px rgba(77,150,255,.5));}
+.slide-h{font-family:var(--fh);font-size:var(--xl);color:var(--white);text-align:center;margin-bottom:8px;line-height:1.2;}
+.slide-h .hi1{color:var(--c2);}
+.slide-h .hi2{color:var(--c3);}
+.slide-h .hi3{color:var(--c1);}
+.slide-body{font-size:var(--sm);color:rgba(240,244,255,.8);text-align:center;line-height:1.7;max-width:440px;margin-bottom:14px;}
+.slide-body b{color:var(--white);}
+.slide-body .tag{display:inline-block;font-family:var(--fh);font-size:var(--xs);border-radius:8px;padding:3px 10px;margin:2px;}
+.slide-body .taga{background:rgba(255,107,107,.25);color:#ffcaca;}
+.slide-body .tagb{background:rgba(77,150,255,.25);color:#c0d8ff;}
+.slide-body .tagc{background:rgba(168,255,62,.22);color:#ccffa0;}
+.intro-canvas-wrap{width:100%;max-width:440px;border-radius:16px;overflow:hidden;margin-bottom:14px;}
+#intro-cvs{display:block;width:100%;}
+.formula-big{font-family:var(--fh);font-size:var(--xl);color:var(--c2);background:rgba(255,217,61,.1);border:1px solid rgba(255,217,61,.25);border-radius:14px;padding:12px 28px;text-align:center;margin-bottom:14px;letter-spacing:.03em;}
+.fact-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 16px;width:100%;max-width:440px;margin-bottom:12px;text-align:left;}
+.fact-box .fb-title{font-family:var(--fh);font-size:var(--sm);color:var(--c2);margin-bottom:6px;}
+.fact-box .fb-body{font-size:var(--xs);color:rgba(240,244,255,.75);line-height:1.65;}
+.fact-box .fb-body b{color:var(--white);}
+.fact-box .fb-body code{font-family:var(--fh);font-size:var(--sm);color:var(--c2);}
+.step-list{width:100%;max-width:440px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.step-item{background:rgba(255,255,255,.05);border-left:4px solid var(--c2);border-radius:0 12px 12px 0;padding:11px 14px;text-align:left;}
+.step-item .sn{font-family:var(--fh);font-size:var(--xs);color:var(--c2);margin-bottom:3px;}
+.step-item .st{font-size:var(--sm);color:var(--white);line-height:1.5;}
+.step-item .st code{font-family:var(--fh);color:var(--c3);}
+.triple-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:440px;margin-bottom:14px;}
+.triple-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 6px;text-align:center;font-family:var(--fh);font-size:var(--sm);color:var(--white);}
+.triple-card .tc-sub{font-size:var(--xs);color:var(--muted);margin-top:3px;}
+.intro-nav{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px 16px;flex-shrink:0;background:rgba(0,0,0,.3);}
+.intro-prev{font-family:var(--fh);font-size:var(--sm);background:rgba(255,255,255,.08);color:var(--white);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px 24px;cursor:pointer;transition:background .15s;}
+.intro-prev:hover{background:rgba(255,255,255,.16);}
+.intro-next{font-family:var(--fh);font-size:var(--md);background:var(--c2);color:#1a0d00;border:none;border-radius:12px;padding:13px 32px;cursor:pointer;transition:background .15s;flex:1;max-width:260px;}
+.intro-next:hover{background:#ffe660;}
+/* intro btn on home */
+.intro-btn{font-family:var(--fh);font-size:var(--sm);background:rgba(77,150,255,.15);color:var(--c4);border:1px solid rgba(77,150,255,.3);border-radius:12px;padding:12px 28px;cursor:pointer;margin-bottom:18px;transition:background .15s;}
+.intro-btn:hover{background:rgba(77,150,255,.28);}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- HOME -->
+<div class="scr on" id="s-home">
+  <h1 class="home-title" style="margin-top:20px">📐 Pythagoras</h1>
+  <p class="home-sub">Mester den berømte sætning trin for trin</p>
+  <div class="formula-badge">a² + b² = c²</div>
+  <button class="intro-btn" onclick="showIntro()">📖 Lær Pythagoras først</button>
+  <div class="level-cards" id="level-cards"></div>
+</div>
+
+
+<!-- INTRO -->
+<div class="scr" id="s-intro">
+  <div class="intro-bar">
+    <button class="intro-skip" onclick="goHome()">← Hjem</button>
+    <div class="intro-pips" id="intro-pips"></div>
+    <button class="intro-skip" onclick="goHome()">Spring over</button>
+  </div>
+  <div class="intro-slides" id="intro-slides">
+
+    <!-- SLIDE 1: Hvad er Pythagoras? -->
+    <div class="slide on" id="slide-0">
+      <div class="slide-icon">📐</div>
+      <h2 class="slide-h">Hvad er <span class="hi1">Pythagoras</span>?</h2>
+      <p class="slide-body">
+        Pythagoras var en græsk matematiker der levede ca. <b>570–495 f.Kr.</b><br><br>
+        Han opdagede en vigtig sammenhæng i <b>retvinklede trekanter</b> — en trekant med én vinkel på nøjagtig <b>90°</b>.<br><br>
+        Sætningen bruges i dag overalt: arkitektur, navigation, IT, fysik og mange andre steder.
+      </p>
+      <div class="intro-canvas-wrap"><canvas id="intro-cvs" height="200"></canvas></div>
+      <div class="formula-big">a² + b² = c²</div>
+      <p class="slide-body" style="font-size:var(--xs);opacity:.7">Kvadratet på hypotenusen er lig summen af kvadraterne på de to kateter.</p>
+    </div>
+
+    <!-- SLIDE 2: Delene i trekanten -->
+    <div class="slide" id="slide-1">
+      <div class="slide-icon">🔺</div>
+      <h2 class="slide-h">Trekantens <span class="hi2">tre sider</span></h2>
+      <p class="slide-body">
+        En retvinklet trekant har altid tre sider med hvert sit navn og sin farve:
+      </p>
+      <div class="fact-box">
+        <div class="fb-title" style="color:#ffcaca">🔴 a — Katete (lodret)</div>
+        <div class="fb-body">Den <b>lodrette</b> side. En af de to kortere sider der danner den rette vinkel. Indgår i <code>a²</code> i formlen.</div>
+      </div>
+      <div class="fact-box">
+        <div class="fb-title" style="color:#c0d8ff">🔵 b — Katete (vandret)</div>
+        <div class="fb-body">Den <b>vandrette</b> side. Den anden kortere side ved den rette vinkel. Indgår i <code>b²</code> i formlen.</div>
+      </div>
+      <div class="fact-box">
+        <div class="fb-title" style="color:#ccffa0">🟢 c — Hypotenusen</div>
+        <div class="fb-body">Den <b>længste</b> side — altid modsat den rette vinkel. Hypotenusen er <b>altid størst</b> og indgår som <code>c²</code>. Husk: <code>c = √(a²+b²)</code></div>
+      </div>
+      <div class="formula-big">c > a &nbsp;·&nbsp; c > b &nbsp;·&nbsp; 90°</div>
+    </div>
+
+    <!-- SLIDE 3: Formlen i praksis -->
+    <div class="slide" id="slide-2">
+      <div class="slide-icon">🧮</div>
+      <h2 class="slide-h">Formlen i <span class="hi1">praksis</span></h2>
+      <p class="slide-body">Formlen <b>a² + b² = c²</b> kan omformes til at finde alle tre sider:</p>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="sn">Find hypotenusen c</div>
+          <div class="st"><code>c = √(a² + b²)</code><br>Kend begge kateter → beregn c</div>
+        </div>
+        <div class="step-item" style="border-color:var(--c1)">
+          <div class="sn" style="color:var(--c1)">Find kateten a</div>
+          <div class="st"><code>a = √(c² − b²)</code><br>Kend c og b → isolér a</div>
+        </div>
+        <div class="step-item" style="border-color:var(--c4)">
+          <div class="sn" style="color:var(--c4)">Find kateten b</div>
+          <div class="st"><code>b = √(c² − a²)</code><br>Kend c og a → isolér b</div>
+        </div>
+      </div>
+      <div class="fact-box">
+        <div class="fb-title">💡 Huskeregel</div>
+        <div class="fb-body"><b>Kender du to sider?</b> → Du kan altid finde den tredje!<br>Start altid med at sætte tallene ind i <code>a²+b²=c²</code> og isolér den ukendte.</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Eksempel trin for trin -->
+    <div class="slide" id="slide-3">
+      <div class="slide-icon">📝</div>
+      <h2 class="slide-h">Eksempel <span class="hi2">trin for trin</span></h2>
+      <p class="slide-body">En trekant har kateterne <b>a = 3</b> og <b>b = 4</b>. Find hypotenusen <b>c</b>.</p>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="sn">Trin 1 — Sæt ind i formlen</div>
+          <div class="st"><code>a² + b² = c²</code><br>3² + 4² = c²</div>
+        </div>
+        <div class="step-item">
+          <div class="sn">Trin 2 — Beregn kvadraterne</div>
+          <div class="st">9 + 16 = c²<br>25 = c²</div>
+        </div>
+        <div class="step-item" style="border-color:var(--c3)">
+          <div class="sn" style="color:var(--c3)">Trin 3 — Tag kvadratroden</div>
+          <div class="st"><code>c = √25 = <b>5</b></code> ✅</div>
+        </div>
+      </div>
+      <div class="fact-box">
+        <div class="fb-title">🏆 Pythagoræiske tripler</div>
+        <div class="fb-body">Disse tal passer perfekt i formlen uden decimaler. Lær dem udenad!</div>
+      </div>
+      <div class="triple-grid">
+        <div class="triple-card">3, 4, 5<div class="tc-sub">Den klassiske</div></div>
+        <div class="triple-card">5, 12, 13<div class="tc-sub">Ret almindelig</div></div>
+        <div class="triple-card">8, 15, 17<div class="tc-sub">Lidt sværere</div></div>
+        <div class="triple-card">6, 8, 10<div class="tc-sub">3-4-5 × 2</div></div>
+        <div class="triple-card">9, 12, 15<div class="tc-sub">3-4-5 × 3</div></div>
+        <div class="triple-card">7, 24, 25<div class="tc-sub">Stor triple</div></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Klar til spillet -->
+    <div class="slide" id="slide-4">
+      <div class="slide-icon">🚀</div>
+      <h2 class="slide-h">Klar til <span class="hi3">spillet!</span></h2>
+      <p class="slide-body">
+        Du er nu klar til at mestre Pythagoras' sætning. Spillet har <b>4 levels</b> med stigende sværhedsgrad:
+      </p>
+      <div class="fact-box" style="border-color:rgba(255,107,107,.3);background:rgba(255,107,107,.06)">
+        <div class="fb-title" style="color:#ffcaca">📐 Level 1 — Find hypotenusen</div>
+        <div class="fb-body">Begynder: Brug <code>c = √(a²+b²)</code> direkte med hele tal.</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(255,217,61,.3);background:rgba(255,217,61,.06)">
+        <div class="fb-title" style="color:var(--c2)">🔍 Level 2 — Find en katete</div>
+        <div class="fb-body">Mellem: Omform formlen til <code>a=√(c²−b²)</code> og find manglende side.</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(107,203,119,.3);background:rgba(107,203,119,.06)">
+        <div class="fb-title" style="color:#b8ffcc">📖 Level 3 — Tekstopgaver</div>
+        <div class="fb-body">Svær: Oversæt virkelige situationer til trekanter og løs dem.</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(77,150,255,.3);background:rgba(77,150,255,.06)">
+        <div class="fb-title" style="color:#c0d8ff">🚀 Level 4 — Avanceret</div>
+        <div class="fb-body">Ekspert: 3D-rum, arealer, ligebenede trekanter og mere.</div>
+      </div>
+      <p class="slide-body" style="font-size:var(--xs);opacity:.65;margin-top:4px">Du skal have mindst <b>90%</b> rigtige for at låse næste level op. Held og lykke! 🎯</p>
+    </div>
+
+  </div>
+  <div class="intro-nav" id="intro-nav">
+    <button class="intro-prev" id="intro-prev-btn" onclick="introPrev()" style="display:none">← Forrige</button>
+    <button class="intro-next" id="intro-next-btn" onclick="introNext()">Næste →</button>
+  </div>
+</div>
+
+
+<!-- GAME -->
+<div class="scr" id="s-game">
+  <div class="gbar">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="glvl" id="glvl">–</div>
+    <div class="gpill" id="gpill">0/0</div>
+  </div>
+  <div class="gstrip"><div class="gstrip-fill" id="gstrip-fill" style="width:0%"></div></div>
+  <div class="qwrap">
+    <canvas id="tri-cvs"></canvas>
+    <div class="qcard">
+      <div class="qnum" id="qnum">–</div>
+      <div class="qtext" id="qtext">–</div>
+      <div class="qtip" id="qtip"></div>
+    </div>
+    <div class="ans-wrap">
+      <div class="ans-label">Dit svar</div>
+      <div class="ans-row">
+        <input class="ainp" id="ainp" type="number" step="0.01" placeholder="?" inputmode="decimal" autocomplete="off">
+        <span class="ans-unit" id="ans-unit"></span>
+      </div>
+    </div>
+    <button class="chkbtn" id="chkbtn" onclick="checkAns()">Tjek ✓</button>
+    <div class="feedback" id="feedback"></div>
+    <button class="nxtbtn" id="nxtbtn" onclick="nextQ()">Næste →</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="scr" id="s-done">
+  <div class="done-icon" id="done-icon">🎉</div>
+  <div class="done-h" id="done-h">Level klaret!</div>
+  <div class="done-score" id="done-score">–</div>
+  <div class="done-stars" id="done-stars"></div>
+  <div class="done-sub" id="done-sub"></div>
+  <button class="dbtn nxt" id="done-nxt" onclick="doneNext()">Næste level →</button>
+  <button class="dbtn retry" id="done-retry-wrong" onclick="retryWrong()" style="display:none;background:rgba(77,150,255,.18);color:var(--c4);border:1px solid rgba(77,150,255,.35)">Genøv fejlede →</button>
+  <button class="dbtn retry" onclick="retryLevel()">Start forfra ↺</button>
+  <div class="done-need" id="done-need"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   STARS
+════════════════════════════════════════════ */
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  function r(){c.width=innerWidth;c.height=innerHeight;}r();addEventListener('resize',r);
+  const S=Array.from({length:200},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.5+.3,a:Math.random(),da:(Math.random()-.5)*.006}));
+  (function tick(){ctx.clearRect(0,0,c.width,c.height);S.forEach(s=>{s.a+=s.da;if(s.a<.05||s.a>1)s.da=-s.da;s.a=Math.max(.05,Math.min(1,s.a));ctx.beginPath();ctx.arc(s.x*c.width,s.y*c.height,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();});requestAnimationFrame(tick);})();
+})();
+
+/* ════════════════════════════════════════════
+   MATH HELPERS
+════════════════════════════════════════════ */
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[rnd(0,arr.length-1)];}
+function round2(x){return Math.round(x*100)/100;}
+function round1(x){return Math.round(x*10)/10;}
+const sqrt=Math.sqrt;
+
+// Pythagorean triples (a,b,c) — primitives and multiples
+const TRIPLES=[
+  [3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29],
+  [9,40,41],[12,35,37],[11,60,61],[28,45,53],[33,56,65],
+  [6,8,10],[9,12,15],[12,16,20],[15,20,25],[10,24,26],
+  [5,12,13],[8,6,10],[15,8,17],[7,24,25],[20,15,25],
+  [3,4,5],[5,12,13],[8,15,17],[9,12,15],[6,8,10],
+];
+
+function pickTriple(){
+  const mult=rnd(1,4);
+  const [a,b,c]=pick(TRIPLES);
+  return[a*mult,b*mult,c*mult];
+}
+
+// Is x a perfect square?
+function isPerfSq(x){const s=Math.round(sqrt(x));return s*s===x;}
+
+/* ════════════════════════════════════════════
+   TRIANGLE CANVAS DRAWING
+   Draws a right-angled triangle labelled a, b, c (hyp)
+   unknown side shown as '?'
+════════════════════════════════════════════ */
+function drawTriangle(a_val, b_val, c_val, unknown){
+  const cvs=document.getElementById('tri-cvs');
+  const maxW=Math.min(innerWidth-28,440);
+  const H=Math.round(maxW*0.52);
+  cvs.width=maxW; cvs.height=H;
+  const ctx=cvs.getContext('2d');
+  ctx.clearRect(0,0,maxW,H);
+
+  const pad=44;
+  // Triangle vertices: right angle at bottom-left
+  const bx=pad, by=H-pad;
+  const cx2=maxW-pad, cy2=H-pad;
+  const ax=pad, ay=pad+10;
+
+  // Scale to fit: keep proportional
+  const rawA=b_val||1; // vertical leg = b
+  const rawB=a_val||1; // horizontal leg = a
+  const scaleH=(H-pad*2-10)/rawA;
+  const scaleW=(maxW-pad*2)/rawB;
+  const sc=Math.min(scaleH,scaleW,18)*0.85;
+
+  const Px=pad+10, Py=H-pad;             // right angle vertex
+  const Qx=Px+rawB*sc, Qy=H-pad;        // far bottom
+  const Rx=Px, Ry=Py-rawA*sc;           // top
+
+  // ground glow
+  ctx.save();
+  const grad=ctx.createLinearGradient(Px,Ry,Qx,Py);
+  grad.addColorStop(0,'rgba(77,150,255,0.08)');grad.addColorStop(1,'rgba(255,107,107,0.06)');
+  ctx.beginPath();ctx.moveTo(Px,Py);ctx.lineTo(Qx,Qy);ctx.lineTo(Rx,Ry);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();ctx.restore();
+
+  // sides
+  const sideW=3;
+  function drawSide(x1,y1,x2,y2,col,label,isUnknown){
+    ctx.save();
+    ctx.strokeStyle=isUnknown?'rgba(255,217,61,0.9)':col;
+    ctx.lineWidth=isUnknown?3.5:sideW;
+    if(isUnknown){ctx.setLineDash([8,5]);}
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.setLineDash([]);
+    // label
+    const mx=(x1+x2)/2,my=(y1+y2)/2;
+    const dx=x2-x1,dy=y2-y1,len=sqrt(dx*dx+dy*dy);
+    const nx=-dy/len*18,ny=dx/len*18;
+    ctx.font=`bold ${clamp(12,maxW*.034,17)}px Fredoka One,cursive`;
+    ctx.fillStyle=isUnknown?'#ffd93d':col;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=4;
+    ctx.fillText(label,mx+nx,my+ny);
+    ctx.shadowBlur=0;ctx.restore();
+  }
+
+  // a = vertical leg (Px→Rx)
+  const aLabel=unknown==='a'?'? (a)':a_val+' ';
+  drawSide(Px,Py,Rx,Ry,'rgba(255,107,107,0.9)',aLabel,unknown==='a');
+  // b = horizontal leg (Px→Qx)
+  const bLabel=unknown==='b'?'? (b)':b_val+' ';
+  drawSide(Px,Py,Qx,Qy,'rgba(77,150,255,0.9)',bLabel,unknown==='b');
+  // c = hypotenuse (Qx→Rx)
+  const cLabel=unknown==='c'?'? (c)':c_val+' ';
+  drawSide(Qx,Qy,Rx,Ry,'rgba(168,255,62,0.9)',cLabel,unknown==='c');
+
+  // right angle marker
+  const sq=14;
+  ctx.strokeStyle='rgba(255,255,255,0.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(Px+sq,Py);ctx.lineTo(Px+sq,Py-sq);ctx.lineTo(Px,Py-sq);ctx.stroke();
+
+  // labels a/b/c legend bottom right
+  ctx.font=`${clamp(10,maxW*.025,13)}px Nunito,sans-serif`;ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  const leg=[['a = højre katete','rgba(255,107,107,0.8)'],['b = vandret katete','rgba(77,150,255,0.8)'],['c = hypotenuse','rgba(168,255,62,0.8)']];
+  leg.forEach(([t,col],i)=>{ctx.fillStyle=col;ctx.fillText(t,Qx-90,Ry+14+i*14);});
+}
+
+function clamp(a,v,b){return Math.max(a,Math.min(b,v));}
+
+/* ════════════════════════════════════════════
+   QUESTION GENERATORS
+════════════════════════════════════════════ */
+
+// Level 1: Find hypotenuse c — integer answers only (Pythagorean triples)
+function genL1(i){
+  const diff=i<17?1:i<34?2:3;
+  let a,b,c,text,tip,steps,unit;
+
+  if(diff===1){
+    // Simple triple, small numbers
+    const triples=[[3,4,5],[5,12,13],[6,8,10],[8,15,17],[9,12,15]];
+    [a,b,c]=pick(triples);
+    text=`En retvinklet trekant har kateterne <b>a = ${a}</b> og <b>b = ${b}</b>.<br>Find hypotenusen <b>c</b>.`;
+    tip=`<b>Brug:</b> c² = a² + b² → c = √(a²+b²) = √(${a}²+${b}²) = √${a*a+b*b}`;
+    steps=`c² = a² + b²<br>c² = ${a}² + ${b}² = ${a*a} + ${b*b} = <b>${a*a+b*b}</b><br>c = √${a*a+b*b} = <b>${c}</b>`;
+    unit='';
+  } else if(diff===2){
+    // Triple × small multiplier
+    const [pa,pb,pc]=pick([[3,4,5],[5,12,13],[8,15,17]]);
+    const m=rnd(2,4);a=pa*m;b=pb*m;c=pc*m;
+    text=`Find hypotenusen i en retvinklet trekant med kateterne <b>${a}</b> og <b>${b}</b>.`;
+    tip=`<b>Brug:</b> c = √(${a}²+${b}²). Det er ${m}×(${pa},${pb},${pc}).`;
+    steps=`c² = ${a}² + ${b}² = ${a*a} + ${b*b} = ${a*a+b*b}<br>c = √${a*a+b*b} = <b>${c}</b>`;
+    unit='';
+  } else {
+    // Triple with unit context
+    const [pa,pb,pc]=pick([[3,4,5],[5,12,13],[9,12,15],[8,15,17]]);
+    const m=rnd(1,3);a=pa*m;b=pb*m;c=pc*m;
+    const units=['m','cm','dm'];unit=pick(units);
+    text=`Et rektangel har sider <b>${a} ${unit}</b> og <b>${b} ${unit}</b>. Hvad er diagonalens længde?`;
+    tip=`<b>Diagonalen</b> er hypotenusen i det retvinklede trekant.`;
+    steps=`c² = ${a}² + ${b}² = ${a*a+b*b}<br>c = √${a*a+b*b} = <b>${c} ${unit}</b>`;
+  }
+  drawTriangle(a,b,c,'c');
+  return{answer:c,tol:0.05,text,tip,steps,unit};
+}
+
+// Level 2: Find a leg (a or b) — decimal answers, √ results
+function genL2(i){
+  const diff=i<17?1:i<34?2:3;
+  let a,b,c,text,tip,steps,unit,answer,unknown;
+
+  const pickSide=()=>Math.random()>.5?'a':'b';
+
+  if(diff===1){
+    [a,b,c]=pickTriple();
+    unknown=pickSide();
+    const known=unknown==='a'?b:a;const knownName=unknown==='a'?'b':'a';
+    text=`Retvinklet trekant med hypotenusen <b>c = ${c}</b> og kateten <b>${knownName} = ${known}</b>.<br>Find kateten <b>${unknown}</b>.`;
+    const miss2=c*c-known*known;
+    const miss=round2(sqrt(miss2));
+    tip=`<b>Omform:</b> ${unknown}² = c² − ${knownName}² = ${c}²−${known}²`;
+    steps=`${unknown}² = c² − ${knownName}² = ${c*c} − ${known*known} = ${miss2}<br>${unknown} = √${miss2} = <b>${miss}</b>`;
+    answer=miss;unit='';
+    drawTriangle(a,b,c,unknown);
+  } else if(diff===2){
+    // Decimal result (non-triple)
+    const cs=[10,13,15,17,20,25,26],as=[3,5,6,7,8,9,12];
+    c=pick(cs);a=pick(as.filter(x=>x<c));
+    b=round2(sqrt(c*c-a*a));
+    if(b===0||isNaN(b))b=round2(sqrt(c*c-a*a+1));
+    unknown=pickSide();
+    if(unknown==='b'){
+      text=`Retvinklet trekant: <b>c = ${c}</b>, <b>a = ${a}</b>. Find <b>b</b>.`;
+      tip=`<b>b</b> = √(c²−a²) = √(${c*c}−${a*a})`;
+      steps=`b² = ${c*c} − ${a*a} = ${c*c-a*a}<br>b = √${c*c-a*a} ≈ <b>${b}</b>`;
+      answer=b;drawTriangle(a,b,c,'b');
+    } else {
+      text=`Retvinklet trekant: <b>c = ${c}</b>, <b>b = ${b}</b>. Find <b>a</b>.`;
+      tip=`<b>a</b> = √(c²−b²) = √(${c*c}−${Math.round(b*b*100)/100})`;
+      steps=`a² = ${c*c} − ${round2(b*b)}<br>a = √${c*c-round2(b*b)} ≈ <b>${a}</b>`;
+      answer=a;drawTriangle(a,b,c,'a');
+    }
+    unit='';
+  } else {
+    // Word problem — find leg
+    const units=['m','cm','km'];unit=pick(units);
+    const [pa,pb,pc]=pick([[5,12,13],[3,4,5],[8,15,17],[9,40,41]]);
+    const m=rnd(1,3);a=pa*m;b=pb*m;c=pc*m;
+    unknown=pickSide();
+    const ctxs=[
+      [`En stige er <b>${c} ${unit}</b> lang og støtter mod en væg. Dens fod er <b>${unknown==='a'?b:a} ${unit}</b> fra væggen. Hvor højt <b>op ad væggen</b> når stigen?`,'a'],
+      [`Et skib sejler <b>${unknown==='a'?b:a} ${unit}</b> mod øst og vil nå et punkt <b>${c} ${unit}</b> i luftlinje. Hvor langt skal det sejle <b>mod nord</b>?`,'b'],
+    ];
+    const [ctxt,unk2]=pick(ctxs);
+    text=ctxt;
+    const miss=unk2==='a'?a:b;const known=unk2==='a'?b:a;const knownN=unk2==='a'?'b':'a';
+    tip=`Hypotenusen er ${c} ${unit}. Omform a²+b²=c² til at finde den manglende katete.`;
+    steps=`${unk2}² = c² − ${knownN}² = ${c*c} − ${known*known} = ${miss*miss}<br>${unk2} = √${miss*miss} = <b>${miss} ${unit}</b>`;
+    answer=miss;drawTriangle(a,b,c,unk2);
+  }
+  return{answer,tol:0.15,text,tip,steps,unit};
+}
+
+// Level 3: Word problems — varied real contexts, sometimes decimal
+function genL3(i){
+  const diff=i<17?1:i<34?2:3;
+  let text,tip,steps,answer,unit,a,b,c;
+
+  const scenarios=[
+    // find c
+    ()=>{
+      const h=rnd(3,12),w=rnd(3,12);c=round2(sqrt(h*h+w*w));
+      text=`Et hus har en tagkonstruktion. Taget er <b>${h} m</b> højt og <b>${w} m</b> halvbredde.<br>Hvor lang er <b>tagskråningen</b>?`;
+      tip=`Tegn en retvinklet trekant: højde ${h} m og vandret ${w} m.`;
+      steps=`c² = ${h}² + ${w}² = ${h*h}+${w*w} = ${h*h+w*w}<br>c = √${h*h+w*w} ≈ <b>${c} m</b>`;
+      unit='m';answer=c;drawTriangle(h,w,c,'c');
+    },
+    ()=>{
+      const[pa,pb,pc]=pick([[3,4,5],[5,12,13],[8,15,17]]);
+      const m=rnd(2,5);a=pa*m;b=pb*m;c=pc*m;
+      text=`Et fodboldbane er <b>${a} m</b> × <b>${b} m</b>.<br>Hvad er <b>diagonalens</b> længde?`;
+      tip=`Diagonal = hypotenusen i den retvinklede trekant.`;
+      steps=`c² = ${a}²+${b}² = ${a*a+b*b}<br>c = √${a*a+b*b} = <b>${c} m</b>`;
+      unit='m';answer=c;drawTriangle(a,b,c,'c');
+    },
+    // find leg
+    ()=>{
+      const[pa,pb,pc]=pick([[3,4,5],[5,12,13],[9,12,15]]);
+      const m=rnd(1,3);a=pa*m;b=pb*m;c=pc*m;
+      text=`En stige på <b>${c} m</b> er placeret <b>${b} m</b> fra husets mur.<br>Hvor højt <b>op ad muren</b> når stigen?`;
+      tip=`a² = c² − b² = ${c*c} − ${b*b}`;
+      steps=`a² = ${c*c}−${b*b} = ${a*a}<br>a = √${a*a} = <b>${a} m</b>`;
+      unit='m';answer=a;drawTriangle(a,b,c,'a');
+    },
+    ()=>{
+      const d=rnd(5,15);const w=rnd(2,d-1);const h=round2(sqrt(d*d-w*w));
+      text=`En bil kører op ad en bakke på <b>${d} km</b>. Den vandredte afstand er <b>${w} km</b>.<br>Hvad er den <b>lodrette højde</b>?`;
+      tip=`h² = c² − b² = ${d*d}−${w*w}`;
+      steps=`h² = ${d*d}−${w*w} = ${d*d-w*w}<br>h = √${d*d-w*w} ≈ <b>${h} km</b>`;
+      unit='km';answer=h;drawTriangle(h,w,d,'a');
+    },
+    ()=>{
+      const ship=rnd(5,15);const east=rnd(3,ship-1);const north=round2(sqrt(ship*ship-east*east));
+      text=`Et skib sejler <b>${ship} sømil</b> i alt. Det sejler <b>${east} sømil</b> mod øst.<br>Hvor mange sømil sejler det <b>mod nord</b>?`;
+      tip=`Nord² = Total² − Øst²`;
+      steps=`N² = ${ship*ship}−${east*east} = ${ship*ship-east*east}<br>N = √${ship*ship-east*east} ≈ <b>${north} sm</b>`;
+      unit='sømil';answer=north;drawTriangle(north,east,ship,'a');
+    },
+    ()=>{
+      const[pa,pb,pc]=pick([[3,4,5],[5,12,13]]);const m=rnd(2,4);a=pa*m;b=pb*m;c=pc*m;
+      text=`Et rektangulært svømmebassin er <b>${a} m × ${b} m</b>.<br>Hvad er den korteste afstand fra <b>hjørne til hjørne</b>?`;
+      tip=`Diagonal = hypotenuse = √(${a}²+${b}²)`;
+      steps=`c = √(${a*a}+${b*b}) = √${a*a+b*b} = <b>${c} m</b>`;
+      unit='m';answer=c;drawTriangle(a,b,c,'c');
+    },
+  ];
+
+  pick(scenarios)();
+  return{answer:round2(answer),tol:0.2,text,tip,steps,unit};
+}
+
+// Level 4: Mixed hard — non-integer results, compound problems, backwards
+function genL4(i){
+  const diff=i<17?1:i<34?2:3;
+  let text,tip,steps,answer,unit,a,b,c;
+
+  if(diff===1){
+    // 3D distance: √(a²+b²+c²) — find space diagonal of cuboid
+    const[x,y,z]=[rnd(2,8),rnd(2,8),rnd(2,8)];
+    const d=round2(sqrt(x*x+y*y+z*z));
+    // First find floor diagonal, then space diagonal
+    const fd=round2(sqrt(x*x+y*y));
+    text=`En kasse er <b>${x}×${y}×${z} cm</b>.<br>Hvor lang er den <b>rumdiagonalen</b> fra hjørne til modsat hjørne?`;
+    tip=`Brug Pythagoras to gange: gulvdiagonal d₁=√(x²+y²), rum d=√(d₁²+z²)`;
+    steps=`Gulvdiagonal: d₁ = √(${x}²+${y}²) = √${x*x+y*y} ≈ ${fd} cm<br>Rumdiagonal: d = √(${fd}²+${z}²) = √${round2(fd*fd+z*z)} ≈ <b>${d} cm</b>`;
+    unit='cm';answer=d;drawTriangle(fd,z,d,'c');
+  } else if(diff===2){
+    // Area of right triangle given hypotenuse + one leg → find other → area
+    const[pa,pb,pc]=pick([[3,4,5],[5,12,13],[8,15,17],[9,40,41]]);
+    const m=rnd(1,3);a=pa*m;b=pb*m;c=pc*m;
+    text=`En retvinklet trekant har hypotenuse <b>c=${c} m</b> og katete <b>a=${a} m</b>.<br>Hvad er trekantens <b>areal</b>?`;
+    tip=`Find b: b=√(c²−a²). Areal = ½·a·b`;
+    steps=`b = √(${c*c}−${a*a}) = √${b*b} = ${b} m<br>Areal = ½·${a}·${b} = <b>${round2(0.5*a*b)} m²</b>`;
+    unit='m²';answer=round2(0.5*a*b);drawTriangle(a,b,c,'c');
+  } else {
+    // Isosceles triangle: height given base + equal side
+    const base=rnd(4,14)*2; const side=rnd(Math.ceil(base/2)+1,20);
+    const h=round2(sqrt(side*side-(base/2)*(base/2)));
+    text=`En ligebenet trekant har <b>grundlinje ${base} cm</b> og <b>skøderne ${side} cm</b>.<br>Hvad er <b>højden</b>?`;
+    tip=`Halvér grundlinjen: tegn en retvinklet trekant med kateter h og ${base/2}, hypotenuse ${side}.`;
+    steps=`h² = ${side}² − ${base/2}² = ${side*side} − ${(base/2)*(base/2)} = ${side*side-(base/2)*(base/2)}<br>h = √${side*side-(base/2)*(base/2)} ≈ <b>${h} cm</b>`;
+    unit='cm';answer=h;drawTriangle(h,base/2,side,'a');
+  }
+  return{answer:round2(answer),tol:0.25,text,tip,steps,unit};
+}
+
+/* ════════════════════════════════════════════
+   LEVELS
+════════════════════════════════════════════ */
+const LEVELS=[
+  {id:0,name:'Find hypotenusen',desc:'Beregn c når begge kateter kendes — a²+b²=c²',cls:'lc1',accent:'#ff6b6b',gen:genL1,total:51},
+  {id:1,name:'Find en katete',desc:'Omform formlen: a²=c²−b² og b²=c²−a²',cls:'lc2',accent:'#ffd93d',gen:genL2,total:51},
+  {id:2,name:'Tekstopgaver',desc:'Anvend Pythagoras i virkelige situationer',cls:'lc3',accent:'#6bcb77',gen:genL3,total:51},
+  {id:3,name:'Avanceret',desc:'3D, arealer, ligebenede trekanter og mere',cls:'lc4',accent:'#4d96ff',gen:genL4,total:51},
+];
+
+/* ════════════════════════════════════════════
+   SAVE / LOAD
+════════════════════════════════════════════ */
+const KEY='pyth_v2';
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{};}}
+function savit(){localStorage.setItem(KEY,JSON.stringify(SD));}
+let SD=load();
+if(!SD.unlocked)SD.unlocked=[true,false,false,false];
+if(!SD.best)SD.best=[0,0,0,0];
+
+/* ════════════════════════════════════════════
+   HOME
+════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════
+   INTRO
+════════════════════════════════════════════ */
+const TOTAL_SLIDES = 5;
+let introSlide = 0;
+
+function showIntro() {
+  introSlide = 0;
+  show('s-intro');
+  buildIntroCanvas();
+  renderIntroSlide();
+}
+
+function renderIntroSlide() {
+  for (let i = 0; i < TOTAL_SLIDES; i++) {
+    const s = document.getElementById('slide-' + i);
+    if (s) s.className = 'slide' + (i === introSlide ? ' on' : '');
+  }
+  // pips
+  const pips = document.getElementById('intro-pips');
+  pips.innerHTML = Array.from({length: TOTAL_SLIDES}, (_, i) =>
+    `<div class="pip${i === introSlide ? ' on' : ''}"></div>`).join('');
+  // prev btn
+  const prevBtn = document.getElementById('intro-prev-btn');
+  prevBtn.style.display = introSlide > 0 ? '' : 'none';
+  // next btn
+  const nextBtn = document.getElementById('intro-next-btn');
+  if (introSlide === TOTAL_SLIDES - 1) {
+    nextBtn.textContent = '🎮 Start spillet!';
+    nextBtn.style.background = 'var(--c3)';
+    nextBtn.style.color = '#0d2010';
+  } else {
+    nextBtn.textContent = 'Næste →';
+    nextBtn.style.background = 'var(--c2)';
+    nextBtn.style.color = '#1a0d00';
+  }
+}
+
+function introNext() {
+  if (introSlide < TOTAL_SLIDES - 1) {
+    introSlide++;
+    renderIntroSlide();
+  } else {
+    goHome();
+  }
+}
+function introPrev() {
+  if (introSlide > 0) { introSlide--; renderIntroSlide(); }
+}
+
+/* Animated intro canvas — labelled triangle with animation */
+let introAnimId = null;
+let introT = 0;
+
+function buildIntroCanvas() {
+  const cvs = document.getElementById('intro-cvs');
+  if (!cvs) return;
+  const W = Math.min(innerWidth - 36, 440);
+  const H = Math.round(W * 0.52);
+  cvs.width = W; cvs.height = H;
+
+  if (introAnimId) cancelAnimationFrame(introAnimId);
+
+  function frame() {
+    introAnimId = requestAnimationFrame(frame);
+    if (!document.getElementById('s-intro').classList.contains('on')) {
+      cancelAnimationFrame(introAnimId); introAnimId = null; return;
+    }
+    introT += 0.025;
+    const ctx = cvs.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+
+    const pad = 38;
+    const Px = pad + 10, Py = H - pad;
+    const Qx = W - pad, Qy = H - pad;
+    const Rx = pad + 10, Ry = pad + 8;
+
+    // fill
+    const grad = ctx.createLinearGradient(Px, Ry, Qx, Py);
+    grad.addColorStop(0, 'rgba(77,150,255,0.1)');
+    grad.addColorStop(1, 'rgba(255,107,107,0.07)');
+    ctx.beginPath(); ctx.moveTo(Px, Py); ctx.lineTo(Qx, Qy); ctx.lineTo(Rx, Ry); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+
+    // sides
+    function side(x1,y1,x2,y2,col,lbl,pulse) {
+      const p = pulse ? 0.6 + 0.4 * Math.sin(introT * 2) : 1;
+      ctx.save();
+      ctx.strokeStyle = col; ctx.lineWidth = 3 * p; ctx.globalAlpha = 0.7 + 0.3 * p;
+      ctx.shadowColor = col; ctx.shadowBlur = pulse ? 8 * p : 0;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      const mx = (x1+x2)/2, my = (y1+y2)/2;
+      const dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx+dy*dy);
+      const nx = -dy/len*20, ny = dx/len*20;
+      ctx.font = `bold ${Math.max(13, W*0.038)}px Fredoka One,cursive`;
+      ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,.7)'; ctx.shadowBlur = 4;
+      ctx.fillText(lbl, mx + nx, my + ny);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
+    // a = vertical (red), b = horizontal (blue), c = hypotenuse (green, pulsing)
+    side(Px, Py, Rx, Ry, 'rgba(255,107,107,0.9)', 'a', false);
+    side(Px, Py, Qx, Qy, 'rgba(77,150,255,0.9)', 'b', false);
+    side(Qx, Qy, Rx, Ry, 'rgba(168,255,62,0.9)', 'c', true);
+
+    // right angle marker
+    const sq = 16;
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(Px+sq, Py); ctx.lineTo(Px+sq, Py-sq); ctx.lineTo(Px, Py-sq); ctx.stroke();
+
+    // 90° label
+    ctx.font = `${Math.max(10, W*0.028)}px Nunito,sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('90°', Px + sq + 4, Py - 4);
+
+    // angle labels
+    ctx.font = `bold ${Math.max(11, W*0.03)}px Fredoka One,cursive`;
+    ctx.fillStyle = 'rgba(255,217,61,0.7)'; ctx.textAlign = 'center';
+    ctx.fillText('α', Qx - 22, Qy - 10);
+    ctx.fillText('β', Rx + 18, Ry + 22);
+
+    // animated c² label near hypotenuse midpoint
+    const pulse2 = 0.5 + 0.5 * Math.sin(introT * 2 + 1);
+    ctx.font = `bold ${Math.max(11, W*0.032)}px Fredoka One,cursive`;
+    ctx.fillStyle = `rgba(168,255,62,${0.55 + 0.45 * pulse2})`;
+    const hypMx = (Qx + Rx) / 2, hypMy = (Qy + Ry) / 2;
+    ctx.fillText('c²', hypMx + 28, hypMy - 10);
+
+    // formula at bottom
+    ctx.font = `${Math.max(10, W*0.026)}px Nunito,sans-serif`;
+    ctx.fillStyle = 'rgba(255,217,61,0.5)'; ctx.textAlign = 'center';
+    ctx.fillText('a² + b² = c²', W / 2, H - 10);
+  }
+  requestAnimationFrame(frame);
+}
+
+
+function buildHome(){
+  const c=document.getElementById('level-cards');c.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const unl=SD.unlocked[i],best=SD.best[i]||0,pct=best?Math.round(best*100)+'%':'–';
+    const d=document.createElement('div');
+    d.className=`lcard ${lv.cls}${unl?'':' locked'}`;
+    d.innerHTML=`${!unl?'<div class="llock">🔒</div>':''}<div class="li"><div class="licon">${['📐','🔍','📖','🚀'][i]}</div><div class="linfo"><div class="ltitle">Level ${i+1}: ${lv.name}</div><div class="ldesc">${lv.desc}</div></div><div class="lbadge">${pct}</div></div><div class="pbar"><div class="pfill" style="width:${best*100}%"></div></div>`;
+    if(unl)d.onclick=()=>startLevel(i);
+    c.appendChild(d);
+  });
+}
+function goHome(){show('s-home');buildHome();}
+
+/* ════════════════════════════════════════════
+   GAME
+════════════════════════════════════════════ */
+let curL=-1,qIdx=0,correct=0,Qs=[],curQ=null,answered=false;
+let wrongIdx=[],retryMode=false,retryQueue=[],retryPos=0,retryCorrect=0;
+const PASS=0.75;
+
+function startLevel(i){
+  curL=i;qIdx=0;correct=0;answered=false;
+  wrongIdx=[];retryMode=false;retryQueue=[];retryPos=0;retryCorrect=0;
+  const lv=LEVELS[i];
+  Qs=[];for(let j=0;j<lv.total;j++)Qs.push(lv.gen(j));
+  document.getElementById('glvl').textContent=`L${i+1}: ${lv.name}`;
+  document.getElementById('gstrip-fill').style.background=`linear-gradient(90deg,${lv.accent},${lv.accent}99)`;
+  show('s-game');
+  requestAnimationFrame(()=>{renderQ();});
+}
+
+function retryWrong(){
+  retryMode=true;
+  retryQueue=wrongIdx.map(i=>LEVELS[curL].gen(i));
+  retryPos=0;retryCorrect=0;answered=false;
+  document.getElementById('gstrip-fill').style.width='0%';
+  show('s-game');
+  requestAnimationFrame(()=>renderQ());
+}
+
+function renderQ(){
+  answered=false;
+  curQ=retryMode?retryQueue[retryPos]:Qs[qIdx];
+  const total=retryMode?retryQueue.length:Qs.length;
+  const displayIdx=retryMode?retryPos:qIdx;
+  const displayCorrect=retryMode?retryCorrect:correct;
+
+  if(retryMode){
+    document.getElementById('qnum').textContent=`Gentagelse ${retryPos+1} af ${total} · fejlede opgaver`;
+    document.getElementById('qtip').innerHTML=curQ.tip;
+  } else {
+    const tier=qIdx<17?'Begynder':qIdx<34?'Mellem':'Svær';
+    document.getElementById('qnum').textContent=`Spørgsmål ${qIdx+1} af ${total} · ${tier}`;
+    document.getElementById('qtip').innerHTML=`<span style="opacity:.4;font-size:var(--xs)">[${tier}]</span> ${curQ.tip}`;
+  }
+  document.getElementById('gstrip-fill').style.width=(displayIdx/total*100)+'%';
+  document.getElementById('gpill').textContent=`✓ ${displayCorrect}/${displayIdx}`;
+  document.getElementById('qtext').innerHTML=curQ.text;
+  document.getElementById('ans-unit').textContent=curQ.unit||'';
+  const inp=document.getElementById('ainp');
+  inp.value='';inp.className='ainp';inp.disabled=false;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('nxtbtn').className='nxtbtn';
+  document.getElementById('chkbtn').disabled=false;
+  document.getElementById('chkbtn').textContent='Tjek ✓';
+  setTimeout(()=>{inp.focus();},80);
+  // redraw triangle
+  setTimeout(()=>{
+    if(retryMode) LEVELS[curL].gen(wrongIdx[retryPos]);
+    else Qs[qIdx]=LEVELS[curL].gen(qIdx);
+    curQ=retryMode?retryQueue[retryPos]:Qs[qIdx];
+  },30);
+}
+
+function checkAns(){
+  if(answered)return;
+  const inp=document.getElementById('ainp');
+  const val=parseFloat(inp.value.replace(',','.'));
+  if(isNaN(val)){inp.classList.add('err');setTimeout(()=>inp.classList.remove('err'),400);return;}
+  answered=true;
+  const ok=Math.abs(val-curQ.answer)<=curQ.tol;
+  if(ok){if(retryMode)retryCorrect++;else correct++;inp.className='ainp ok';}
+  else{if(!retryMode)wrongIdx.push(qIdx);inp.className='ainp err';}
+  const displayCorrect=retryMode?retryCorrect:correct;
+  const displayDone=retryMode?retryPos+1:qIdx+1;
+  document.getElementById('gpill').textContent=`✓ ${displayCorrect}/${displayDone}`;
+  const fb=document.getElementById('feedback');
+  fb.className='feedback '+(ok?'ok':'no');
+  fb.innerHTML=ok
+    ?`✅ <b>Rigtigt!</b><div class="steps">${curQ.steps}</div>`
+    :`❌ Facit ≈ <b>${curQ.answer}${curQ.unit?' '+curQ.unit:''}</b><div class="steps">${curQ.steps}</div>`;
+  document.getElementById('chkbtn').disabled=true;
+  const nb=document.getElementById('nxtbtn');nb.className='nxtbtn on';
+  const isLast=retryMode?(retryPos>=retryQueue.length-1):(qIdx>=Qs.length-1);
+  nb.textContent=isLast?'Se resultat →':'Næste →';
+}
+
+function nextQ(){
+  if(retryMode){
+    retryPos++;
+    if(retryPos>=retryQueue.length)showResult();
+    else renderQ();
+  } else {
+    qIdx++;
+    if(qIdx>=Qs.length)showResult();
+    else{
+      Qs[qIdx]=LEVELS[curL].gen(qIdx);
+      document.getElementById('ainp').value='';
+      renderQ();
+    }
+  }
+}
+
+function showResult(){
+  const allCorrect=correct+retryCorrect;
+  const pct=allCorrect/Qs.length;
+  const passed=pct>=PASS;
+  if(pct>SD.best[curL])SD.best[curL]=pct;
+  if(passed&&curL<3)SD.unlocked[curL+1]=true;
+  savit();
+  const pR=Math.round(pct*100);
+  const stars=pct>=.97?'⭐⭐⭐':pct>=.87?'⭐⭐':pct>=.75?'⭐':'';
+  document.getElementById('done-icon').textContent=passed?'🎉':'💪';
+  document.getElementById('done-h').textContent=passed?'Level klaret!':'Næsten!';
+  document.getElementById('done-score').textContent=`${allCorrect}/${Qs.length} = ${pR}%`;
+  document.getElementById('done-stars').textContent=stars;
+  const nb=document.getElementById('done-nxt');
+  if(passed&&curL<3){document.getElementById('done-sub').textContent=`Flot! Du klarede level ${curL+1} med ${pR}% — level ${curL+2} er nu låst op!`;nb.textContent='Næste level →';nb.style.display='';}
+  else if(passed&&curL===3){document.getElementById('done-sub').textContent=`Imponerende! Du har klaret ALLE levels! Du er en Pythagoras-mester! 🏆`;nb.textContent='Tilbage til menu';nb.style.display='';}
+  else{document.getElementById('done-sub').textContent=`Du fik ${pR}%. Du skal have 75% for at låse næste level op.${!retryMode&&wrongIdx.length>0?' Du kan genøve de '+wrongIdx.length+' fejlede opgaver.':''}`;nb.style.display='none';}
+  document.getElementById('done-need').textContent=passed?`Top resultat gemt: ${pR}%`:`Du mangler ${Math.ceil(PASS*Qs.length)-allCorrect} korrekte svar for at bestå.`;
+  const rwBtn=document.getElementById('done-retry-wrong');
+  if(rwBtn){
+    if(!passed&&wrongIdx.length>0&&!retryMode){rwBtn.style.display='';rwBtn.textContent=`Genøv de ${wrongIdx.length} fejlede →`;}
+    else rwBtn.style.display='none';
+  }
+  show('s-done');
+}
+function doneNext(){if(curL<3)startLevel(curL+1);else goHome();}
+function retryLevel(){startLevel(curL);}
+
+/* ════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════ */
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+addEventListener('resize',()=>{if(document.getElementById('s-game').classList.contains('on')&&curQ){const lv=LEVELS[curL];Qs[qIdx]=lv.gen(qIdx);}});
+
+buildHome();
+</script>
+</body>
+</html>

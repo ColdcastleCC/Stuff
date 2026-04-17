@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Procentregning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f1a2e;
+  --c1:#ff9f43; --c2:#ffd93d; --c3:#6bcb77; --c4:#4d96ff; --c5:#ff6b9d;
+  --white:#f0f4ff; --muted:rgba(240,244,255,0.48);
+  --fh:'Fredoka One',cursive; --fb:'Nunito',sans-serif;
+  --xs:clamp(11px,2.4vw,13px); --sm:clamp(13px,3vw,15px); --md:clamp(15px,3.5vw,18px);
+  --lg:clamp(19px,5vw,26px); --xl:clamp(24px,6.5vw,34px); --xxl:clamp(32px,8.5vw,50px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scr.on{display:flex;}
+
+/* ══ HOME ══ */
+#s-home{align-items:center;justify-content:flex-start;padding:clamp(20px,5vw,36px) 16px 50px;}
+.home-title{font-family:var(--fh);font-size:var(--xxl);color:var(--white);text-align:center;margin-bottom:4px;text-shadow:0 0 40px rgba(255,159,67,.45);}
+.home-sub{font-size:var(--sm);color:var(--muted);text-align:center;margin-bottom:10px;}
+.formula-badge{font-family:var(--fh);font-size:var(--md);color:var(--c2);text-align:center;margin-bottom:28px;background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.2);border-radius:12px;padding:10px 24px;display:inline-block;letter-spacing:.04em;}
+.level-cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:500px;}
+.lcard{border-radius:18px;padding:18px 20px;cursor:pointer;transition:transform .18s,box-shadow .18s;position:relative;overflow:hidden;}
+.lcard:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(0,0,0,.35);}
+.lcard.locked{opacity:.4;cursor:default;}
+.lcard .li{display:flex;align-items:center;gap:14px;}
+.lcard .licon{font-size:clamp(30px,7.5vw,42px);flex-shrink:0;line-height:1;}
+.lcard .linfo{flex:1;}
+.lcard .ltitle{font-family:var(--fh);font-size:var(--md);color:#fff;margin-bottom:2px;}
+.lcard .ldesc{font-size:var(--xs);color:rgba(255,255,255,.7);line-height:1.45;}
+.lcard .lbadge{flex-shrink:0;font-family:var(--fh);font-size:var(--sm);background:rgba(0,0,0,.22);padding:6px 12px;border-radius:20px;color:#fff;}
+.lcard .pbar{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(0,0,0,.2);}
+.lcard .pfill{height:100%;border-radius:0 0 18px 18px;background:rgba(255,255,255,.5);transition:width .4s;}
+.lcard .llock{position:absolute;top:14px;right:16px;font-size:22px;}
+.lc1{background:linear-gradient(135deg,#ff9f43,#ee5a24);}
+.lc2{background:linear-gradient(135deg,#ffd93d,#f9ca24);}
+.lc3{background:linear-gradient(135deg,#6bcb77,#00b894);}
+.lc4{background:linear-gradient(135deg,#4d96ff,#6c5ce7);}
+.intro-btn{font-family:var(--fh);font-size:var(--sm);background:rgba(255,159,67,.15);color:var(--c1);border:1px solid rgba(255,159,67,.3);border-radius:12px;padding:12px 28px;cursor:pointer;margin-bottom:18px;transition:background .15s;}
+.intro-btn:hover{background:rgba(255,159,67,.28);}
+
+/* ══ INTRO ══ */
+#s-intro{background:var(--bg);align-items:stretch;}
+.intro-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(0,0,0,.35);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));}
+.intro-skip{font-family:var(--fh);font-size:var(--xs);color:var(--muted);background:none;border:none;cursor:pointer;padding:6px 10px;}
+.intro-skip:hover{color:var(--white);}
+.intro-pips{display:flex;gap:7px;align-items:center;}
+.pip{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s;}
+.pip.on{background:var(--c2);transform:scale(1.3);}
+.intro-slides{flex:1;overflow:hidden;position:relative;}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:18px 16px 28px;}
+.slide.on{display:flex;}
+.slide-icon{font-size:clamp(44px,11vw,70px);margin-bottom:10px;line-height:1;filter:drop-shadow(0 0 18px rgba(255,159,67,.4));}
+.slide-h{font-family:var(--fh);font-size:var(--xl);color:var(--white);text-align:center;margin-bottom:8px;line-height:1.2;}
+.slide-h .h1{color:var(--c1);} .slide-h .h2{color:var(--c2);} .slide-h .h3{color:var(--c3);} .slide-h .h4{color:var(--c4);}
+.slide-body{font-size:var(--sm);color:rgba(240,244,255,.8);text-align:center;line-height:1.7;max-width:440px;margin-bottom:12px;}
+.slide-body b{color:var(--white);}
+.intro-cvs-wrap{width:100%;max-width:440px;border-radius:16px;overflow:hidden;margin-bottom:12px;}
+#intro-cvs{display:block;width:100%;}
+.formula-big{font-family:var(--fh);font-size:var(--lg);color:var(--c2);background:rgba(255,217,61,.1);border:1px solid rgba(255,217,61,.25);border-radius:14px;padding:12px 22px;text-align:center;margin-bottom:12px;letter-spacing:.03em;}
+.fact-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:13px 15px;width:100%;max-width:440px;margin-bottom:10px;text-align:left;}
+.fact-box .fb-t{font-family:var(--fh);font-size:var(--sm);margin-bottom:5px;}
+.fact-box .fb-b{font-size:var(--xs);color:rgba(240,244,255,.75);line-height:1.65;}
+.fact-box .fb-b b{color:var(--white);}
+.fact-box .fb-b code{font-family:var(--fh);font-size:var(--sm);color:var(--c2);}
+.step-list{width:100%;max-width:440px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.step-item{background:rgba(255,255,255,.05);border-left:4px solid var(--c2);border-radius:0 12px 12px 0;padding:11px 14px;text-align:left;}
+.step-item .sn{font-family:var(--fh);font-size:var(--xs);color:var(--c2);margin-bottom:3px;}
+.step-item .st{font-size:var(--sm);color:var(--white);line-height:1.5;}
+.step-item .st code{font-family:var(--fh);color:var(--c3);}
+.formula-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:440px;margin-bottom:12px;}
+.fgcard{border-radius:12px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,.12);}
+.fgcard .fg-t{font-family:var(--fh);font-size:var(--xs);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;}
+.fgcard .fg-f{font-family:var(--fh);font-size:var(--md);color:var(--white);line-height:1.4;}
+.fgcard .fg-sub{font-size:var(--xs);color:rgba(255,255,255,.5);margin-top:4px;line-height:1.4;}
+.intro-nav{display:flex;gap:10px;align-items:center;justify-content:center;padding:12px 16px;flex-shrink:0;background:rgba(0,0,0,.3);}
+.intro-prev{font-family:var(--fh);font-size:var(--sm);background:rgba(255,255,255,.08);color:var(--white);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px 22px;cursor:pointer;}
+.intro-next{font-family:var(--fh);font-size:var(--md);background:var(--c2);color:#1a0d00;border:none;border-radius:12px;padding:13px 32px;cursor:pointer;flex:1;max-width:260px;}
+.intro-next:hover{background:#ffe660;}
+
+/* ══ GAME ══ */
+#s-game{background:var(--bg);}
+.gbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.35);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));}
+.bk{font-family:var(--fh);font-size:var(--xs);color:rgba(255,255,255,.55);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 12px;cursor:pointer;}
+.bk:hover{color:#fff;}
+.glvl{font-family:var(--fh);font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.gpill{font-family:var(--fh);font-size:var(--xs);background:rgba(255,255,255,.1);border-radius:20px;padding:6px 12px;color:var(--white);}
+.gstrip{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.gstrip-fill{height:100%;transition:width .4s;}
+.qwrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;padding:16px 14px 28px;gap:12px;}
+
+/* visual bar */
+.vis-wrap{width:100%;max-width:440px;}
+#vis-cvs{display:block;width:100%;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);}
+
+.qcard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px 20px;width:100%;max-width:440px;text-align:center;}
+.qnum{font-family:var(--fh);font-size:var(--xs);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.qtext{font-family:var(--fh);font-size:var(--md);color:var(--white);line-height:1.55;}
+.qtip{font-size:var(--xs);color:var(--muted);margin-top:8px;line-height:1.55;}
+.qtip b{color:var(--white);}
+.ans-wrap{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.ans-label{font-family:var(--fh);font-size:var(--xs);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.ans-row{display:flex;align-items:center;gap:10px;}
+.ans-unit{font-family:var(--fh);font-size:var(--md);color:var(--muted);}
+.ainp{font-family:var(--fh);font-size:var(--xl);width:clamp(120px,30vw,160px);background:rgba(255,255,255,.1);border:2.5px solid rgba(255,255,255,.2);border-radius:12px;color:var(--white);text-align:center;padding:10px 6px;outline:none;-webkit-appearance:none;appearance:none;transition:border-color .2s;}
+.ainp:focus{border-color:var(--c2);background:rgba(255,217,61,.1);}
+.ainp.ok{border-color:var(--c3);background:rgba(107,203,119,.12);}
+.ainp.err{border-color:var(--c5);animation:shake .35s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+.chkbtn{font-family:var(--fh);font-size:var(--md);background:var(--c2);color:#1a0d00;border:none;border-radius:14px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;min-width:160px;transition:background .14s,transform .1s;}
+.chkbtn:hover{background:#ffe660;} .chkbtn:active{transform:scale(.97);} .chkbtn:disabled{opacity:.3;cursor:default;}
+.feedback{width:100%;max-width:440px;border-radius:14px;padding:12px 16px;font-size:var(--sm);line-height:1.6;display:none;}
+.feedback.ok{background:rgba(107,203,119,.18);border:1px solid rgba(107,203,119,.4);color:#b8ffcc;display:block;}
+.feedback.no{background:rgba(255,107,157,.15);border:1px solid rgba(255,107,157,.35);color:#ffd0e8;display:block;}
+.feedback .steps{margin-top:7px;font-size:var(--xs);line-height:1.75;opacity:.85;}
+.feedback .steps b{color:#fff;}
+.nxtbtn{font-family:var(--fh);font-size:var(--md);background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:13px 32px;cursor:pointer;display:none;letter-spacing:.04em;}
+.nxtbtn.on{display:inline-block;} .nxtbtn:hover{background:rgba(255,255,255,.22);}
+
+/* ══ DONE ══ */
+#s-done{align-items:center;justify-content:center;text-align:center;padding:30px 16px 60px;}
+.done-icon{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bounce 1s ease infinite alternate;}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.done-h{font-family:var(--fh);font-size:var(--xxl);color:var(--white);margin-bottom:8px;}
+.done-score{font-family:var(--fh);font-size:clamp(50px,13vw,76px);color:var(--c2);line-height:1;margin-bottom:6px;}
+.done-stars{font-size:clamp(28px,7vw,42px);margin-bottom:16px;}
+.done-sub{font-size:var(--md);color:var(--muted);max-width:370px;line-height:1.6;margin-bottom:28px;}
+.dbtn{font-family:var(--fh);font-size:var(--md);border:none;border-radius:14px;padding:15px 40px;cursor:pointer;letter-spacing:.04em;display:block;margin:0 auto 10px;}
+.dbtn.nxt{background:var(--c3);color:#0d2010;} .dbtn.nxt:hover{background:#8fffa0;}
+.dbtn.retry{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);} .dbtn.retry:hover{background:rgba(255,255,255,.22);}
+.done-need{font-size:var(--xs);color:var(--muted);margin-top:14px;line-height:1.6;}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- HOME -->
+<div class="scr on" id="s-home">
+  <h1 class="home-title" style="margin-top:20px">💯 Procentregning</h1>
+  <p class="home-sub">Træn procent trin for trin</p>
+  <div class="formula-badge">Procent = Del ÷ Helhed × 100</div>
+  <button class="intro-btn" onclick="showIntro()">📖 Lær procentregning først</button>
+  <div class="level-cards" id="level-cards"></div>
+</div>
+
+<!-- INTRO -->
+<div class="scr" id="s-intro">
+  <div class="intro-bar">
+    <button class="intro-skip" onclick="goHome()">← Hjem</button>
+    <div class="intro-pips" id="intro-pips"></div>
+    <button class="intro-skip" onclick="goHome()">Spring over</button>
+  </div>
+  <div class="intro-slides">
+
+    <!-- SLIDE 0 -->
+    <div class="slide on" id="slide-0">
+      <div class="slide-icon">💯</div>
+      <h2 class="slide-h">Hvad er <span class="h1">procent</span>?</h2>
+      <p class="slide-body">
+        Ordet "procent" kommer fra latin: <b>per centum</b> — "ud af hundrede".<br><br>
+        Procent er en måde at udtrykke en del af et helt tal. <b>1% = 1/100 = 0,01</b>. Vi bruger procent overalt: rabatter, renter, vækst, sandsynligheder og meget mere.
+      </p>
+      <div class="intro-cvs-wrap"><canvas id="intro-cvs" height="190"></canvas></div>
+      <div class="formula-big">Procent = Del ÷ Helhed × 100</div>
+      <p class="slide-body" style="font-size:var(--xs);opacity:.7">
+        Eksempel: 30 ud af 120 elever er piger. Andelen = 30÷120×100 = <b>25%</b>
+      </p>
+    </div>
+
+    <!-- SLIDE 1 -->
+    <div class="slide" id="slide-1">
+      <div class="slide-icon">🔢</div>
+      <h2 class="slide-h">De tre <span class="h2">grundformler</span></h2>
+      <p class="slide-body">Alle procentopgaver handler om tre størrelser: <b>Procent (P%)</b>, <b>Helhed (H)</b> og <b>Del (D)</b>.</p>
+      <div class="formula-grid">
+        <div class="fgcard" style="background:rgba(255,159,67,.12);border-color:rgba(255,159,67,.3)">
+          <div class="fg-t" style="color:var(--c1)">Find DELEN</div>
+          <div class="fg-f">D = H × P/100</div>
+          <div class="fg-sub">Kend helhed og procent → find delen</div>
+        </div>
+        <div class="fgcard" style="background:rgba(255,217,61,.1);border-color:rgba(255,217,61,.3)">
+          <div class="fg-t" style="color:var(--c2)">Find PROCENTEN</div>
+          <div class="fg-f">P = D÷H × 100</div>
+          <div class="fg-sub">Kend del og helhed → find procent</div>
+        </div>
+        <div class="fgcard" style="background:rgba(107,203,119,.1);border-color:rgba(107,203,119,.3)" style="grid-column:1/-1">
+          <div class="fg-t" style="color:var(--c3)">Find HELHEDEN</div>
+          <div class="fg-f">H = D ÷ (P/100)</div>
+          <div class="fg-sub">Kend del og procent → find helheden</div>
+        </div>
+        <div class="fgcard" style="background:rgba(77,150,255,.1);border-color:rgba(77,150,255,.3);grid-column:1/-1">
+          <div class="fg-t" style="color:var(--c4)">ALTERNATIV: Omregning</div>
+          <div class="fg-f">P% = P ÷ 100</div>
+          <div class="fg-sub">30% = 0,30 som decimaltal — gang direkte med helheden</div>
+        </div>
+      </div>
+      <div class="fact-box">
+        <div class="fb-t" style="color:var(--c2)">💡 Husketrick: Trekanten</div>
+        <div class="fb-b">Tegn en trekant med <b>D</b> øverst og <b>H × P</b> i bunden. Dæk den størrelse du søger, og regnarten fremgår.<br>D = H × P/100 · H = D/(P/100) · P = D/H × 100</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" id="slide-2">
+      <div class="slide-icon">🛒</div>
+      <h2 class="slide-h">Rabat, tillæg & <span class="h3">vækst</span></h2>
+      <p class="slide-body">Procent bruges tit til at beregne prisændringer:</p>
+      <div class="fact-box" style="border-color:rgba(107,203,119,.3)">
+        <div class="fb-t" style="color:var(--c3)">⬇ Rabat / fald</div>
+        <div class="fb-b">
+          Ny pris = Gammel pris × (1 − P/100)<br>
+          <b>Eksempel:</b> 200 kr med 25% rabat:<br>
+          <code>200 × (1 − 0,25) = 200 × 0,75 = 150 kr</code>
+        </div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(255,159,67,.3)">
+        <div class="fb-t" style="color:var(--c1)">⬆ Tillæg / stigning</div>
+        <div class="fb-b">
+          Ny pris = Gammel pris × (1 + P/100)<br>
+          <b>Eksempel:</b> 500 kr med 20% tillæg:<br>
+          <code>500 × (1 + 0,20) = 500 × 1,20 = 600 kr</code>
+        </div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(77,150,255,.3)">
+        <div class="fb-t" style="color:var(--c4)">📈 Procentvis ændring</div>
+        <div class="fb-b">
+          Ændring% = (Ny − Gammel) / Gammel × 100<br>
+          <b>Eksempel:</b> Fra 80 til 100:<br>
+          <code>(100−80)/80 × 100 = 25% stigning</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide" id="slide-3">
+      <div class="slide-icon">🔍</div>
+      <h2 class="slide-h">Find <span class="h4">den oprindelige</span> pris</h2>
+      <p class="slide-body">Når du kender den nye pris efter en ændring, kan du finde den originale:</p>
+      <div class="step-list">
+        <div class="step-item" style="border-color:var(--c1)">
+          <div class="sn" style="color:var(--c1)">Trin 1 — Hvad er faktoren?</div>
+          <div class="st">20% rabat → faktor = 1 − 0,20 = <code>0,80</code><br>15% tillæg → faktor = 1 + 0,15 = <code>1,15</code></div>
+        </div>
+        <div class="step-item" style="border-color:var(--c2)">
+          <div class="sn" style="color:var(--c2)">Trin 2 — Isolér den originale pris</div>
+          <div class="st">Ny pris = Original × faktor<br>→ Original = Ny pris ÷ faktor</div>
+        </div>
+        <div class="step-item" style="border-color:var(--c3)">
+          <div class="sn" style="color:var(--c3)">Trin 3 — Regn eksempel</div>
+          <div class="st">Ny pris = 240 kr efter 20% rabat:<br><code>Original = 240 ÷ 0,80 = 300 kr</code></div>
+        </div>
+      </div>
+      <div class="fact-box">
+        <div class="fb-t" style="color:var(--c2)">⚠️ Pas på fejlen!</div>
+        <div class="fb-b">20% rabat → ny pris er <b>80%</b> af original. Originalen er <b>IKKE</b> ny pris + 20%. Du skal dividere med 0,80, ikke lægge 20% til!</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide" id="slide-4">
+      <div class="slide-icon">🚀</div>
+      <h2 class="slide-h">Klar til <span class="h1">spillet!</span></h2>
+      <p class="slide-body">Spillet har <b>4 levels</b> med stigende sværhedsgrad — 90% kræves for at låse næste op.</p>
+      <div class="fact-box" style="border-color:rgba(255,159,67,.3);background:rgba(255,159,67,.06)">
+        <div class="fb-t" style="color:var(--c1)">🔢 Level 1 — Find delen (D = H × P%)</div>
+        <div class="fb-b">Hvad er 30% af 200? Hvad koster 15% moms af 400 kr?</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(255,217,61,.3);background:rgba(255,217,61,.06)">
+        <div class="fb-t" style="color:var(--c2)">📊 Level 2 — Find procenten (P = D÷H×100)</div>
+        <div class="fb-b">30 ud af 120 — hvad er procenten? Hvor mange procent er 45 af 180?</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(107,203,119,.3);background:rgba(107,203,119,.06)">
+        <div class="fb-t" style="color:var(--c3)">🔍 Level 3 — Find helheden (H = D÷P%)</div>
+        <div class="fb-b">25% af et tal er 50 — hvad er tallet? Moms (25%) udgør 80 kr — hvad er grundprisen?</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(77,150,255,.3);background:rgba(77,150,255,.06)">
+        <div class="fb-t" style="color:var(--c4)">💹 Level 4 — Ændringer og rabatter</div>
+        <div class="fb-b">Ny pris efter rabat, find original pris, procentvis ændring, sammensatte procenter.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="intro-nav">
+    <button class="intro-prev" id="intro-prev-btn" onclick="introPrev()" style="display:none">← Forrige</button>
+    <button class="intro-next" id="intro-next-btn" onclick="introNext()">Næste →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="scr" id="s-game">
+  <div class="gbar">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="glvl" id="glvl">–</div>
+    <div class="gpill" id="gpill">0/0</div>
+  </div>
+  <div class="gstrip"><div class="gstrip-fill" id="gstrip-fill" style="width:0%"></div></div>
+  <div class="qwrap">
+    <div class="vis-wrap"><canvas id="vis-cvs"></canvas></div>
+    <div class="qcard">
+      <div class="qnum" id="qnum">–</div>
+      <div class="qtext" id="qtext">–</div>
+      <div class="qtip" id="qtip"></div>
+    </div>
+    <div class="ans-wrap">
+      <div class="ans-label">Dit svar</div>
+      <div class="ans-row">
+        <input class="ainp" id="ainp" type="number" step="0.01" placeholder="?" inputmode="decimal" autocomplete="off">
+        <span class="ans-unit" id="ans-unit"></span>
+      </div>
+    </div>
+    <button class="chkbtn" id="chkbtn" onclick="checkAns()">Tjek ✓</button>
+    <div class="feedback" id="feedback"></div>
+    <button class="nxtbtn" id="nxtbtn" onclick="nextQ()">Næste →</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="scr" id="s-done">
+  <div class="done-icon" id="done-icon">🎉</div>
+  <div class="done-h" id="done-h">Level klaret!</div>
+  <div class="done-score" id="done-score">–</div>
+  <div class="done-stars" id="done-stars"></div>
+  <div class="done-sub" id="done-sub"></div>
+  <button class="dbtn nxt" id="done-nxt" onclick="doneNext()">Næste level →</button>
+  <button class="dbtn retry" id="done-retry-wrong" onclick="retryWrong()" style="display:none;background:rgba(255,159,67,.18);color:var(--c1);border-color:rgba(255,159,67,.3)">Genøv fejlede →</button>
+  <button class="dbtn retry" onclick="retryLevel()">Start forfra ↺</button>
+  <div class="done-need" id="done-need"></div>
+</div>
+
+<script>
+/* ════ STARS ════ */
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  function rs(){c.width=innerWidth;c.height=innerHeight;}rs();addEventListener('resize',rs);
+  const S=Array.from({length:180},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.3,a:Math.random(),da:(Math.random()-.5)*.006}));
+  (function t(){ctx.clearRect(0,0,c.width,c.height);S.forEach(s=>{s.a+=s.da;if(s.a<.05||s.a>1)s.da=-s.da;s.a=Math.max(.05,Math.min(1,s.a));ctx.beginPath();ctx.arc(s.x*c.width,s.y*c.height,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();});requestAnimationFrame(t);})();
+})();
+
+/* ════ HELPERS ════ */
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[rnd(0,arr.length-1)];}
+function r1(x){return Math.round(x*10)/10;}
+function r2(x){return Math.round(x*100)/100;}
+function nice(x){return Number.isInteger(x)?x:r2(x);}
+
+/* ════ VISUAL BAR DRAWING ════ */
+function drawBar(pct, label, color){
+  const cvs=document.getElementById('vis-cvs');
+  if(!cvs)return;
+  const W=Math.min(innerWidth-28,440);
+  cvs.width=W; cvs.height=70;
+  const ctx=cvs.getContext('2d');
+  ctx.clearRect(0,0,W,70);
+  const pad=12, barH=28, y=20;
+  const bw=W-pad*2;
+  // background track
+  ctx.fillStyle='rgba(255,255,255,0.08)';
+  ctx.beginPath();ctx.roundRect(pad,y,bw,barH,6);ctx.fill();
+  // filled portion
+  const fillW=Math.max(4,Math.min(bw,bw*(pct/100)));
+  const g=ctx.createLinearGradient(pad,0,pad+fillW,0);
+  g.addColorStop(0,color+'cc');g.addColorStop(1,color);
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.roundRect(pad,y,fillW,barH,6);ctx.fill();
+  // glow
+  ctx.shadowColor=color;ctx.shadowBlur=10;
+  ctx.beginPath();ctx.roundRect(pad,y,fillW,barH,6);ctx.fill();
+  ctx.shadowBlur=0;
+  // pct label inside bar
+  ctx.font=`bold ${Math.max(11,W*0.032)}px Fredoka One,cursive`;
+  ctx.fillStyle='rgba(255,255,255,0.9)';ctx.textAlign='left';ctx.textBaseline='middle';
+  if(fillW>50)ctx.fillText(pct.toFixed(1)+'%',pad+8,y+barH/2);
+  // caption
+  ctx.font=`${Math.max(10,W*0.026)}px Nunito,sans-serif`;
+  ctx.fillStyle='rgba(255,255,255,0.45)';ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(label,W/2,66);
+}
+
+/* ════ QUESTION GENERATORS ════ */
+
+// Helpers
+const HELHEDER=[20,25,40,50,60,80,100,120,150,160,200,240,250,300,400,500,600,800,1000];
+const PROCENTER=[5,10,12,15,20,25,30,35,40,45,50,60,75];
+const ITEMS=['en jakke','en cykel','en telefon','en bil','et ur','en computer','et tv','en stol','en taske','en bold','en bil','et kursus','et produkt'];
+const KONTEKSTER=[
+  (h,p,d)=>`En ${pick(ITEMS)} koster <b>${h} kr</b>. Du får <b>${p}% rabat</b>. Hvad betaler du?`,
+  (h,p,d)=>`Der er <b>${p}% moms</b> på en vare til <b>${h} kr</b>. Hvad er momsbeløbet?`,
+  (h,p,d)=>`En klasse har <b>${h} elever</b>. <b>${p}%</b> er drenge. Hvor mange drenge er der?`,
+  (h,p,d)=>`En bank giver <b>${p}% rente</b> om året på <b>${h} kr</b>. Hvad er rentebeløbet?`,
+  (h,p,d)=>`En butik sænker prisen på <b>${h} kr</b> med <b>${p}%</b>. Hvad er den nye pris?`,
+];
+
+// LEVEL 1: Find D = H × P/100
+function genL1(i){
+  const diff=i<17?1:i<34?2:3;
+  let H,P,D,text,tip,steps,unit='';
+
+  if(diff===1){
+    H=pick([20,40,50,80,100,120,200]);P=pick([10,20,25,50]);
+    D=H*P/100;
+    text=`Hvad er <b>${P}% af ${H}</b>?`;
+    tip=`<b>D = H × P/100</b> = ${H} × ${P}/100`;
+    steps=`D = ${H} × ${P}/100<br>= ${H} × ${r2(P/100)}<br>= <b>${nice(D)}</b>`;
+    unit='';
+  } else if(diff===2){
+    H=pick(HELHEDER);P=pick(PROCENTER);
+    D=r2(H*P/100);
+    const ctx2=pick(KONTEKSTER);
+    text=ctx2(H,P,D);
+    // detect if asking for rabat price or amount
+    if(text.includes('betaler')||text.includes('nye pris')){
+      const newP=r2(H*(1-P/100));
+      tip=`<b>Ny pris</b> = H × (1 − P/100) = ${H} × ${r2(1-P/100)}`;
+      steps=`Ny pris = ${H} × (1 − ${P}/100)<br>= ${H} × ${r2(1-P/100)}<br>= <b>${newP} kr</b>`;
+      D=newP;unit='kr';
+    } else {
+      tip=`<b>D = H × P/100</b> = ${H} × ${P}/100`;
+      steps=`D = ${H} × ${P}/100 = ${H} × ${r2(P/100)} = <b>${nice(D)}</b>${unit?` ${unit}`:''}`;
+      if(text.includes('kr'))unit='kr';
+      else if(text.includes('elever'))unit='';
+    }
+  } else {
+    // Decimal percentages
+    H=pick([120,150,200,240,300,400,480,500]);
+    P=pick([12,15,17.5,22,35,37.5,62.5]);
+    D=r2(H*P/100);
+    text=`Hvad er <b>${P}% af ${H}</b>?`;
+    tip=`<b>D = H × P/100</b> = ${H} × ${r2(P/100)}`;
+    steps=`D = ${H} × ${P}/100 = ${H} × ${r2(P/100)} = <b>${D}</b>`;
+  }
+  drawBar(P, `${P}% af ${H}`, '#ff9f43');
+  return{answer:nice(D),tol:0.11,text,tip,steps,unit};
+}
+
+// LEVEL 2: Find P = D/H × 100
+function genL2(i){
+  const diff=i<17?1:i<34?2:3;
+  let H,D,P,text,tip,steps,unit='%';
+
+  if(diff===1){
+    H=pick([20,40,50,100,200]);
+    P=pick([10,20,25,50,75]);
+    D=H*P/100;
+    text=`<b>${D}</b> ud af <b>${H}</b> — hvad er det i procent?`;
+    tip=`<b>P = D ÷ H × 100</b> = ${D}/${H} × 100`;
+    steps=`P = ${D} ÷ ${H} × 100<br>= ${r2(D/H)} × 100<br>= <b>${P}%</b>`;
+  } else if(diff===2){
+    H=pick([60,80,120,150,160,200,250,300]);
+    P=pick([5,10,15,20,25,30,40,50,60]);
+    D=r2(H*P/100);
+    const ctxs=[
+      `I en klasse på <b>${H}</b> elever er <b>${D}</b> fraværende. Hvad er fraværsprocenten?`,
+      `En butik solgte <b>${D}</b> ud af <b>${H}</b> varer. Hvad er salgsprocenten?`,
+      `Af <b>${H}</b> adspurgte svarede <b>${D}</b> ja. Hvad er ja-procenten?`,
+      `En skole har <b>${H}</b> elever og <b>${D}</b> er drenge. Hvad er drengeandelen i %?`,
+    ];
+    text=pick(ctxs);
+    tip=`<b>P = D ÷ H × 100</b> = ${D}/${H} × 100`;
+    steps=`P = ${D} ÷ ${H} × 100 = ${r2(D/H)} × 100 = <b>${P}%</b>`;
+  } else {
+    H=pick([160,175,220,240,280,320,400,480]);
+    D=rnd(1,H-1);
+    P=r1(D/H*100);D=r2(H*P/100); // round D to match
+    text=`Hvad er <b>${D}</b> procent af <b>${H}</b>? (Angiv én decimal)`;
+    tip=`<b>P = D ÷ H × 100</b> = ${D}/${H} × 100`;
+    steps=`P = ${D} ÷ ${H} × 100 = ${r2(D/H)} × 100 = <b>${P}%</b>`;
+  }
+  drawBar(Math.min(P,100), `${D} ud af ${H}`, '#ffd93d');
+  return{answer:P,tol:0.15,text,tip,steps,unit};
+}
+
+// LEVEL 3: Find H = D / (P/100)
+function genL3(i){
+  const diff=i<17?1:i<34?2:3;
+  let H,D,P,text,tip,steps,unit='';
+
+  if(diff===1){
+    H=pick([40,50,80,100,120,200]);P=pick([10,20,25,50]);D=r2(H*P/100);
+    text=`<b>${P}%</b> af et tal er <b>${D}</b>. Hvad er tallet?`;
+    tip=`<b>H = D ÷ (P/100)</b> = ${D} ÷ ${r2(P/100)}`;
+    steps=`H = ${D} ÷ (${P}/100)<br>= ${D} ÷ ${r2(P/100)}<br>= <b>${H}</b>`;
+  } else if(diff===2){
+    H=pick([80,100,120,150,160,200,250,300,400]);P=pick([5,10,12.5,15,20,25,30,40]);D=r2(H*P/100);
+    const ctxs=[
+      `Momsen (${P}%) af en vare udgør <b>${D} kr</b>. Hvad er varens pris <b>uden</b> moms?`,
+      `En sælger tjener <b>${D} kr</b> i provision, som svarer til <b>${P}%</b> af salgsprisen. Hvad er salgsprisen?`,
+      `<b>${P}%</b> af en klasse — dvs. <b>${D}</b> elever — er fraværende. Hvor mange elever er der i alt?`,
+      `Et beløb vokser med <b>${P}%</b> til <b>${D} kr</b> i rente. Hvad var det oprindelige beløb?`,
+    ];
+    text=pick(ctxs);
+    tip=`<b>H = D ÷ (P/100)</b> = ${D} ÷ ${r2(P/100)}`;
+    steps=`H = ${D} ÷ (${P}/100) = ${D} ÷ ${r2(P/100)} = <b>${H}</b>`;
+    if(text.includes('kr'))unit='kr';
+  } else {
+    H=pick([120,150,160,200,240,300,350,400,480,500]);
+    P=pick([8,12,15,17.5,22,35,40,60,75]);D=r2(H*P/100);
+    text=`<b>${P}%</b> af et tal er <b>${D}</b>. Find helheden.`;
+    tip=`<b>H = D ÷ (P/100)</b> = ${D} ÷ ${r2(P/100)}`;
+    steps=`H = ${D} ÷ ${r2(P/100)} = <b>${H}</b>`;
+  }
+  drawBar(P, `${P}% = ${D} → find helheden`, '#6bcb77');
+  return{answer:H,tol:0.15,text,tip,steps,unit};
+}
+
+// LEVEL 4: Percentage change, reverse, compound
+function genL4(i){
+  const diff=i<17?1:i<34?2:3;
+  let answer,tol=0.15,text,tip,steps,unit='';
+
+  if(diff===1){
+    // Find new price after change
+    const H=pick([100,120,150,200,250,300,400,500]);
+    const P=pick([5,10,15,20,25,30]);
+    const up=Math.random()>.5;
+    const newH=r2(H*(1+(up?1:-1)*P/100));
+    text=`En vare koster <b>${H} kr</b>. Prisen ${up?'stiger':'falder'} med <b>${P}%</b>. Hvad er den nye pris?`;
+    tip=`Ny pris = ${H} × (1 ${up?'+':'-'} ${P}/100) = ${H} × ${r2(1+(up?1:-1)*P/100)}`;
+    steps=`Ny pris = ${H} × (1 ${up?'+':'-'} ${r2(P/100)})<br>= ${H} × ${r2(1+(up?1:-1)*P/100)}<br>= <b>${newH} kr</b>`;
+    answer=newH;unit='kr';
+    drawBar(up?Math.min(100+P,150):Math.max(100-P,0),`${H} kr ${up?'+ '+P+'%':'− '+P+'%'} = ${newH} kr`,'#4d96ff');
+
+  } else if(diff===2){
+    // Find original price before change
+    const H=pick([80,100,120,150,200,250,300,400]);
+    const P=pick([10,15,20,25,30,40]);
+    const up=Math.random()>.5;
+    const newH=r2(H*(1+(up?1:-1)*P/100));
+    const fac=r2(1+(up?1:-1)*P/100);
+    text=`En vare koster <b>${newH} kr</b> efter en ${up?'stigning':'rabat'} på <b>${P}%</b>. Hvad var den <b>originale</b> pris?`;
+    tip=`Original = Ny ÷ (1 ${up?'+':'-'} ${P}/100) = ${newH} ÷ ${fac}`;
+    steps=`Original = ${newH} ÷ ${fac}<br>= <b>${H} kr</b>`;
+    answer=H;unit='kr';
+    drawBar(up?Math.min(100,100/fac*100):Math.min(100/fac*100,150),`${newH} kr ÷ ${fac} = ${H} kr`,'#ff6b9d');
+
+  } else {
+    // Procentvis ændring fra A til B
+    const A=pick([40,50,60,80,100,120,150,160,200]);
+    const P=pick([10,12.5,15,20,25,30,50,-10,-20,-25]);
+    const B=r2(A*(1+P/100));
+    if(Math.random()>.5){
+      // Find ændring%
+      text=`En pris går fra <b>${A} kr</b> til <b>${B} kr</b>. Hvad er den procentvise ændring?`;
+      tip=`Ændring% = (Ny − Gammel) / Gammel × 100`;
+      steps=`= (${B} − ${A}) / ${A} × 100<br>= ${r2((B-A)/A)} × 100<br>= <b>${r1(P)}%</b>`;
+      answer=r1(P);unit='%';
+      drawBar(Math.max(0,Math.min(100,50+P/2)),`Fra ${A} til ${B} = ${r1(P)}%`,'#c77dff');
+    } else {
+      // Find new value after compound
+      const P2=pick([5,10,15,20]);
+      const final=r2(A*(1+P/100)*(1+P2/100));
+      text=`Et beløb på <b>${A} kr</b> stiger med <b>${P>0?P:Math.abs(P)}%</b> og derefter med <b>${P2}%</b>. Hvad er slutbeløbet?`;
+      tip=`Slutbeløb = ${A} × ${r2(1+P/100)} × ${r2(1+P2/100)}`;
+      steps=`${A} × ${r2(1+P/100)} = ${r2(A*(1+P/100))} kr<br>${r2(A*(1+P/100))} × ${r2(1+P2/100)} = <b>${final} kr</b>`;
+      answer=final;unit='kr';
+      drawBar(Math.min(150,r2((1+P/100)*(1+P2/100)*100)-50),`${A} → ${r2(A*(1+P/100))} → ${final}`,'#ff9f43');
+      tol=0.5;
+    }
+  }
+  return{answer,tol,text,tip,steps,unit};
+}
+
+/* ════ LEVELS ════ */
+const LEVELS=[
+  {id:0,name:'Find delen',desc:'D = Helhed × Procent/100',cls:'lc1',accent:'#ff9f43',gen:genL1,total:51},
+  {id:1,name:'Find procenten',desc:'P = Del ÷ Helhed × 100',cls:'lc2',accent:'#ffd93d',gen:genL2,total:51},
+  {id:2,name:'Find helheden',desc:'H = Del ÷ (Procent/100)',cls:'lc3',accent:'#6bcb77',gen:genL3,total:51},
+  {id:3,name:'Ændringer & rabatter',desc:'Ny pris, original pris, procentvis ændring',cls:'lc4',accent:'#4d96ff',gen:genL4,total:51},
+];
+const PASS=0.75;
+
+/* ════ SAVE ════ */
+const KEY='pct_v1';
+function loadS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{};}}
+function saveS(){localStorage.setItem(KEY,JSON.stringify(SD));}
+let SD=loadS();
+if(!SD.unlocked)SD.unlocked=[true,false,false,false];
+if(!SD.best)SD.best=[0,0,0,0];
+
+/* ════ INTRO ════ */
+const TOTAL_SLIDES=5;
+let introSlide=0,introAnimId=null,introT=0;
+
+function showIntro(){introSlide=0;show('s-intro');buildIntroCanvas();renderIntro();}
+function renderIntro(){
+  for(let i=0;i<TOTAL_SLIDES;i++){const s=document.getElementById('slide-'+i);if(s)s.className='slide'+(i===introSlide?' on':'');}
+  document.getElementById('intro-pips').innerHTML=Array.from({length:TOTAL_SLIDES},(_,i)=>`<div class="pip${i===introSlide?' on':''}"></div>`).join('');
+  const pb=document.getElementById('intro-prev-btn');pb.style.display=introSlide>0?'':'none';
+  const nb=document.getElementById('intro-next-btn');
+  if(introSlide===TOTAL_SLIDES-1){nb.textContent='🎮 Start spillet!';nb.style.background='var(--c3)';nb.style.color='#0d2010';}
+  else{nb.textContent='Næste →';nb.style.background='var(--c2)';nb.style.color='#1a0d00';}
+}
+function introNext(){if(introSlide<TOTAL_SLIDES-1){introSlide++;renderIntro();}else goHome();}
+function introPrev(){if(introSlide>0){introSlide--;renderIntro();}}
+
+function buildIntroCanvas(){
+  const cvs=document.getElementById('intro-cvs');if(!cvs)return;
+  const W=Math.min(innerWidth-36,440);cvs.width=W;cvs.height=190;
+  if(introAnimId)cancelAnimationFrame(introAnimId);
+  function frame(){
+    introAnimId=requestAnimationFrame(frame);
+    if(!document.getElementById('s-intro').classList.contains('on')){cancelAnimationFrame(introAnimId);introAnimId=null;return;}
+    introT+=0.02;
+    const ctx=cvs.getContext('2d');
+    ctx.clearRect(0,0,W,190);
+    const pad=16,bH=34,y=20,bW=W-pad*2;
+    // animated percentage that bounces 0→100→0
+    const animPct=50+50*Math.sin(introT*0.7);
+    const labels=[['100%','rgba(255,159,67,0.9)'],[`${Math.round(animPct)}%`,'rgba(255,217,61,0.9)'],['25%','rgba(107,203,119,0.9)']];
+    const pcts=[100,animPct,25];
+    labels.forEach(([lbl,col],row)=>{
+      const ry=y+row*(bH+10);
+      ctx.fillStyle='rgba(255,255,255,0.07)';
+      ctx.beginPath();ctx.roundRect(pad,ry,bW,bH,6);ctx.fill();
+      const fw=Math.max(4,bW*pcts[row]/100);
+      const g=ctx.createLinearGradient(pad,0,pad+fw,0);
+      g.addColorStop(0,col.replace('0.9)','0.6)'));g.addColorStop(1,col);
+      ctx.fillStyle=g;
+      ctx.shadowColor=col;ctx.shadowBlur=row===1?12:6;
+      ctx.beginPath();ctx.roundRect(pad,ry,fw,bH,6);ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.font=`bold ${Math.max(12,W*0.034)}px Fredoka One,cursive`;
+      ctx.fillStyle='rgba(255,255,255,0.9)';ctx.textAlign='left';ctx.textBaseline='middle';
+      ctx.fillText(lbl,pad+10,ry+bH/2);
+    });
+    // formula at bottom
+    const f=0.4+0.6*Math.abs(Math.sin(introT));
+    ctx.font=`bold ${Math.max(11,W*0.028)}px Fredoka One,cursive`;
+    ctx.fillStyle=`rgba(255,217,61,${f})`;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+    ctx.fillText('Procent = Del ÷ Helhed × 100',W/2,186);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ════ HOME ════ */
+function buildHome(){
+  const c=document.getElementById('level-cards');c.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const unl=SD.unlocked[i],best=SD.best[i]||0,pct=best?Math.round(best*100)+'%':'–';
+    const d=document.createElement('div');
+    d.className=`lcard ${lv.cls}${unl?'':' locked'}`;
+    d.innerHTML=`${!unl?'<div class="llock">🔒</div>':''}<div class="li"><div class="licon">${['🔢','📊','🔍','💹'][i]}</div><div class="linfo"><div class="ltitle">Level ${i+1}: ${lv.name}</div><div class="ldesc">${lv.desc}</div></div><div class="lbadge">${pct}</div></div><div class="pbar"><div class="pfill" style="width:${best*100}%"></div></div>`;
+    if(unl)d.onclick=()=>startLevel(i);
+    c.appendChild(d);
+  });
+}
+function goHome(){show('s-home');buildHome();}
+
+/* ════ GAME ════ */
+let curL=-1, qIdx=0, correct=0, Qs=[], wrongIdx=[], curQ=null, answered=false;
+// retryMode: true = only replaying wrongIdx questions
+let retryMode=false, retryQueue=[], retryPos=0, retryCorrect=0;
+
+function startLevel(i){
+  curL=i; qIdx=0; correct=0; answered=false;
+  retryMode=false; wrongIdx=[];
+  const lv=LEVELS[i];
+  Qs=[]; for(let j=0;j<lv.total;j++) Qs.push(lv.gen(j));
+  document.getElementById('glvl').textContent=`L${i+1}: ${lv.name}`;
+  document.getElementById('gstrip-fill').style.background=`linear-gradient(90deg,${lv.accent},${lv.accent}99)`;
+  show('s-game');
+  requestAnimationFrame(()=>renderQ());
+}
+
+function retryWrong(){
+  // Rebuild only the wrong questions and replay them
+  retryMode=true;
+  retryQueue=wrongIdx.map(i=>LEVELS[curL].gen(i));
+  retryPos=0; retryCorrect=0; answered=false;
+  document.getElementById('gstrip-fill').style.width='0%';
+  show('s-game');
+  requestAnimationFrame(()=>renderRetryQ());
+}
+
+function renderRetryQ(){
+  answered=false;
+  curQ=retryQueue[retryPos];
+  // trigger drawBar by re-generating (already done in retryQueue build)
+  LEVELS[curL].gen(wrongIdx[retryPos]); // redraw visual
+  curQ=retryQueue[retryPos];
+  const total=retryQueue.length;
+  document.getElementById('qnum').textContent=`Gentagelse ${retryPos+1} af ${total} · fejlede opgaver`;
+  document.getElementById('gstrip-fill').style.width=(retryPos/total*100)+'%';
+  document.getElementById('gpill').textContent=`✓ ${retryCorrect}/${retryPos}`;
+  document.getElementById('qtext').innerHTML=curQ.text;
+  document.getElementById('qtip').innerHTML=curQ.tip;
+  document.getElementById('ans-unit').textContent=curQ.unit||'';
+  const inp=document.getElementById('ainp');
+  inp.value=''; inp.className='ainp'; inp.disabled=false;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('nxtbtn').className='nxtbtn';
+  document.getElementById('chkbtn').disabled=false;
+  document.getElementById('chkbtn').textContent='Tjek ✓';
+  setTimeout(()=>inp.focus(),80);
+}
+
+function renderQ(){
+  answered=false;
+  const lv=LEVELS[curL];
+  Qs[qIdx]=lv.gen(qIdx);
+  curQ=Qs[qIdx];
+  const total=Qs.length;
+  const tier=qIdx<17?'Begynder':qIdx<34?'Mellem':'Svær';
+  document.getElementById('qnum').textContent=`Spørgsmål ${qIdx+1} af ${total} · ${tier}`;
+  document.getElementById('gstrip-fill').style.width=(qIdx/total*100)+'%';
+  document.getElementById('gpill').textContent=`✓ ${correct}/${qIdx}`;
+  document.getElementById('qtext').innerHTML=curQ.text;
+  document.getElementById('qtip').innerHTML=`<span style="opacity:.4;font-size:var(--xs)">[${tier}]</span> ${curQ.tip}`;
+  document.getElementById('ans-unit').textContent=curQ.unit||'';
+  const inp=document.getElementById('ainp');
+  inp.value=''; inp.className='ainp'; inp.disabled=false;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('nxtbtn').className='nxtbtn';
+  document.getElementById('chkbtn').disabled=false;
+  document.getElementById('chkbtn').textContent='Tjek ✓';
+  setTimeout(()=>inp.focus(),80);
+}
+
+function checkAns(){
+  if(answered)return;
+  const inp=document.getElementById('ainp');
+  const val=parseFloat(inp.value.replace(',','.'));
+  if(isNaN(val)){inp.classList.add('err');setTimeout(()=>inp.classList.remove('err'),400);return;}
+  answered=true;
+  const ok=Math.abs(val-curQ.answer)<=curQ.tol;
+  if(retryMode){
+    if(ok) retryCorrect++; else inp.className='ainp err';
+    if(ok) inp.className='ainp ok';
+  } else {
+    if(ok){ correct++; inp.className='ainp ok'; }
+    else { wrongIdx.push(qIdx); inp.className='ainp err'; }
+  }
+  const displayTotal=retryMode?retryQueue.length:Qs.length;
+  const displayCorrect=retryMode?retryCorrect:correct;
+  const displayDone=retryMode?retryPos+1:qIdx+1;
+  document.getElementById('gpill').textContent=`✓ ${displayCorrect}/${displayDone}`;
+  const fb=document.getElementById('feedback');
+  fb.className='feedback '+(ok?'ok':'no');
+  fb.innerHTML=ok
+    ?`✅ <b>Rigtigt!</b><div class="steps">${curQ.steps}</div>`
+    :`❌ Facit: <b>${curQ.answer}${curQ.unit?' '+curQ.unit:''}</b><div class="steps">${curQ.steps}</div>`;
+  document.getElementById('chkbtn').disabled=true;
+  const nb=document.getElementById('nxtbtn'); nb.className='nxtbtn on';
+  const isLast=retryMode?(retryPos>=retryQueue.length-1):(qIdx>=Qs.length-1);
+  nb.textContent=isLast?'Se resultat →':'Næste →';
+}
+
+function nextQ(){
+  if(retryMode){
+    retryPos++;
+    if(retryPos>=retryQueue.length) showResult();
+    else renderRetryQ();
+  } else {
+    qIdx++;
+    if(qIdx>=Qs.length) showResult();
+    else renderQ();
+  }
+}
+
+function showResult(){
+  // In retry mode, only count the retry questions
+  const totalDone = retryMode ? retryQueue.length : Qs.length;
+  const totalCorrect = retryMode ? retryCorrect : correct;
+  // Overall score: correct first-pass + correct retry, over all questions
+  const allCorrect = retryMode
+    ? (correct + retryCorrect)   // first-pass correct + retry correct
+    : correct;
+  const allTotal = Qs.length;
+  const pct = allCorrect / allTotal;
+  const pR = Math.round(pct*100);
+  const passed = pct >= PASS;
+
+  if(pct > SD.best[curL]) SD.best[curL]=pct;
+  if(passed && curL<3) SD.unlocked[curL+1]=true;
+  saveS();
+
+  const stars=pct>=.97?'⭐⭐⭐':pct>=.87?'⭐⭐':pct>=.75?'⭐':'';
+  document.getElementById('done-icon').textContent=passed?'🎉':'💪';
+  document.getElementById('done-h').textContent=passed?'Level klaret!':'Næsten!';
+  document.getElementById('done-score').textContent=`${allCorrect}/${allTotal} = ${pR}%`;
+  document.getElementById('done-stars').textContent=stars;
+
+  const nb=document.getElementById('done-nxt');
+  if(passed && curL<3){
+    document.getElementById('done-sub').textContent=`Flot! Du klarede "${LEVELS[curL].name}" med ${pR}% — level ${curL+2} er låst op!`;
+    nb.textContent='Næste level →'; nb.style.display='';
+  } else if(passed && curL===3){
+    document.getElementById('done-sub').textContent=`Imponerende! Du har klaret ALLE levels i procentregning! 🏆`;
+    nb.textContent='Tilbage til menu'; nb.style.display='';
+  } else {
+    const newWrong = retryMode ? wrongIdx.length : wrongIdx.length; // wrong remaining
+    document.getElementById('done-sub').textContent=`Du fik ${pR}%. Du skal have 75% for at komme videre. ${retryMode?'':'Du kan genøve de '+wrongIdx.length+' fejlede opgaver.'}`;
+    nb.style.display='none';
+  }
+
+  document.getElementById('done-need').textContent=passed
+    ? `Top resultat gemt: ${pR}%`
+    : `Du mangler ${Math.ceil(PASS*allTotal)-allCorrect} korrekte svar for at bestå.`;
+
+  // Show retry-wrong button only if there are wrong answers and not already in retry
+  const retryBtn=document.getElementById('done-retry-wrong');
+  if(retryBtn){
+    if(!passed && wrongIdx.length>0 && !retryMode){
+      retryBtn.style.display='';
+      retryBtn.textContent=`Genøv de ${wrongIdx.length} fejlede →`;
+    } else {
+      retryBtn.style.display='none';
+    }
+  }
+
+  show('s-done');
+}
+
+function doneNext(){if(curL<3)startLevel(curL+1);else goHome();}
+function retryLevel(){startLevel(curL);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+addEventListener('resize',()=>{if(document.getElementById('s-game').classList.contains('on')&&curL>=0)renderQ();});
+buildHome();
+</script>
+</body>
+</html>

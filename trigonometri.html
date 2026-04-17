@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Trigonometri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#1a0d2e;
+  --c1:#ff6b9d; --c2:#ffd93d; --c3:#6bcb77; --c4:#c77dff;
+  --sin:#ff6b9d; --cos:#4d96ff; --tan:#ffd93d; --hyp:#a8ff3e;
+  --white:#f0f4ff; --muted:rgba(240,244,255,0.48);
+  --fh:'Fredoka One',cursive; --fb:'Nunito',sans-serif;
+  --xs:clamp(11px,2.4vw,13px); --sm:clamp(13px,3vw,15px); --md:clamp(15px,3.5vw,18px);
+  --lg:clamp(19px,5vw,26px); --xl:clamp(24px,6.5vw,34px); --xxl:clamp(32px,8.5vw,50px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scr.on{display:flex;}
+
+/* ══ HOME ══ */
+#s-home{align-items:center;justify-content:flex-start;padding:clamp(20px,5vw,36px) 16px 50px;}
+.home-title{font-family:var(--fh);font-size:var(--xxl);color:var(--white);text-align:center;margin-bottom:4px;text-shadow:0 0 40px rgba(199,125,255,.5);}
+.home-sub{font-size:var(--sm);color:var(--muted);text-align:center;margin-bottom:10px;}
+.formula-badge{font-family:var(--fh);font-size:var(--md);color:var(--c2);text-align:center;margin-bottom:28px;background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.2);border-radius:12px;padding:10px 24px;display:inline-block;letter-spacing:.04em;}
+.level-cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:500px;}
+.lcard{border-radius:18px;padding:18px 20px;cursor:pointer;transition:transform .18s,box-shadow .18s;position:relative;overflow:hidden;}
+.lcard:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(0,0,0,.35);}
+.lcard.locked{opacity:.4;cursor:default;}
+.lcard .li{display:flex;align-items:center;gap:14px;}
+.lcard .licon{font-size:clamp(30px,7.5vw,42px);flex-shrink:0;line-height:1;}
+.lcard .linfo{flex:1;}
+.lcard .ltitle{font-family:var(--fh);font-size:var(--md);color:#fff;margin-bottom:2px;}
+.lcard .ldesc{font-size:var(--xs);color:rgba(255,255,255,.7);line-height:1.45;}
+.lcard .lbadge{flex-shrink:0;font-family:var(--fh);font-size:var(--sm);background:rgba(0,0,0,.22);padding:6px 12px;border-radius:20px;color:#fff;}
+.lcard .pbar{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(0,0,0,.2);}
+.lcard .pfill{height:100%;border-radius:0 0 18px 18px;background:rgba(255,255,255,.5);transition:width .4s;}
+.lcard .llock{position:absolute;top:14px;right:16px;font-size:22px;}
+.lc1{background:linear-gradient(135deg,#ff6b9d,#ff8e53);}
+.lc2{background:linear-gradient(135deg,#4d96ff,#7b5ea7);}
+.lc3{background:linear-gradient(135deg,#ffd93d,#ff9f43);}
+.lc4{background:linear-gradient(135deg,#c77dff,#4d96ff);}
+.intro-btn{font-family:var(--fh);font-size:var(--sm);background:rgba(199,125,255,.15);color:var(--c4);border:1px solid rgba(199,125,255,.3);border-radius:12px;padding:12px 28px;cursor:pointer;margin-bottom:18px;transition:background .15s;}
+.intro-btn:hover{background:rgba(199,125,255,.28);}
+
+/* ══ INTRO ══ */
+#s-intro{background:var(--bg);align-items:stretch;}
+.intro-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(0,0,0,.35);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));}
+.intro-skip{font-family:var(--fh);font-size:var(--xs);color:var(--muted);background:none;border:none;cursor:pointer;padding:6px 10px;}
+.intro-skip:hover{color:var(--white);}
+.intro-pips{display:flex;gap:7px;align-items:center;}
+.pip{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s;}
+.pip.on{background:var(--c2);transform:scale(1.3);}
+.intro-slides{flex:1;overflow:hidden;position:relative;}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:18px 16px 28px;}
+.slide.on{display:flex;}
+.slide-icon{font-size:clamp(44px,11vw,70px);margin-bottom:10px;line-height:1;filter:drop-shadow(0 0 18px rgba(199,125,255,.5));}
+.slide-h{font-family:var(--fh);font-size:var(--xl);color:var(--white);text-align:center;margin-bottom:8px;line-height:1.2;}
+.slide-h .h1{color:var(--sin);} .slide-h .h2{color:var(--cos);} .slide-h .h3{color:var(--tan);} .slide-h .h4{color:var(--c4);}
+.slide-body{font-size:var(--sm);color:rgba(240,244,255,.8);text-align:center;line-height:1.7;max-width:440px;margin-bottom:12px;}
+.slide-body b{color:var(--white);}
+.intro-cvs-wrap{width:100%;max-width:440px;border-radius:16px;overflow:hidden;margin-bottom:12px;}
+#intro-cvs{display:block;width:100%;}
+.formula-big{font-family:var(--fh);font-size:var(--lg);color:var(--c2);background:rgba(255,217,61,.1);border:1px solid rgba(255,217,61,.25);border-radius:14px;padding:12px 22px;text-align:center;margin-bottom:12px;letter-spacing:.03em;}
+.fact-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:13px 15px;width:100%;max-width:440px;margin-bottom:10px;text-align:left;}
+.fact-box .fb-t{font-family:var(--fh);font-size:var(--sm);margin-bottom:5px;}
+.fact-box .fb-b{font-size:var(--xs);color:rgba(240,244,255,.75);line-height:1.65;}
+.fact-box .fb-b b{color:var(--white);}
+.fact-box .fb-b code{font-family:var(--fh);font-size:var(--sm);color:var(--c2);}
+.soh-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;max-width:440px;margin-bottom:12px;}
+.soh-card{border-radius:12px;padding:12px 8px;text-align:center;}
+.soh-card.sin{background:rgba(255,107,157,.18);border:1px solid rgba(255,107,157,.4);}
+.soh-card.cos{background:rgba(77,150,255,.16);border:1px solid rgba(77,150,255,.35);}
+.soh-card.tan{background:rgba(255,217,61,.14);border:1px solid rgba(255,217,61,.3);}
+.soh-card .soh-title{font-family:var(--fh);font-size:var(--md);margin-bottom:4px;}
+.soh-card.sin .soh-title{color:var(--sin);}
+.soh-card.cos .soh-title{color:var(--cos);}
+.soh-card.tan .soh-title{color:var(--tan);}
+.soh-card .soh-frac{display:flex;flex-direction:column;align-items:center;font-family:var(--fh);font-size:var(--sm);color:var(--white);}
+.soh-card .soh-top{border-bottom:2px solid currentColor;padding:0 4px;margin-bottom:3px;}
+.soh-card .soh-bot{padding:0 4px;}
+.soh-card .soh-label{font-size:var(--xs);color:rgba(255,255,255,.5);margin-top:5px;line-height:1.3;}
+.step-list{width:100%;max-width:440px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.step-item{background:rgba(255,255,255,.05);border-left:4px solid var(--c2);border-radius:0 12px 12px 0;padding:11px 14px;text-align:left;}
+.step-item .sn{font-family:var(--fh);font-size:var(--xs);color:var(--c2);margin-bottom:3px;}
+.step-item .st{font-size:var(--sm);color:var(--white);line-height:1.5;}
+.step-item .st code{font-family:var(--fh);color:var(--c3);}
+.angle-table{width:100%;max-width:440px;border-collapse:collapse;margin-bottom:12px;}
+.angle-table th{font-family:var(--fh);font-size:var(--xs);color:var(--muted);padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.1);}
+.angle-table td{font-family:var(--fh);font-size:var(--sm);color:var(--white);padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.06);}
+.angle-table td:first-child{color:var(--c2);}
+.angle-table .sin-c{color:var(--sin);} .angle-table .cos-c{color:var(--cos);} .angle-table .tan-c{color:var(--tan);}
+.intro-nav{display:flex;gap:10px;align-items:center;justify-content:center;padding:12px 16px;flex-shrink:0;background:rgba(0,0,0,.3);}
+.intro-prev{font-family:var(--fh);font-size:var(--sm);background:rgba(255,255,255,.08);color:var(--white);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px 22px;cursor:pointer;}
+.intro-prev:hover{background:rgba(255,255,255,.16);}
+.intro-next{font-family:var(--fh);font-size:var(--md);background:var(--c2);color:#1a0d00;border:none;border-radius:12px;padding:13px 32px;cursor:pointer;flex:1;max-width:260px;}
+.intro-next:hover{background:#ffe660;}
+
+/* ══ GAME ══ */
+#s-game{background:var(--bg);}
+.gbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.35);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));}
+.bk{font-family:var(--fh);font-size:var(--xs);color:rgba(255,255,255,.55);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 12px;cursor:pointer;}
+.bk:hover{color:#fff;}
+.glvl{font-family:var(--fh);font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.gpill{font-family:var(--fh);font-size:var(--xs);background:rgba(255,255,255,.1);border-radius:20px;padding:6px 12px;color:var(--white);}
+.gstrip{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.gstrip-fill{height:100%;transition:width .4s;}
+.qwrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;padding:14px 14px 28px;gap:12px;}
+#tri-cvs{display:block;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);}
+.qcard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px 20px;width:100%;max-width:440px;text-align:center;}
+.qnum{font-family:var(--fh);font-size:var(--xs);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.qtext{font-family:var(--fh);font-size:var(--md);color:var(--white);line-height:1.55;}
+.qtip{font-size:var(--xs);color:var(--muted);margin-top:8px;line-height:1.55;}
+.qtip b{color:var(--white);}
+.ans-wrap{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.ans-label{font-family:var(--fh);font-size:var(--xs);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.ans-row{display:flex;align-items:center;gap:10px;}
+.ans-unit{font-family:var(--fh);font-size:var(--md);color:var(--muted);}
+.ainp{font-family:var(--fh);font-size:var(--xl);width:clamp(120px,30vw,160px);background:rgba(255,255,255,.1);border:2.5px solid rgba(255,255,255,.2);border-radius:12px;color:var(--white);text-align:center;padding:10px 6px;outline:none;-webkit-appearance:none;appearance:none;transition:border-color .2s;}
+.ainp:focus{border-color:var(--c2);background:rgba(255,217,61,.1);}
+.ainp.ok{border-color:var(--c3);background:rgba(107,203,119,.12);}
+.ainp.err{border-color:var(--c1);animation:shake .35s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+.chkbtn{font-family:var(--fh);font-size:var(--md);background:var(--c2);color:#1a0d00;border:none;border-radius:14px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;min-width:160px;transition:background .14s,transform .1s;}
+.chkbtn:hover{background:#ffe660;}
+.chkbtn:active{transform:scale(.97);}
+.chkbtn:disabled{opacity:.3;cursor:default;}
+.feedback{width:100%;max-width:440px;border-radius:14px;padding:12px 16px;font-size:var(--sm);line-height:1.6;display:none;}
+.feedback.ok{background:rgba(107,203,119,.18);border:1px solid rgba(107,203,119,.4);color:#b8ffcc;display:block;}
+.feedback.no{background:rgba(255,107,157,.15);border:1px solid rgba(255,107,157,.35);color:#ffd0e8;display:block;}
+.feedback .steps{margin-top:7px;font-size:var(--xs);line-height:1.75;opacity:.85;}
+.feedback .steps b{color:#fff;}
+.nxtbtn{font-family:var(--fh);font-size:var(--md);background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:13px 32px;cursor:pointer;display:none;letter-spacing:.04em;}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(255,255,255,.22);}
+
+/* ══ DONE ══ */
+#s-done{align-items:center;justify-content:center;text-align:center;padding:30px 16px 60px;}
+.done-icon{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bounce 1s ease infinite alternate;}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.done-h{font-family:var(--fh);font-size:var(--xxl);color:var(--white);margin-bottom:8px;}
+.done-score{font-family:var(--fh);font-size:clamp(50px,13vw,76px);color:var(--c2);line-height:1;margin-bottom:6px;}
+.done-stars{font-size:clamp(28px,7vw,42px);margin-bottom:16px;}
+.done-sub{font-size:var(--md);color:var(--muted);max-width:370px;line-height:1.6;margin-bottom:28px;}
+.dbtn{font-family:var(--fh);font-size:var(--md);border:none;border-radius:14px;padding:15px 40px;cursor:pointer;letter-spacing:.04em;display:block;margin:0 auto 10px;}
+.dbtn.nxt{background:var(--c3);color:#0d2010;}
+.dbtn.nxt:hover{background:#8fffa0;}
+.dbtn.retry{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);}
+.dbtn.retry:hover{background:rgba(255,255,255,.22);}
+.done-need{font-size:var(--xs);color:var(--muted);margin-top:14px;line-height:1.6;}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- HOME -->
+<div class="scr on" id="s-home">
+  <h1 class="home-title" style="margin-top:20px">📐 Trigonometri</h1>
+  <p class="home-sub">Træn sin, cos og tan trin for trin</p>
+  <div class="formula-badge">sin · cos · tan — SOH CAH TOA</div>
+  <button class="intro-btn" onclick="showIntro()">📖 Lær trigonometri først</button>
+  <div class="level-cards" id="level-cards"></div>
+</div>
+
+<!-- INTRO -->
+<div class="scr" id="s-intro">
+  <div class="intro-bar">
+    <button class="intro-skip" onclick="goHome()">← Hjem</button>
+    <div class="intro-pips" id="intro-pips"></div>
+    <button class="intro-skip" onclick="goHome()">Spring over</button>
+  </div>
+  <div class="intro-slides">
+
+    <!-- SLIDE 0: Hvad er trigonometri? -->
+    <div class="slide on" id="slide-0">
+      <div class="slide-icon">🔺</div>
+      <h2 class="slide-h">Hvad er <span class="h4">trigonometri</span>?</h2>
+      <p class="slide-body">
+        Trigonometri handler om <b>sammenhængen mellem vinkler og sidelængder</b> i retvinklede trekanter.<br><br>
+        Hvis du kender en vinkel og én side, kan du finde alle de andre sider. Det bruges i navigation, arkitektur, fysik og meget mere!
+      </p>
+      <div class="intro-cvs-wrap"><canvas id="intro-cvs" height="210"></canvas></div>
+      <div class="formula-big">sin α · cos α · tan α</div>
+      <p class="slide-body" style="font-size:var(--xs);opacity:.7">
+        Disse tre funktioner beskriver forholdet mellem en vinkel og trekantens sider.
+      </p>
+    </div>
+
+    <!-- SLIDE 1: Sidernes navne -->
+    <div class="slide" id="slide-1">
+      <div class="slide-icon">🏷️</div>
+      <h2 class="slide-h">Sidernes <span class="h2">navne</span></h2>
+      <p class="slide-body">I forhold til vinklen <b>α</b> har siderne tre navne:</p>
+      <div class="fact-box" style="border-color:rgba(168,255,62,.3)">
+        <div class="fb-t" style="color:var(--hyp)">🟢 Hypotenuse (mod)</div>
+        <div class="fb-b">Den <b>længste</b> side — altid modsat den rette vinkel (90°). Kaldes også "hyp". Den kendes fra Pythagoras.</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(255,107,157,.3)">
+        <div class="fb-t" style="color:var(--sin)">🔴 Modstående side (mod α)</div>
+        <div class="fb-b">Siden der ligger <b>direkte over for</b> vinklen α. Ændrer sig afhængigt af hvilken vinkel du kigger på!</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(77,150,255,.3)">
+        <div class="fb-t" style="color:var(--cos)">🔵 Hosliggende side (hos α)</div>
+        <div class="fb-b">Siden der <b>støder op til</b> vinklen α (og ikke er hypotenusen). Kaldes også den "nærliggende" katete.</div>
+      </div>
+      <p class="slide-body" style="font-size:var(--xs);opacity:.65;margin-top:4px">
+        ⚠️ Modstående og hosliggende bytter plads afhængigt af hvilken vinkel (α eller β) du bruger!
+      </p>
+    </div>
+
+    <!-- SLIDE 2: SOH CAH TOA -->
+    <div class="slide" id="slide-2">
+      <div class="slide-icon">🧮</div>
+      <h2 class="slide-h"><span class="h1">SOH</span> <span class="h2">CAH</span> <span class="h3">TOA</span></h2>
+      <p class="slide-body">Huskereglen <b>SOH CAH TOA</b> giver dig de tre trigonometriske formler:</p>
+      <div class="soh-grid">
+        <div class="soh-card sin">
+          <div class="soh-title">SOH</div>
+          <div style="font-family:var(--fh);font-size:var(--md);color:var(--sin);margin-bottom:6px">sin α</div>
+          <div class="soh-frac">
+            <div class="soh-top" style="color:var(--sin)">modstående</div>
+            <div class="soh-bot">hypotenuse</div>
+          </div>
+          <div class="soh-label">Modstående Over Hypotenuse</div>
+        </div>
+        <div class="soh-card cos">
+          <div class="soh-title">CAH</div>
+          <div style="font-family:var(--fh);font-size:var(--md);color:var(--cos);margin-bottom:6px">cos α</div>
+          <div class="soh-frac">
+            <div class="soh-top" style="color:var(--cos)">hosliggende</div>
+            <div class="soh-bot">hypotenuse</div>
+          </div>
+          <div class="soh-label">Hosliggende Adjacent Hypotenuse</div>
+        </div>
+        <div class="soh-card tan">
+          <div class="soh-title">TOA</div>
+          <div style="font-family:var(--fh);font-size:var(--md);color:var(--tan);margin-bottom:6px">tan α</div>
+          <div class="soh-frac">
+            <div class="soh-top" style="color:var(--tan)">modstående</div>
+            <div class="soh-bot">hosliggende</div>
+          </div>
+          <div class="soh-label">Tan Over Adjacent</div>
+        </div>
+      </div>
+      <div class="fact-box">
+        <div class="fb-t" style="color:var(--c2)">💡 Omformning</div>
+        <div class="fb-b">
+          <code>sin α = mod/hyp</code> → <code>mod = hyp · sin α</code> → <code>hyp = mod / sin α</code><br>
+          Samme logik for cos og tan — gang eller divider afhængigt af hvad du søger.
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Eksempel trin for trin -->
+    <div class="slide" id="slide-3">
+      <div class="slide-icon">📝</div>
+      <h2 class="slide-h">Eksempel <span class="h3">trin for trin</span></h2>
+      <p class="slide-body">Trekant med vinkel <b>α = 30°</b> og hypotenuse <b>c = 10</b>. Find den modstående side <b>a</b>.</p>
+      <div class="step-list">
+        <div class="step-item" style="border-color:var(--sin)">
+          <div class="sn" style="color:var(--sin)">Trin 1 — Identificér hvad du kender</div>
+          <div class="st">α = 30°, hypotenuse = 10, søger: modstående side</div>
+        </div>
+        <div class="step-item" style="border-color:var(--cos)">
+          <div class="sn" style="color:var(--cos)">Trin 2 — Vælg den rigtige formel</div>
+          <div class="st">Modstående og hyp → brug <code>sin α = mod/hyp</code></div>
+        </div>
+        <div class="step-item" style="border-color:var(--tan)">
+          <div class="sn" style="color:var(--tan)">Trin 3 — Isolér den ukendte</div>
+          <div class="st"><code>mod = hyp · sin α = 10 · sin 30° = 10 · 0,5 = 5</code></div>
+        </div>
+        <div class="step-item" style="border-color:var(--c3)">
+          <div class="sn" style="color:var(--c3)">Trin 4 — Find vinklen (omvendt)</div>
+          <div class="st">Kender du siderne? Brug: <code>α = sin⁻¹(mod/hyp)</code></div>
+        </div>
+      </div>
+      <div class="fact-box">
+        <div class="fb-t" style="color:var(--c2)">🔢 Find vinklen med invers funktion</div>
+        <div class="fb-b">
+          <code>α = sin⁻¹(mod/hyp)</code> — kaldes "arcsin" eller "sin⁻¹"<br>
+          <code>α = cos⁻¹(hos/hyp)</code> — kaldes "arccos" eller "cos⁻¹"<br>
+          <code>α = tan⁻¹(mod/hos)</code> — kaldes "arctan" eller "tan⁻¹"
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Vigtige vinkler + niveauer -->
+    <div class="slide" id="slide-4">
+      <div class="slide-icon">🎯</div>
+      <h2 class="slide-h">Vigtige <span class="h1">vinkler</span></h2>
+      <p class="slide-body">Disse vinkler bør du kende udenad:</p>
+      <table class="angle-table">
+        <thead><tr><th>Vinkel α</th><th class="sin-c">sin α</th><th class="cos-c">cos α</th><th class="tan-c">tan α</th></tr></thead>
+        <tbody>
+          <tr><td>0°</td><td class="sin-c">0</td><td class="cos-c">1</td><td class="tan-c">0</td></tr>
+          <tr><td>30°</td><td class="sin-c">0,5</td><td class="cos-c">√3/2 ≈ 0,866</td><td class="tan-c">1/√3 ≈ 0,577</td></tr>
+          <tr><td>45°</td><td class="sin-c">√2/2 ≈ 0,707</td><td class="cos-c">√2/2 ≈ 0,707</td><td class="tan-c">1</td></tr>
+          <tr><td>60°</td><td class="sin-c">√3/2 ≈ 0,866</td><td class="cos-c">0,5</td><td class="tan-c">√3 ≈ 1,732</td></tr>
+          <tr><td>90°</td><td class="sin-c">1</td><td class="cos-c">0</td><td class="tan-c">∞</td></tr>
+        </tbody>
+      </table>
+      <div class="fact-box" style="border-color:rgba(199,125,255,.3)">
+        <div class="fb-t" style="color:var(--c4)">💡 Husketrick: Fingertælling</div>
+        <div class="fb-b">Læg hånden fladt. Tæl fra tommelfingren: <b>0°, 30°, 45°, 60°, 90°</b>.<br>For sin: bøj den tilsvarende finger — <code>sin = √(finger)/2</code>.<br>F.eks. 60° = 4. finger: sin 60° = √4/2 = 2/2 = ... prøv selv!</div>
+      </div>
+      <div class="fact-box" style="border-color:rgba(107,203,119,.3);margin-top:2px">
+        <div class="fb-t" style="color:var(--c3)">🚀 Spillet har 4 levels — 90% kræves</div>
+        <div class="fb-b">
+          <b style="color:var(--sin)">Level 1:</b> Find sider med sinus<br>
+          <b style="color:var(--cos)">Level 2:</b> Find sider med cosinus<br>
+          <b style="color:var(--tan)">Level 3:</b> Find sider med tangens<br>
+          <b style="color:var(--c4)">Level 4:</b> Find vinkler + blandede opgaver
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro-nav">
+    <button class="intro-prev" id="intro-prev-btn" onclick="introPrev()" style="display:none">← Forrige</button>
+    <button class="intro-next" id="intro-next-btn" onclick="introNext()">Næste →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="scr" id="s-game">
+  <div class="gbar">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="glvl" id="glvl">–</div>
+    <div class="gpill" id="gpill">0/0</div>
+  </div>
+  <div class="gstrip"><div class="gstrip-fill" id="gstrip-fill" style="width:0%"></div></div>
+  <div class="qwrap">
+    <canvas id="tri-cvs"></canvas>
+    <div class="qcard">
+      <div class="qnum" id="qnum">–</div>
+      <div class="qtext" id="qtext">–</div>
+      <div class="qtip" id="qtip"></div>
+    </div>
+    <div class="ans-wrap">
+      <div class="ans-label">Dit svar</div>
+      <div class="ans-row">
+        <input class="ainp" id="ainp" type="number" step="0.01" placeholder="?" inputmode="decimal" autocomplete="off">
+        <span class="ans-unit" id="ans-unit"></span>
+      </div>
+    </div>
+    <button class="chkbtn" id="chkbtn" onclick="checkAns()">Tjek ✓</button>
+    <div class="feedback" id="feedback"></div>
+    <button class="nxtbtn" id="nxtbtn" onclick="nextQ()">Næste →</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="scr" id="s-done">
+  <div class="done-icon" id="done-icon">🎉</div>
+  <div class="done-h" id="done-h">Level klaret!</div>
+  <div class="done-score" id="done-score">–</div>
+  <div class="done-stars" id="done-stars"></div>
+  <div class="done-sub" id="done-sub"></div>
+  <button class="dbtn nxt" id="done-nxt" onclick="doneNext()">Næste level →</button>
+  <button class="dbtn retry" id="done-retry-wrong" onclick="retryWrong()" style="display:none;background:rgba(199,125,255,.18);color:var(--c4);border:1px solid rgba(199,125,255,.35)">Genøv fejlede →</button>
+  <button class="dbtn retry" onclick="retryLevel()">Start forfra ↺</button>
+  <div class="done-need" id="done-need"></div>
+</div>
+
+<script>
+/* ════════════════ STARS ════════════════ */
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  function r(){c.width=innerWidth;c.height=innerHeight;}r();addEventListener('resize',r);
+  const S=Array.from({length:200},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.5+.3,a:Math.random(),da:(Math.random()-.5)*.006}));
+  (function tick(){ctx.clearRect(0,0,c.width,c.height);S.forEach(s=>{s.a+=s.da;if(s.a<.05||s.a>1)s.da=-s.da;s.a=Math.max(.05,Math.min(1,s.a));ctx.beginPath();ctx.arc(s.x*c.width,s.y*c.height,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();});requestAnimationFrame(tick);})();
+})();
+
+/* ════════════════ MATH ════════════════ */
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[rnd(0,arr.length-1)];}
+function r2(x){return Math.round(x*100)/100;}
+function r1(x){return Math.round(x*10)/10;}
+const deg=x=>x*Math.PI/180;
+const asin=x=>Math.asin(x)*180/Math.PI;
+const acos=x=>Math.acos(x)*180/Math.PI;
+const atan=x=>Math.atan(x)*180/Math.PI;
+
+// Nice angle-hyp combos that give clean-ish answers
+const ANGLES=[30,35,40,45,50,53,55,60,65,70,75];
+const HYPS=[5,6,7,8,9,10,12,13,15,16,17,20];
+const LEGS=[3,4,5,6,7,8,9,10,12,14,15,16,20];
+
+/* ════════════════ QUESTION GENERATORS ════════════════ */
+
+// LEVEL 1: SIN — find side or angle using sin
+function genSin(i){
+  const diff=i<17?1:i<34?2:3;
+  let text,tip,steps,answer,unit='',drawUnk;
+  const alpha=pick(ANGLES);
+  const hyp=pick(HYPS);
+  const opp=r2(hyp*Math.sin(deg(alpha)));
+  const adj=r2(hyp*Math.cos(deg(alpha)));
+
+  if(diff===1){
+    // Find modstående given hyp + angle
+    text=`Vinkel <b>α = ${alpha}°</b>, hypotenuse <b>c = ${hyp}</b>.<br>Find den <b>modstående side</b>.`;
+    tip=`<b>SOH:</b> sin α = mod/hyp → mod = hyp · sin α`;
+    steps=`mod = hyp · sin α<br>= ${hyp} · sin ${alpha}°<br>= ${hyp} · ${r2(Math.sin(deg(alpha)))}<br>= <b>${opp}</b>`;
+    answer=opp;drawUnk='opp';
+    drawTri(alpha,hyp,opp,adj,'opp');
+  } else if(diff===2){
+    // Find hyp given opp + angle
+    text=`Vinkel <b>α = ${alpha}°</b>, modstående side <b>a = ${opp}</b>.<br>Find <b>hypotenusen</b>.`;
+    tip=`<b>SOH:</b> sin α = mod/hyp → hyp = mod / sin α`;
+    steps=`hyp = mod / sin α<br>= ${opp} / sin ${alpha}°<br>= ${opp} / ${r2(Math.sin(deg(alpha)))}<br>= <b>${hyp}</b>`;
+    answer=hyp;drawTri(alpha,hyp,opp,adj,'hyp');
+  } else {
+    // Find angle given opp + hyp
+    text=`Modstående side <b>a = ${opp}</b>, hypotenuse <b>c = ${hyp}</b>.<br>Find vinklen <b>α</b> (i grader).`;
+    tip=`<b>SOH:</b> sin α = mod/hyp → α = sin⁻¹(mod/hyp)`;
+    steps=`sin α = ${opp}/${hyp} = ${r2(opp/hyp)}<br>α = sin⁻¹(${r2(opp/hyp)}) = <b>${alpha}°</b>`;
+    answer=alpha;unit='°';drawTri(alpha,hyp,opp,adj,'angle');
+  }
+  return{answer,tol:diff===3?0.6:0.15,text,tip,steps,unit};
+}
+
+// LEVEL 2: COS — find side or angle using cos
+function genCos(i){
+  const diff=i<17?1:i<34?2:3;
+  let text,tip,steps,answer,unit='';
+  const alpha=pick(ANGLES);
+  const hyp=pick(HYPS);
+  const opp=r2(hyp*Math.sin(deg(alpha)));
+  const adj=r2(hyp*Math.cos(deg(alpha)));
+
+  if(diff===1){
+    text=`Vinkel <b>α = ${alpha}°</b>, hypotenuse <b>c = ${hyp}</b>.<br>Find den <b>hosliggende side</b>.`;
+    tip=`<b>CAH:</b> cos α = hos/hyp → hos = hyp · cos α`;
+    steps=`hos = hyp · cos α<br>= ${hyp} · cos ${alpha}°<br>= ${hyp} · ${r2(Math.cos(deg(alpha)))}<br>= <b>${adj}</b>`;
+    answer=adj;drawTri(alpha,hyp,opp,adj,'adj');
+  } else if(diff===2){
+    text=`Vinkel <b>α = ${alpha}°</b>, hosliggende side <b>b = ${adj}</b>.<br>Find <b>hypotenusen</b>.`;
+    tip=`<b>CAH:</b> cos α = hos/hyp → hyp = hos / cos α`;
+    steps=`hyp = hos / cos α<br>= ${adj} / cos ${alpha}°<br>= ${adj} / ${r2(Math.cos(deg(alpha)))}<br>= <b>${hyp}</b>`;
+    answer=hyp;drawTri(alpha,hyp,opp,adj,'hyp');
+  } else {
+    text=`Hosliggende side <b>b = ${adj}</b>, hypotenuse <b>c = ${hyp}</b>.<br>Find vinklen <b>α</b> (i grader).`;
+    tip=`<b>CAH:</b> cos α = hos/hyp → α = cos⁻¹(hos/hyp)`;
+    steps=`cos α = ${adj}/${hyp} = ${r2(adj/hyp)}<br>α = cos⁻¹(${r2(adj/hyp)}) = <b>${alpha}°</b>`;
+    answer=alpha;unit='°';drawTri(alpha,hyp,opp,adj,'angle');
+  }
+  return{answer,tol:diff===3?0.6:0.15,text,tip,steps,unit};
+}
+
+// LEVEL 3: TAN — find side or angle using tan
+function genTan(i){
+  const diff=i<17?1:i<34?2:3;
+  let text,tip,steps,answer,unit='';
+  const alpha=pick(ANGLES.filter(a=>a!==90));
+  const adj=pick(LEGS);
+  const opp=r2(adj*Math.tan(deg(alpha)));
+  const hyp=r2(Math.sqrt(opp*opp+adj*adj));
+
+  if(diff===1){
+    text=`Vinkel <b>α = ${alpha}°</b>, hosliggende side <b>b = ${adj}</b>.<br>Find den <b>modstående side</b>.`;
+    tip=`<b>TOA:</b> tan α = mod/hos → mod = hos · tan α`;
+    steps=`mod = hos · tan α<br>= ${adj} · tan ${alpha}°<br>= ${adj} · ${r2(Math.tan(deg(alpha)))}<br>= <b>${opp}</b>`;
+    answer=opp;drawTri(alpha,hyp,opp,adj,'opp');
+  } else if(diff===2){
+    text=`Vinkel <b>α = ${alpha}°</b>, modstående side <b>a = ${opp}</b>.<br>Find den <b>hosliggende side</b>.`;
+    tip=`<b>TOA:</b> tan α = mod/hos → hos = mod / tan α`;
+    steps=`hos = mod / tan α<br>= ${opp} / tan ${alpha}°<br>= ${opp} / ${r2(Math.tan(deg(alpha)))}<br>= <b>${adj}</b>`;
+    answer=adj;drawTri(alpha,hyp,opp,adj,'adj');
+  } else {
+    text=`Modstående side <b>a = ${opp}</b>, hosliggende side <b>b = ${adj}</b>.<br>Find vinklen <b>α</b> (i grader).`;
+    tip=`<b>TOA:</b> tan α = mod/hos → α = tan⁻¹(mod/hos)`;
+    steps=`tan α = ${opp}/${adj} = ${r2(opp/adj)}<br>α = tan⁻¹(${r2(opp/adj)}) = <b>${alpha}°</b>`;
+    answer=alpha;unit='°';drawTri(alpha,hyp,opp,adj,'angle');
+  }
+  return{answer,tol:diff===3?0.6:0.15,text,tip,steps,unit};
+}
+
+// LEVEL 4: Mixed — word problems + find angles + all three functions
+const CONTEXTS=[
+  (a,h,o,j)=>`En stige er <b>${h} m</b> lang og laver en vinkel på <b>${a}° med jorden</b>. Hvor <b>højt op ad væggen</b> når den? (modstående)`,
+  (a,h,o,j)=>`Et fly stiger med en vinkel på <b>${a}°</b> og flyver en skrå afstand på <b>${h} km</b>. Hvad er den <b>lodrette stigning</b>?`,
+  (a,h,o,j)=>`En bakke har en hældningsvinkel på <b>${a}°</b>. Du går <b>${h} m</b> langs bakken. Hvor <b>langt fremad (vandret)</b> bevæger du dig? (hosliggende)`,
+  (a,h,o,j)=>`En flagstang kaster en skygge på <b>${j} m</b>. Solen er i en vinkel på <b>${a}°</b> over horisonten. Hvad er flagstangens <b>højde</b>? (modstående)`,
+  (a,h,o,j)=>`Et tag er <b>${o} m</b> højt og <b>${j} m</b> halvbredt. Find <b>tagvinklen α</b> ved tagfoden.`,
+];
+
+function genMixed(i){
+  const diff=i<17?1:i<34?2:3;
+  let text,tip,steps,answer,unit='';
+  const alpha=pick(ANGLES);
+  const hyp=pick(HYPS);
+  const opp=r2(hyp*Math.sin(deg(alpha)));
+  const adj=r2(hyp*Math.cos(deg(alpha)));
+  const fn=pick(['sin','cos','tan']);
+
+  if(diff===1){
+    // Contextual — find a side
+    const ctx=pick(CONTEXTS);
+    text=ctx(alpha,hyp,opp,adj);
+    if(text.includes('modstående')||text.includes('stigning')||text.includes('højde')){
+      if(text.includes('flagstang')){
+        tip=`<b>TOA:</b> tan α = mod/hos → mod = hos · tan α`;
+        steps=`mod = ${adj} · tan ${alpha}° = ${adj} · ${r2(Math.tan(deg(alpha)))} = <b>${opp}</b>`;
+        answer=opp;drawTri(alpha,hyp,opp,adj,'opp');
+      } else {
+        tip=`<b>SOH:</b> sin α = mod/hyp → mod = hyp · sin α`;
+        steps=`mod = ${hyp} · sin ${alpha}° = ${hyp} · ${r2(Math.sin(deg(alpha)))} = <b>${opp}</b>`;
+        answer=opp;drawTri(alpha,hyp,opp,adj,'opp');
+      }
+    } else if(text.includes('tagvinkel')){
+      tip=`<b>TOA:</b> α = tan⁻¹(mod/hos) = tan⁻¹(${opp}/${adj})`;
+      steps=`tan α = ${opp}/${adj} = ${r2(opp/adj)}<br>α = tan⁻¹(${r2(opp/adj)}) ≈ <b>${alpha}°</b>`;
+      answer=alpha;unit='°';drawTri(alpha,hyp,opp,adj,'angle');
+    } else {
+      tip=`<b>CAH:</b> cos α = hos/hyp → hos = hyp · cos α`;
+      steps=`hos = ${hyp} · cos ${alpha}° = ${hyp} · ${r2(Math.cos(deg(alpha)))} = <b>${adj}</b>`;
+      answer=adj;drawTri(alpha,hyp,opp,adj,'adj');
+    }
+  } else if(diff===2){
+    // Choose function, find angle
+    const funcs=[
+      {f:'sin',ans:alpha,t:`Modstående <b>a=${opp}</b>, hypotenuse <b>c=${hyp}</b>. Find vinkel <b>α</b>.`,tip:`α = sin⁻¹(mod/hyp) = sin⁻¹(${opp}/${hyp})`,steps:`α = sin⁻¹(${r2(opp/hyp)}) = <b>${alpha}°</b>`,u:'°',draw:()=>drawTri(alpha,hyp,opp,adj,'angle')},
+      {f:'cos',ans:alpha,t:`Hosliggende <b>b=${adj}</b>, hypotenuse <b>c=${hyp}</b>. Find vinkel <b>α</b>.`,tip:`α = cos⁻¹(hos/hyp) = cos⁻¹(${adj}/${hyp})`,steps:`α = cos⁻¹(${r2(adj/hyp)}) = <b>${alpha}°</b>`,u:'°',draw:()=>drawTri(alpha,hyp,opp,adj,'angle')},
+      {f:'tan',ans:alpha,t:`Modstående <b>a=${opp}</b>, hosliggende <b>b=${adj}</b>. Find vinkel <b>α</b>.`,tip:`α = tan⁻¹(mod/hos) = tan⁻¹(${opp}/${adj})`,steps:`α = tan⁻¹(${r2(opp/adj)}) = <b>${alpha}°</b>`,u:'°',draw:()=>drawTri(alpha,hyp,opp,adj,'angle')},
+    ];
+    const chosen=pick(funcs);
+    text=chosen.t;tip=chosen.tip;steps=chosen.steps;answer=chosen.ans;unit=chosen.u;
+    chosen.draw();
+  } else {
+    // Hard: two-step or choose own function
+    const alpha2=pick(ANGLES);const hyp2=pick(HYPS);
+    const opp2=r2(hyp2*Math.sin(deg(alpha2)));const adj2=r2(hyp2*Math.cos(deg(alpha2)));
+    const hard=[
+      {t:`I en retvinklet trekant er α=<b>${alpha2}°</b> og den modstående side er <b>${opp2}</b>.<br>Brug den rigtige formel til at finde <b>hypotenusen</b>.`,tip:'SOH omvendt: hyp=mod/sin α',steps:`hyp = ${opp2}/sin ${alpha2}° = ${opp2}/${r2(Math.sin(deg(alpha2)))} = <b>${hyp2}</b>`,a:hyp2,u:'',d:()=>drawTri(alpha2,hyp2,opp2,adj2,'hyp')},
+      {t:`En trekant har α=<b>${alpha2}°</b> og hosliggende side <b>${adj2}</b>.<br>Find den <b>modstående side</b> (brug tan).`,tip:'TOA: mod=hos·tan α',steps:`mod = ${adj2} · tan ${alpha2}° = ${adj2}·${r2(Math.tan(deg(alpha2)))} = <b>${r2(adj2*Math.tan(deg(alpha2)))}</b>`,a:r2(adj2*Math.tan(deg(alpha2))),u:'',d:()=>drawTri(alpha2,hyp2,opp2,adj2,'opp')},
+      {t:`Find vinklen α i en trekant med hosliggende <b>${adj2}</b> og hypotenuse <b>${hyp2}</b>.`,tip:'CAH omvendt: α=cos⁻¹(hos/hyp)',steps:`α = cos⁻¹(${adj2}/${hyp2}) = cos⁻¹(${r2(adj2/hyp2)}) = <b>${alpha2}°</b>`,a:alpha2,u:'°',d:()=>drawTri(alpha2,hyp2,opp2,adj2,'angle')},
+    ];
+    const h=pick(hard);text=h.t;tip=h.tip;steps=h.steps;answer=h.a;unit=h.u;h.d();
+  }
+  return{answer,tol:unit==='°'?0.6:0.15,text,tip,steps,unit};
+}
+
+/* ════════════════ TRIANGLE DRAWING ════════════════ */
+function drawTri(alpha, hyp, opp, adj, unknown){
+  const cvs=document.getElementById('tri-cvs');
+  if(!cvs)return;
+  const W=Math.min(innerWidth-28,440);
+  const H=Math.round(W*0.52);
+  cvs.width=W;cvs.height=H;
+  const ctx=cvs.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const pad=46;
+  // Right angle at Px,Py. adj horizontal, opp vertical.
+  const Px=pad+8,Py=H-pad;
+  const maxAdj=W-pad*2-8,maxOpp=H-pad*2;
+  const scAdj=maxAdj/Math.max(adj,0.1);
+  const scOpp=maxOpp/Math.max(opp,0.1);
+  const sc=Math.min(scAdj,scOpp,14)*0.9;
+  const Qx=Px+adj*sc,Qy=Py;   // far bottom (adj end)
+  const Rx=Px,Ry=Py-opp*sc;   // top (opp end)
+
+  // fill
+  const gr=ctx.createLinearGradient(Px,Ry,Qx,Py);
+  gr.addColorStop(0,'rgba(199,125,255,0.08)');gr.addColorStop(1,'rgba(77,150,255,0.06)');
+  ctx.beginPath();ctx.moveTo(Px,Py);ctx.lineTo(Qx,Qy);ctx.lineTo(Rx,Ry);ctx.closePath();
+  ctx.fillStyle=gr;ctx.fill();
+
+  const sinA=r2(Math.sin(deg(alpha)));
+  const cosA=r2(Math.cos(deg(alpha)));
+  const tanA=r2(Math.tan(deg(alpha)));
+
+  function drawSide(x1,y1,x2,y2,col,label,isUnk){
+    ctx.save();
+    ctx.strokeStyle=isUnk?'rgba(255,217,61,0.9)':col;
+    ctx.lineWidth=isUnk?3.5:3;
+    if(isUnk)ctx.setLineDash([8,5]);
+    ctx.shadowColor=isUnk?'rgba(255,217,61,.5)':col;ctx.shadowBlur=isUnk?10:0;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.setLineDash([]);ctx.shadowBlur=0;
+    const mx=(x1+x2)/2,my=(y1+y2)/2;
+    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+    const nx=-dy/len*20,ny=dx/len*20;
+    ctx.font=`bold ${Math.max(12,W*0.035)}px Fredoka One,cursive`;
+    ctx.fillStyle=isUnk?'#ffd93d':col;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=4;
+    ctx.fillText(label,mx+nx,my+ny);ctx.shadowBlur=0;
+    ctx.restore();
+  }
+
+  // opp side (vertical, red=sin side)
+  const oppUnk=unknown==='opp';
+  const oppLbl=oppUnk?'? (mod)': String(opp);
+  drawSide(Px,Py,Rx,Ry,'rgba(255,107,157,0.9)',oppLbl,oppUnk);
+  // adj side (horizontal, blue=cos side)
+  const adjUnk=unknown==='adj';
+  const adjLbl=adjUnk?'? (hos)':String(adj);
+  drawSide(Px,Py,Qx,Qy,'rgba(77,150,255,0.9)',adjLbl,adjUnk);
+  // hypotenuse (green)
+  const hypUnk=unknown==='hyp';
+  const hypLbl=hypUnk?'? (hyp)':String(hyp);
+  drawSide(Qx,Qy,Rx,Ry,'rgba(168,255,62,0.9)',hypLbl,hypUnk);
+
+  // right angle marker
+  const sq=14;
+  ctx.strokeStyle='rgba(255,255,255,0.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(Px+sq,Py);ctx.lineTo(Px+sq,Py-sq);ctx.lineTo(Px,Py-sq);ctx.stroke();
+
+  // alpha arc + label
+  const arcR=Math.min(32,adj*sc*0.3);
+  ctx.strokeStyle='rgba(255,217,61,0.7)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(Qx,Qy,arcR,Math.PI,Math.PI+(deg(alpha)));ctx.stroke();
+  ctx.font=`bold ${Math.max(11,W*0.03)}px Fredoka One,cursive`;
+  ctx.fillStyle=unknown==='angle'?'#ffd93d':'rgba(255,217,61,0.75)';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=3;
+  ctx.fillText(unknown==='angle'?'α=?':`${alpha}°`,Qx-arcR-16,Qy-12);
+  ctx.shadowBlur=0;
+
+  // formula hint bottom-left
+  const fmFn=unknown==='opp'?`sin ${alpha}°=${sinA}`:unknown==='adj'?`cos ${alpha}°=${cosA}`:unknown==='hyp'?`sin/cos…`:`α=?`;
+  ctx.font=`${Math.max(9,W*0.023)}px Nunito,sans-serif`;
+  ctx.fillStyle='rgba(255,217,61,0.4)';ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillText('SOH CAH TOA',pad,H-8);
+}
+
+/* ════════════════ LEVELS ════════════════ */
+const LEVELS=[
+  {id:0,name:'Sinus (sin)',desc:'sin α = modstående/hypotenuse — SOH',cls:'lc1',accent:'#ff6b9d',gen:genSin,total:51},
+  {id:1,name:'Cosinus (cos)',desc:'cos α = hosliggende/hypotenuse — CAH',cls:'lc2',accent:'#4d96ff',gen:genCos,total:51},
+  {id:2,name:'Tangens (tan)',desc:'tan α = modstående/hosliggende — TOA',cls:'lc3',accent:'#ffd93d',gen:genTan,total:51},
+  {id:3,name:'Blandet + vinkler',desc:'Find vinkler, tekstopgaver, alle tre funktioner',cls:'lc4',accent:'#c77dff',gen:genMixed,total:51},
+];
+
+/* ════════════════ SAVE ════════════════ */
+const KEY='trig_v1';
+function loadS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{};}}
+function saveS(){localStorage.setItem(KEY,JSON.stringify(SD));}
+let SD=loadS();
+if(!SD.unlocked)SD.unlocked=[true,false,false,false];
+if(!SD.best)SD.best=[0,0,0,0];
+
+/* ════════════════ INTRO ════════════════ */
+const TOTAL_SLIDES=5;
+let introSlide=0;
+let introAnimId=null,introT=0;
+
+function showIntro(){introSlide=0;show('s-intro');buildIntroCanvas();renderIntro();}
+function renderIntro(){
+  for(let i=0;i<TOTAL_SLIDES;i++){const s=document.getElementById('slide-'+i);if(s)s.className='slide'+(i===introSlide?' on':'');}
+  document.getElementById('intro-pips').innerHTML=Array.from({length:TOTAL_SLIDES},(_,i)=>`<div class="pip${i===introSlide?' on':''}"></div>`).join('');
+  const pb=document.getElementById('intro-prev-btn');pb.style.display=introSlide>0?'':'none';
+  const nb=document.getElementById('intro-next-btn');
+  if(introSlide===TOTAL_SLIDES-1){nb.textContent='🎮 Start spillet!';nb.style.background='var(--c3)';nb.style.color='#0d2010';}
+  else{nb.textContent='Næste →';nb.style.background='var(--c2)';nb.style.color='#1a0d00';}
+}
+function introNext(){if(introSlide<TOTAL_SLIDES-1){introSlide++;renderIntro();}else goHome();}
+function introPrev(){if(introSlide>0){introSlide--;renderIntro();}}
+
+function buildIntroCanvas(){
+  const cvs=document.getElementById('intro-cvs');if(!cvs)return;
+  const W=Math.min(innerWidth-36,440);const H=Math.round(W*0.52);
+  cvs.width=W;cvs.height=H;
+  if(introAnimId)cancelAnimationFrame(introAnimId);
+  const alpha=35;
+  const hyp=1;
+  const opp=Math.sin(deg(alpha));
+  const adj=Math.cos(deg(alpha));
+
+  function frame(){
+    introAnimId=requestAnimationFrame(frame);
+    if(!document.getElementById('s-intro').classList.contains('on')){cancelAnimationFrame(introAnimId);introAnimId=null;return;}
+    introT+=0.022;
+    const ctx=cvs.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    const pad=46;
+    const sc=Math.min((W-pad*2)/(adj),(H-pad*2)/opp,180)*0.88;
+    const Px=pad+8,Py=H-pad;
+    const Qx=Px+adj*sc,Qy=Py;
+    const Rx=Px,Ry=Py-opp*sc;
+
+    // fill
+    const gr=ctx.createLinearGradient(Px,Ry,Qx,Py);
+    gr.addColorStop(0,'rgba(199,125,255,0.1)');gr.addColorStop(1,'rgba(77,150,255,0.07)');
+    ctx.beginPath();ctx.moveTo(Px,Py);ctx.lineTo(Qx,Qy);ctx.lineTo(Rx,Ry);ctx.closePath();
+    ctx.fillStyle=gr;ctx.fill();
+
+    // sides with pulsing
+    function pulse(base,t,offset=0){return base+Math.sin(introT*2+offset)*0.3;}
+
+    function animSide(x1,y1,x2,y2,col,lbl,ph){
+      const p=0.55+0.45*Math.abs(Math.sin(introT*1.8+ph));
+      ctx.save();ctx.strokeStyle=col;ctx.lineWidth=3;ctx.globalAlpha=0.55+0.45*p;
+      ctx.shadowColor=col;ctx.shadowBlur=8*p;
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+      ctx.shadowBlur=0;ctx.globalAlpha=1;
+      const mx=(x1+x2)/2,my=(y1+y2)/2;
+      const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+      const nx=-dy/len*22,ny=dx/len*22;
+      ctx.font=`bold ${Math.max(12,W*0.036)}px Fredoka One,cursive`;
+      ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=4;
+      ctx.fillText(lbl,mx+nx,my+ny);ctx.shadowBlur=0;ctx.restore();
+    }
+    animSide(Px,Py,Rx,Ry,'rgba(255,107,157,0.9)','mod',0);
+    animSide(Px,Py,Qx,Qy,'rgba(77,150,255,0.9)','hos',1.2);
+    animSide(Qx,Qy,Rx,Ry,'rgba(168,255,62,0.9)','hyp',2.4);
+
+    // right angle
+    const sq=14;
+    ctx.strokeStyle='rgba(255,255,255,0.35)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(Px+sq,Py);ctx.lineTo(Px+sq,Py-sq);ctx.lineTo(Px,Py-sq);ctx.stroke();
+
+    // alpha arc
+    const arcR=28;
+    ctx.strokeStyle='rgba(255,217,61,0.7)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(Qx,Qy,arcR,Math.PI,Math.PI+deg(alpha));ctx.stroke();
+    ctx.font=`bold ${Math.max(11,W*0.03)}px Fredoka One,cursive`;
+    ctx.fillStyle='rgba(255,217,61,0.8)';ctx.textAlign='center';
+    ctx.fillText('α',Qx-arcR-14,Qy-10);
+
+    // rotating sin/cos/tan label
+    const labels=['sin α = mod/hyp','cos α = hos/hyp','tan α = mod/hos'];
+    const li=Math.floor(introT/3)%3;
+    const fade=0.4+0.6*Math.abs(Math.sin(introT*Math.PI/3));
+    ctx.font=`bold ${Math.max(10,W*0.028)}px Fredoka One,cursive`;
+    ctx.fillStyle=`rgba(255,217,61,${fade})`;ctx.textAlign='center';
+    ctx.fillText(labels[li],W/2,H-10);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ════════════════ HOME ════════════════ */
+function buildHome(){
+  const c=document.getElementById('level-cards');c.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const unl=SD.unlocked[i],best=SD.best[i]||0,pct=best?Math.round(best*100)+'%':'–';
+    const d=document.createElement('div');
+    d.className=`lcard ${lv.cls}${unl?'':' locked'}`;
+    d.innerHTML=`${!unl?'<div class="llock">🔒</div>':''}<div class="li"><div class="licon">${['📐','📏','📊','🌀'][i]}</div><div class="linfo"><div class="ltitle">Level ${i+1}: ${lv.name}</div><div class="ldesc">${lv.desc}</div></div><div class="lbadge">${pct}</div></div><div class="pbar"><div class="pfill" style="width:${best*100}%"></div></div>`;
+    if(unl)d.onclick=()=>startLevel(i);
+    c.appendChild(d);
+  });
+}
+function goHome(){show('s-home');buildHome();}
+
+/* ════════════════ GAME ════════════════ */
+let curL=-1,qIdx=0,correct=0,Qs=[],curQ=null,answered=false;
+let wrongIdx=[],retryMode=false,retryQueue=[],retryPos=0,retryCorrect=0;
+const PASS=0.75;
+
+function startLevel(i){
+  curL=i;qIdx=0;correct=0;answered=false;
+  wrongIdx=[];retryMode=false;retryQueue=[];retryPos=0;retryCorrect=0;
+  const lv=LEVELS[i];
+  Qs=[];for(let j=0;j<lv.total;j++)Qs.push(lv.gen(j));
+  document.getElementById('glvl').textContent=`L${i+1}: ${lv.name}`;
+  document.getElementById('gstrip-fill').style.background=`linear-gradient(90deg,${lv.accent},${lv.accent}99)`;
+  show('s-game');
+  requestAnimationFrame(()=>renderQ());
+}
+
+function retryWrong(){
+  retryMode=true;
+  retryQueue=wrongIdx.map(i=>LEVELS[curL].gen(i));
+  retryPos=0;retryCorrect=0;answered=false;
+  document.getElementById('gstrip-fill').style.width='0%';
+  show('s-game');
+  requestAnimationFrame(()=>renderQ());
+}
+
+function renderQ(){
+  answered=false;
+  curQ=retryMode?retryQueue[retryPos]:Qs[qIdx];
+  const total=retryMode?retryQueue.length:Qs.length;
+  const displayIdx=retryMode?retryPos:qIdx;
+  const displayCorrect=retryMode?retryCorrect:correct;
+
+  if(retryMode){
+    document.getElementById('qnum').textContent=`Gentagelse ${retryPos+1} af ${total} · fejlede opgaver`;
+    document.getElementById('qtip').innerHTML=curQ.tip;
+  } else {
+    const tier=qIdx<17?'Begynder':qIdx<34?'Mellem':'Svær';
+    document.getElementById('qnum').textContent=`Spørgsmål ${qIdx+1} af ${total} · ${tier}`;
+    // Regenerate to trigger drawTri
+    Qs[qIdx]=LEVELS[curL].gen(qIdx);
+    curQ=Qs[qIdx];
+    document.getElementById('qtip').innerHTML=`<span style="opacity:.4;font-size:var(--xs)">[${tier}]</span> ${curQ.tip}`;
+  }
+  if(retryMode){
+    // Redraw triangle for retry question
+    LEVELS[curL].gen(wrongIdx[retryPos]);
+    curQ=retryQueue[retryPos];
+  }
+  document.getElementById('gstrip-fill').style.width=(displayIdx/total*100)+'%';
+  document.getElementById('gpill').textContent=`✓ ${displayCorrect}/${displayIdx}`;
+  document.getElementById('qtext').innerHTML=curQ.text;
+  document.getElementById('ans-unit').textContent=curQ.unit||'';
+  const inp=document.getElementById('ainp');
+  inp.value='';inp.className='ainp';inp.disabled=false;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('nxtbtn').className='nxtbtn';
+  document.getElementById('chkbtn').disabled=false;
+  document.getElementById('chkbtn').textContent='Tjek ✓';
+  setTimeout(()=>inp.focus(),80);
+}
+
+function checkAns(){
+  if(answered)return;
+  const inp=document.getElementById('ainp');
+  const val=parseFloat(inp.value.replace(',','.'));
+  if(isNaN(val)){inp.classList.add('err');setTimeout(()=>inp.classList.remove('err'),400);return;}
+  answered=true;
+  const ok=Math.abs(val-curQ.answer)<=curQ.tol;
+  if(ok){if(retryMode)retryCorrect++;else correct++;inp.className='ainp ok';}
+  else{if(!retryMode)wrongIdx.push(qIdx);inp.className='ainp err';}
+  const displayCorrect=retryMode?retryCorrect:correct;
+  const displayDone=retryMode?retryPos+1:qIdx+1;
+  document.getElementById('gpill').textContent=`✓ ${displayCorrect}/${displayDone}`;
+  const fb=document.getElementById('feedback');
+  fb.className='feedback '+(ok?'ok':'no');
+  fb.innerHTML=ok
+    ?`✅ <b>Rigtigt!</b><div class="steps">${curQ.steps}</div>`
+    :`❌ Facit ≈ <b>${curQ.answer}${curQ.unit?' '+curQ.unit:''}</b><div class="steps">${curQ.steps}</div>`;
+  document.getElementById('chkbtn').disabled=true;
+  const nb=document.getElementById('nxtbtn');nb.className='nxtbtn on';
+  const isLast=retryMode?(retryPos>=retryQueue.length-1):(qIdx>=Qs.length-1);
+  nb.textContent=isLast?'Se resultat →':'Næste →';
+}
+
+function nextQ(){
+  if(retryMode){
+    retryPos++;
+    if(retryPos>=retryQueue.length)showResult();
+    else renderQ();
+  } else {
+    qIdx++;
+    if(qIdx>=Qs.length)showResult();
+    else renderQ();
+  }
+}
+
+function showResult(){
+  const allCorrect=correct+retryCorrect;
+  const pct=allCorrect/Qs.length,pR=Math.round(pct*100);
+  const passed=pct>=PASS;
+  if(pct>SD.best[curL])SD.best[curL]=pct;
+  if(passed&&curL<3)SD.unlocked[curL+1]=true;
+  saveS();
+  const stars=pct>=.97?'⭐⭐⭐':pct>=.87?'⭐⭐':pct>=.75?'⭐':'';
+  document.getElementById('done-icon').textContent=passed?'🎉':'💪';
+  document.getElementById('done-h').textContent=passed?'Level klaret!':'Næsten!';
+  document.getElementById('done-score').textContent=`${allCorrect}/${Qs.length} = ${pR}%`;
+  document.getElementById('done-stars').textContent=stars;
+  const nb=document.getElementById('done-nxt');
+  if(passed&&curL<3){document.getElementById('done-sub').textContent=`Godt klaret! ${LEVELS[curL].name} med ${pR}% — level ${curL+2} er låst op!`;nb.textContent='Næste level →';nb.style.display='';}
+  else if(passed&&curL===3){document.getElementById('done-sub').textContent=`Utroligt! Du har klaret ALLE levels i trigonometri! 🏆`;nb.textContent='Tilbage til menu';nb.style.display='';}
+  else{document.getElementById('done-sub').textContent=`Du fik ${pR}%. Du skal have 75% for at låse næste level op.${!retryMode&&wrongIdx.length>0?' Du kan genøve de '+wrongIdx.length+' fejlede opgaver.':''}`;nb.style.display='none';}
+  document.getElementById('done-need').textContent=passed?`Top resultat: ${pR}%`:`Du mangler ${Math.ceil(PASS*Qs.length)-allCorrect} korrekte svar.`;
+  const rwBtn=document.getElementById('done-retry-wrong');
+  if(rwBtn){
+    if(!passed&&wrongIdx.length>0&&!retryMode){rwBtn.style.display='';rwBtn.textContent=`Genøv de ${wrongIdx.length} fejlede →`;}
+    else rwBtn.style.display='none';
+  }
+  show('s-done');
+}
+function lv(i){return LEVELS[i];}
+function doneNext(){if(curL<3)startLevel(curL+1);else goHome();}
+function retryLevel(){startLevel(curL);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+addEventListener('resize',()=>{if(document.getElementById('s-game').classList.contains('on')&&curL>=0&&curQ){LEVELS[curL].gen(qIdx);}});
+
+buildHome();
+</script>
+</body>
+</html>
