@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Brøker – Regning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#1a1040;
+  --c1:#ff6b9d; --c2:#ffd93d; --c3:#6bcb77; --c4:#4d96ff;
+  --white:#f0f4ff; --muted:rgba(240,244,255,0.5);
+  --fh:'Fredoka One',cursive; --fb:'Nunito',sans-serif;
+  --xs:clamp(11px,2.4vw,13px); --sm:clamp(13px,3vw,15px); --md:clamp(15px,3.5vw,18px);
+  --lg:clamp(19px,5vw,26px); --xl:clamp(26px,7vw,38px); --xxl:clamp(34px,9vw,52px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;}
+
+/* ── BG STARS ── */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* ── SCREENS ── */
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scr.on{display:flex;}
+
+/* ══════════════ HOME ══════════════ */
+#s-home{align-items:center;justify-content:flex-start;padding:clamp(20px,5vw,40px) 16px 40px;}
+.home-title{font-family:var(--fh);font-size:var(--xxl);color:var(--white);text-align:center;margin-bottom:4px;text-shadow:0 0 40px rgba(255,107,157,.5);}
+.home-sub{font-size:var(--sm);color:var(--muted);text-align:center;margin-bottom:36px;}
+.level-cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:500px;}
+.lcard{border-radius:18px;padding:20px 22px;cursor:pointer;transition:transform .18s,box-shadow .18s;position:relative;overflow:hidden;}
+.lcard:hover{transform:translateY(-3px);}
+.lcard.locked{opacity:.45;cursor:default;}
+.lcard .lc-inner{display:flex;align-items:center;gap:16px;}
+.lcard .lc-icon{font-size:clamp(32px,8vw,44px);flex-shrink:0;line-height:1;}
+.lcard .lc-info{flex:1;}
+.lcard .lc-title{font-family:var(--fh);font-size:var(--lg);color:#fff;margin-bottom:2px;}
+.lcard .lc-desc{font-size:var(--xs);opacity:.75;color:#fff;line-height:1.5;}
+.lcard .lc-badge{flex-shrink:0;font-family:var(--fh);font-size:var(--sm);background:rgba(0,0,0,.25);padding:6px 12px;border-radius:20px;color:#fff;}
+.lcard .prog-bar{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(0,0,0,.2);}
+.lcard .prog-fill{height:100%;border-radius:0 0 18px 18px;transition:width .4s;}
+.lc1{background:linear-gradient(135deg,#ff6b9d,#ff8e53);}
+.lc2{background:linear-gradient(135deg,#ffd93d,#ff8e53);}
+.lc3{background:linear-gradient(135deg,#6bcb77,#00b4d8);}
+.lc4{background:linear-gradient(135deg,#4d96ff,#7b5ea7);}
+.lcard .lock-icon{position:absolute;top:14px;right:16px;font-size:22px;}
+
+/* ══════════════ GAME ══════════════ */
+#s-game{align-items:stretch;background:var(--bg);}
+
+/* top bar */
+.gbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.3);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));}
+.gbar .bk{font-family:var(--fh);font-size:var(--xs);color:rgba(255,255,255,.55);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 12px;cursor:pointer;}
+.gbar .bk:hover{color:#fff;}
+.gbar .lvl-name{font-family:var(--fh);font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.gbar .score-pill{font-family:var(--fh);font-size:var(--xs);background:rgba(255,255,255,.1);border-radius:20px;padding:6px 12px;color:var(--white);}
+
+/* progress strip */
+.gstrip{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.gstrip-fill{height:100%;background:linear-gradient(90deg,var(--c3),var(--c2));transition:width .4s;}
+
+/* question area */
+.qarea{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 14px;gap:14px;}
+
+/* question number */
+.qnum{font-family:var(--fh);font-size:var(--xs);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+
+/* fraction display */
+.qdisplay{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px 28px;text-align:center;max-width:420px;width:100%;}
+.qtext{font-family:var(--fh);font-size:var(--xl);color:var(--white);line-height:1.3;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.15;}
+.frac .fn{border-bottom:3px solid currentColor;padding:0 4px;font-size:inherit;}
+.frac .fd{padding:0 4px;font-size:inherit;}
+.op{font-size:var(--xl);color:var(--c2);}
+.eq-sign{font-size:var(--xl);color:var(--muted);}
+
+/* hint / tip */
+.qtip{font-size:var(--xs);color:var(--muted);text-align:center;line-height:1.55;max-width:360px;}
+.qtip b{color:var(--white);}
+
+/* answer area */
+.ans-area{width:100%;max-width:380px;}
+.ans-label{font-family:var(--fh);font-size:var(--xs);color:var(--muted);text-align:center;margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase;}
+.ans-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+.ans-frac{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.ans-line{width:70px;height:3px;background:var(--white);border-radius:2px;}
+.ans-inp{font-family:var(--fh);font-size:var(--lg);width:70px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);border-radius:10px;color:var(--white);text-align:center;padding:8px 4px;outline:none;-webkit-appearance:none;appearance:none;}
+.ans-inp:focus{border-color:var(--c2);background:rgba(255,221,61,.1);}
+.ans-inp.ok{border-color:var(--c3);background:rgba(107,203,119,.12);}
+.ans-inp.no{border-color:var(--c1);animation:shake .35s ease;}
+.whole-inp{font-family:var(--fh);font-size:var(--lg);width:70px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);border-radius:10px;color:var(--white);text-align:center;padding:8px 4px;outline:none;-webkit-appearance:none;appearance:none;}
+.whole-inp:focus{border-color:var(--c2);}
+.plus-sign{font-family:var(--fh);font-size:var(--md);color:var(--muted);}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+
+/* check btn */
+.chk-btn{font-family:var(--fh);font-size:var(--md);background:var(--c2);color:#1a1040;border:none;border-radius:14px;padding:14px 36px;cursor:pointer;letter-spacing:.04em;transition:background .14s,transform .1s;min-width:160px;}
+.chk-btn:hover{background:#ffe660;}
+.chk-btn:active{transform:scale(.97);}
+.chk-btn:disabled{opacity:.35;cursor:default;}
+
+/* feedback */
+.feedback{width:100%;max-width:420px;border-radius:14px;padding:12px 16px;font-size:var(--sm);line-height:1.6;display:none;}
+.feedback.ok{background:rgba(107,203,119,.18);border:1px solid rgba(107,203,119,.4);color:#b8ffcc;display:block;}
+.feedback.no{background:rgba(255,107,157,.15);border:1px solid rgba(255,107,157,.35);color:#ffbcd6;display:block;}
+.feedback .step{margin-top:6px;font-size:var(--xs);opacity:.8;line-height:1.7;}
+.feedback .step b{color:var(--white);}
+
+/* next btn */
+.nxt-btn{font-family:var(--fh);font-size:var(--md);background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:13px 32px;cursor:pointer;display:none;letter-spacing:.04em;transition:background .14s;}
+.nxt-btn.on{display:inline-block;}
+.nxt-btn:hover{background:rgba(255,255,255,.22);}
+
+/* ══════════════ LEVEL COMPLETE ══════════════ */
+#s-done{align-items:center;justify-content:center;text-align:center;padding:30px 16px;}
+.done-icon{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bounce 1s ease infinite alternate;}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.done-h{font-family:var(--fh);font-size:var(--xxl);color:var(--white);margin-bottom:8px;}
+.done-sub{font-size:var(--md);color:var(--muted);max-width:360px;line-height:1.6;margin-bottom:28px;}
+.done-score{font-family:var(--fh);font-size:clamp(48px,12vw,72px);color:var(--c2);line-height:1;margin-bottom:4px;}
+.done-stars{font-size:clamp(28px,7vw,42px);margin-bottom:20px;}
+.done-btn{font-family:var(--fh);font-size:var(--md);background:var(--c3);color:#0d2010;border:none;border-radius:14px;padding:15px 42px;cursor:pointer;letter-spacing:.04em;transition:background .14s;}
+.done-btn:hover{background:#8fffa0;}
+.done-btn.retry{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);margin-top:10px;}
+.done-btn.retry:hover{background:rgba(255,255,255,.22);}
+.done-need{font-size:var(--xs);color:var(--muted);margin-top:16px;line-height:1.6;}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- ══ HOME ══ -->
+<div class="scr on" id="s-home">
+  <h1 class="home-title" style="margin-top:24px">🍕 Brøker!</h1>
+  <p class="home-sub">Vælg en regneart og mester brøkerne</p>
+  <div class="level-cards" id="level-cards"></div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="scr" id="s-game">
+  <div class="gbar">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="lvl-name" id="glvlname">–</div>
+    <div class="score-pill" id="gscore">0/0</div>
+  </div>
+  <div class="gstrip"><div class="gstrip-fill" id="gstrip" style="width:0%"></div></div>
+  <div class="qarea">
+    <div class="qnum" id="qnum">Spørgsmål 1 af 50+</div>
+    <div class="qdisplay">
+      <div class="qtext" id="qtext">–</div>
+    </div>
+    <div class="qtip" id="qtip"></div>
+    <div class="ans-area">
+      <div class="ans-label">Dit svar</div>
+      <div class="ans-row" id="ans-row"></div>
+    </div>
+    <button class="chk-btn" id="chkbtn" onclick="checkAnswer()">Tjek ✓</button>
+    <div class="feedback" id="feedback"></div>
+    <button class="nxt-btn" id="nxtbtn" onclick="nextQ()">Næste →</button>
+  </div>
+</div>
+
+<!-- ══ LEVEL DONE ══ -->
+<div class="scr" id="s-done">
+  <div class="done-icon" id="done-icon">🎉</div>
+  <div class="done-h" id="done-h">Level fuldført!</div>
+  <div class="done-score" id="done-score">90%</div>
+  <div class="done-stars" id="done-stars">⭐⭐⭐</div>
+  <div class="done-sub" id="done-sub">–</div>
+  <button class="done-btn" id="done-next" onclick="doneNext()">Næste level →</button>
+  <button class="done-btn retry" onclick="retryLevel()">Prøv igen</button>
+  <div class="done-need" id="done-need"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   STAR FIELD
+══════════════════════════════════════════════════ */
+(function(){
+  const c=document.getElementById('stars');
+  const ctx=c.getContext('2d');
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  const stars=Array.from({length:180},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.3,a:Math.random(),da:(Math.random()-.5)*.007}));
+  function tick(){
+    ctx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{s.a+=s.da;if(s.a<0.05||s.a>1)s.da=-s.da;s.a=Math.max(.05,Math.min(1,s.a));ctx.beginPath();ctx.arc(s.x*c.width,s.y*c.height,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();});
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+/* ══════════════════════════════════════════════════
+   MATH HELPERS
+══════════════════════════════════════════════════ */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;}
+function lcm(a,b){return Math.abs(a*b)/gcd(a,b);}
+function simplify(n,d){if(d===0)return{n:0,d:1};const g=gcd(Math.abs(n),Math.abs(d));const sign=d<0?-1:1;return{n:sign*n/g,d:sign*d/g};}
+function fracEq(n1,d1,n2,d2){const a=simplify(n1,d1),b=simplify(n2,d2);return a.n===b.n&&a.d===b.d;}
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[rnd(0,arr.length-1)];}
+
+/* ══════════════════════════════════════════════════
+   QUESTION GENERATORS
+   Each returns {display:HTML, num:n, den:d, tip, steps, ansType}
+   ansType: 'frac' | 'int'
+══════════════════════════════════════════════════ */
+
+// ── ADDITION ──
+function genAdd(diff){
+  // diff 1-3
+  let a,b,c,d,rn,rd,steps,display,tip;
+  if(diff===1){
+    // same denominator, small numbers
+    d=rnd(2,9);a=rnd(1,d-1);b=rnd(1,d-a);
+    rn=a+b;rd=d;
+    const s=simplify(rn,rd);
+    steps=`<b>${a}/${d} + ${b}/${d}</b> = (${a}+${b})/${d} = ${rn}/${d}${rn!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+    tip=`<b>Tip:</b> Ens nævner → læg tæller til: (${a}+${b})/${d}`;
+    display=fracHTML(a,d)+opHTML('+')+fracHTML(b,d)+eqHTML();
+    return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+  }
+  if(diff===2){
+    // one is multiple of other
+    const bases=[2,3,4,5,6];
+    d=pick(bases);const mult=rnd(2,4);c=d*mult;
+    a=rnd(1,d-1);b=rnd(1,c-1);
+    const l=lcm(d,c);
+    rn=a*(l/d)+b*(l/c);rd=l;
+    const s=simplify(rn,rd);
+    steps=`Fælles nævner: <b>${l}</b><br>${a}/${d} = ${a*(l/d)}/${l} og ${b}/${c} = ${b*(l/c)}/${l}<br>= (${a*(l/d)}+${b*(l/c)})/${l} = ${rn}/${l}${rn!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+    tip=`<b>Tip:</b> Find fælles nævner. lcm(${d},${c})=${l}`;
+    display=fracHTML(a,d)+opHTML('+')+fracHTML(b,c)+eqHTML();
+    return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+  }
+  // diff 3: different denominators
+  const ds=[[2,3],[3,4],[4,5],[2,5],[3,7],[5,6],[4,7]];
+  [d,c]=pick(ds);a=rnd(1,d-1);b=rnd(1,c-1);
+  const l=lcm(d,c);
+  rn=a*(l/d)+b*(l/c);rd=l;
+  const s=simplify(rn,rd);
+  steps=`lcm(${d},${c})=${l}<br>${a}/${d} = ${a*(l/d)}/${l}, ${b}/${c} = ${b*(l/c)}/${l}<br>Sum: ${rn}/${l}${rn!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+  tip=`<b>Tip:</b> lcm(${d},${c})=${l} → omskriv begge brøker`;
+  display=fracHTML(a,d)+opHTML('+')+fracHTML(b,c)+eqHTML();
+  return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+}
+
+// ── SUBTRACTION ──
+function genSub(diff){
+  let a,b,c,d,rn,rd,steps,display,tip;
+  if(diff===1){
+    d=rnd(2,9);a=rnd(2,d-1);b=rnd(1,a-1);
+    rn=a-b;rd=d;
+    const s=simplify(rn,rd);
+    steps=`(${a}-${b})/${d} = ${rn}/${d}${rn!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+    tip=`<b>Tip:</b> Ens nævner → træk tæller fra`;
+    display=fracHTML(a,d)+opHTML('−')+fracHTML(b,d)+eqHTML();
+    return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+  }
+  if(diff===2){
+    const pairs=[[2,4],[3,6],[2,6],[4,8],[3,9]];
+    [d,c]=pick(pairs);a=rnd(1,d-1);b=rnd(1,c-1);
+    const l=lcm(d,c);
+    rn=a*(l/d)-b*(l/c);rd=l;
+    // ensure positive result
+    if(rn<=0){a=d-1;b=1;rn=a*(l/d)-b*(l/c);}
+    const s=simplify(Math.abs(rn),rd);
+    steps=`lcm(${d},${c})=${l}<br>${a}/${d}=${a*(l/d)}/${l}, ${b}/${c}=${b*(l/c)}/${l}<br>= (${a*(l/d)}-${b*(l/c)})/${l}${Math.abs(rn)!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+    tip=`<b>Tip:</b> Omskriv til fælles nævner ${l}, så træk fra`;
+    display=fracHTML(a,d)+opHTML('−')+fracHTML(b,c)+eqHTML();
+    return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+  }
+  const ds=[[3,4],[4,5],[3,5],[5,6],[4,7]];
+  [d,c]=pick(ds);a=rnd(1,d);b=rnd(1,c-1);
+  const l=lcm(d,c);
+  rn=a*(l/d)-b*(l/c);
+  if(rn<=0){a=d;b=1;rn=a*(l/d)-b*(l/c);}
+  rd=l;
+  const s=simplify(Math.abs(rn),rd);
+  steps=`lcm(${d},${c})=${l}<br>= ${a*(l/d)}/${l} − ${b*(l/c)}/${l} = ${Math.abs(rn)}/${l}${Math.abs(rn)!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+  tip=`<b>Tip:</b> Fælles nævner: lcm(${d},${c})=${l}`;
+  display=fracHTML(a,d)+opHTML('−')+fracHTML(b,c)+eqHTML();
+  return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+}
+
+// ── MULTIPLICATION ──
+function genMul(diff){
+  let a,b,c,d,rn,rd,steps,display,tip;
+  if(diff===1){
+    // fraction × integer
+    d=pick([2,3,4,5,6,8]);a=rnd(1,d-1);b=rnd(2,8);
+    rn=a*b;rd=d;
+    const s=simplify(rn,rd);
+    steps=`${a}/${d} × ${b} = (${a}×${b})/${d} = ${rn}/${d}${rn!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+    tip=`<b>Tip:</b> Gange brøk med heltal: gang tæller`;
+    display=fracHTML(a,d)+opHTML('×')+numHTML(b)+eqHTML();
+    return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+  }
+  if(diff===2){
+    // two fractions, small denominators
+    d=rnd(2,5);c=rnd(2,5);a=rnd(1,d-1);b=rnd(1,c-1);
+    rn=a*b;rd=d*c;
+    const s=simplify(rn,rd);
+    steps=`(${a}×${b})/(${d}×${c}) = ${rn}/${rd}${rn!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+    tip=`<b>Tip:</b> Gang tæller med tæller, nævner med nævner`;
+    display=fracHTML(a,d)+opHTML('×')+fracHTML(b,c)+eqHTML();
+    return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+  }
+  // diff 3: with simplification before or mixed numbers
+  d=rnd(3,8);c=rnd(3,8);a=rnd(1,d-1);b=rnd(1,c-1);
+  rn=a*b;rd=d*c;
+  const s=simplify(rn,rd);
+  const g=gcd(a,c);const g2=gcd(b,d); // cross-simplify hint
+  steps=`${a}/${d} × ${b}/${c}<br>Evt. krydsforenkling: ggd(${a},${c})=${g}, ggd(${b},${d})=${g2}<br>= ${rn}/${rd}${rn!==s.n||rd!==s.d?` = <b>${s.n}/${s.d}</b>`:''}`;
+  tip=`<b>Tip:</b> Tæller×tæller / Nævner×nævner, så forsimpl`;
+  display=fracHTML(a,d)+opHTML('×')+fracHTML(b,c)+eqHTML();
+  return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+}
+
+// ── DIVISION ──
+function genDiv(diff){
+  let a,b,c,d,rn,rd,steps,display,tip;
+  if(diff===1){
+    // fraction ÷ integer
+    d=pick([2,3,4,5,6]);a=rnd(1,d-1);b=rnd(2,6);
+    rn=a;rd=d*b;
+    const s=simplify(rn,rd);
+    steps=`${a}/${d} ÷ ${b} = ${a}/(${d}×${b}) = ${rn}/${rd}${rn!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+    tip=`<b>Tip:</b> Dividere med heltal = gang nævner med heltal`;
+    display=fracHTML(a,d)+opHTML('÷')+numHTML(b)+eqHTML();
+    return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+  }
+  if(diff===2){
+    // fraction ÷ fraction — flip and multiply
+    d=rnd(2,5);c=rnd(2,5);a=rnd(1,d-1);b=rnd(1,c-1);
+    // a/d ÷ b/c = a/d × c/b = ac/db
+    rn=a*c;rd=d*b;
+    const s=simplify(rn,rd);
+    steps=`${a}/${d} ÷ ${b}/${c} = ${a}/${d} × ${c}/${b}<br>= (${a}×${c})/(${d}×${b}) = ${rn}/${rd}${rn!==s.n||rd!==s.d?` = ${s.n}/${s.d}`:''}`;
+    tip=`<b>Tip:</b> Dividend ÷ divisor = Dividend × <u>omvendt divisor</u>`;
+    display=fracHTML(a,d)+opHTML('÷')+fracHTML(b,c)+eqHTML();
+    return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+  }
+  // diff 3: larger numbers
+  const ds=[[3,5],[4,7],[5,6],[3,8],[4,9]];
+  [d,c]=pick(ds);a=rnd(1,d-1);b=rnd(1,c-1);
+  rn=a*c;rd=d*b;
+  const s=simplify(rn,rd);
+  steps=`${a}/${d} ÷ ${b}/${c} = ${a}/${d} × ${c}/${b} = ${rn}/${rd}${rn!==s.n||rd!==s.d?` = <b>${s.n}/${s.d}</b>`:''}`;
+  tip=`<b>Tip:</b> Vend divisoren og gang: ${a}/${d} × ${c}/${b}`;
+  display=fracHTML(a,d)+opHTML('÷')+fracHTML(b,c)+eqHTML();
+  return{display,n:s.n,d:s.d,steps,tip,ansType:'frac'};
+}
+
+/* ── HTML helpers ── */
+function fracHTML(n,d){return`<span class="frac"><span class="fn">${n}</span><span class="fd">${d}</span></span>`;}
+function opHTML(o){return`<span class="op">${o}</span>`;}
+function numHTML(n){return`<span style="font-size:inherit">${n}</span>`;}
+function eqHTML(){return`<span class="eq-sign">=</span>`;}
+
+/* ══════════════════════════════════════════════════
+   LEVEL CONFIG — 50+ questions each, 3 difficulty tiers
+══════════════════════════════════════════════════ */
+const LEVELS=[
+  {
+    id:0,name:'➕ Addition',desc:'Lær at lægge brøker sammen med ens og forskellige nævnere',
+    color:'lc1',accent:'#ff6b9d',
+    // Difficulty distribution across 54 questions
+    // 1-18: diff1, 19-36: diff2, 37-54: diff3
+    gen:(i)=>genAdd(i<18?1:i<36?2:3),
+    total:54,
+  },
+  {
+    id:1,name:'➖ Subtraktion',desc:'Træk brøker fra hinanden — pas på nævnerne!',
+    color:'lc2',accent:'#ffd93d',
+    gen:(i)=>genSub(i<18?1:i<36?2:3),
+    total:54,
+  },
+  {
+    id:2,name:'✖️ Multiplikation',desc:'Gang brøker — tæller×tæller og nævner×nævner',
+    color:'lc3',accent:'#6bcb77',
+    gen:(i)=>genMul(i<18?1:i<36?2:3),
+    total:54,
+  },
+  {
+    id:3,name:'➗ Division',desc:'Divider brøker — vend og gang!',
+    color:'lc4',accent:'#4d96ff',
+    gen:(i)=>genDiv(i<18?1:i<36?2:3),
+    total:54,
+  },
+];
+
+/* ══════════════════════════════════════════════════
+   PERSISTENT STATE
+══════════════════════════════════════════════════ */
+const SAVE_KEY='broker_v3';
+function loadSave(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')}catch{return{};}}
+function save(){localStorage.setItem(SAVE_KEY,JSON.stringify(S_DATA));}
+let S_DATA=loadSave();
+if(!S_DATA.unlocked)S_DATA.unlocked=[true,false,false,false];
+if(!S_DATA.best)S_DATA.best=[0,0,0,0];
+
+/* ══════════════════════════════════════════════════
+   GAME STATE
+══════════════════════════════════════════════════ */
+let curLevel=-1,qIdx=0,correct=0,questions=[],curQ=null,answered=false;
+const PASS_PCT=0.9;
+
+/* ══════════════════════════════════════════════════
+   HOME SCREEN
+══════════════════════════════════════════════════ */
+function buildHome(){
+  const container=document.getElementById('level-cards');
+  container.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const unlocked=S_DATA.unlocked[i];
+    const best=S_DATA.best[i]||0;
+    const pct=best?Math.round(best*100)+'%':'–';
+    const div=document.createElement('div');
+    div.className=`lcard ${lv.color}${unlocked?'':' locked'}`;
+    div.innerHTML=`
+      ${!unlocked?`<div class="lock-icon">🔒</div>`:''}
+      <div class="lc-inner">
+        <div class="lc-icon">${['➕','➖','✖️','➗'][i]}</div>
+        <div class="lc-info">
+          <div class="lc-title">${lv.name.replace(/^[^\s]+\s/,'')}</div>
+          <div class="lc-desc">${lv.desc}</div>
+        </div>
+        <div class="lc-badge">${pct}</div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${best*100}%;background:rgba(255,255,255,0.5)"></div></div>`;
+    if(unlocked)div.onclick=()=>startLevel(i);
+    container.appendChild(div);
+  });
+}
+
+function goHome(){show('s-home');buildHome();}
+
+/* ══════════════════════════════════════════════════
+   START LEVEL
+══════════════════════════════════════════════════ */
+function startLevel(lvIdx){
+  curLevel=lvIdx;qIdx=0;correct=0;answered=false;
+  const lv=LEVELS[lvIdx];
+  // Pre-generate all questions
+  questions=[];
+  for(let i=0;i<lv.total;i++)questions.push(lv.gen(i));
+
+  document.getElementById('glvlname').textContent=lv.name;
+  document.getElementById('gstrip').style.background=`linear-gradient(90deg,${lv.accent},${lv.accent}aa)`;
+  show('s-game');
+  renderQ();
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER QUESTION
+══════════════════════════════════════════════════ */
+function renderQ(){
+  answered=false;
+  curQ=questions[qIdx];
+  const lv=LEVELS[curLevel];
+  const total=lv.total;
+
+  document.getElementById('qnum').textContent=`Spørgsmål ${qIdx+1} af ${total} · Level ${curLevel+1}`;
+  document.getElementById('gstrip').style.width=(qIdx/total*100)+'%';
+  document.getElementById('gscore').textContent=`✓ ${correct}/${qIdx}`;
+  document.getElementById('qtext').innerHTML=curQ.display;
+  document.getElementById('qtip').innerHTML=curQ.tip;
+
+  // difficulty label
+  const tier=qIdx<18?'Begynder':qIdx<36?'Mellem':'Svær';
+  document.getElementById('qtip').innerHTML=`<span style="opacity:.45;font-size:var(--xs)">[${tier}]</span> ${curQ.tip}`;
+
+  // Build input
+  buildInput();
+
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('nxtbtn').className='nxt-btn';
+  document.getElementById('chkbtn').disabled=false;
+  document.getElementById('chkbtn').textContent='Tjek ✓';
+
+  // Focus first input
+  setTimeout(()=>{
+    const inp=document.querySelector('#ans-row input');
+    if(inp)inp.focus();
+  },80);
+}
+
+function buildInput(){
+  const row=document.getElementById('ans-row');
+  row.innerHTML='';
+
+  // Always fraction input (n/d)
+  const wrap=document.createElement('div');
+  wrap.className='ans-frac';
+  const ni=document.createElement('input');
+  ni.type='number';ni.id='inp-n';ni.className='ans-inp';ni.placeholder='?';ni.autocomplete='off';ni.inputMode='numeric';
+  ni.onkeydown=e=>{if(e.key==='Enter')checkAnswer();};
+  const line=document.createElement('div');line.className='ans-line';
+  const di=document.createElement('input');
+  di.type='number';di.id='inp-d';di.className='ans-inp';di.placeholder='?';di.autocomplete='off';di.inputMode='numeric';
+  di.onkeydown=e=>{if(e.key==='Enter')checkAnswer();};
+  wrap.appendChild(ni);wrap.appendChild(line);wrap.appendChild(di);
+  row.appendChild(wrap);
+}
+
+/* ══════════════════════════════════════════════════
+   CHECK ANSWER
+══════════════════════════════════════════════════ */
+function checkAnswer(){
+  if(answered)return;
+  const ni=document.getElementById('inp-n');
+  const di=document.getElementById('inp-d');
+  if(!ni||!di)return;
+  const nv=parseInt(ni.value);
+  const dv=parseInt(di.value);
+  if(isNaN(nv)||isNaN(dv)||dv===0){
+    ni.classList.add('no');setTimeout(()=>ni.classList.remove('no'),400);
+    return;
+  }
+
+  answered=true;
+  const q=curQ;
+  const isOk=fracEq(nv,dv,q.n,q.d);
+  const fb=document.getElementById('feedback');
+  const sn=simplify(q.n,q.d);
+
+  if(isOk){
+    correct++;
+    ni.classList.add('ok');di.classList.add('ok');
+    fb.className='feedback ok';
+    fb.innerHTML=`✅ <b>Rigtigt!</b><div class="step">${q.steps}</div>`;
+  } else {
+    ni.classList.add('no');di.classList.add('no');
+    fb.className='feedback no';
+    fb.innerHTML=`❌ Ikke helt. Facit: <b>${sn.n}/${sn.d}</b><div class="step">${q.steps}</div>`;
+  }
+
+  document.getElementById('gscore').textContent=`✓ ${correct}/${qIdx+1}`;
+  document.getElementById('chkbtn').disabled=true;
+  const nxtbtn=document.getElementById('nxtbtn');
+  nxtbtn.className='nxt-btn on';
+  nxtbtn.textContent=qIdx<questions.length-1?'Næste →':'Se resultat →';
+}
+
+/* ══════════════════════════════════════════════════
+   NEXT QUESTION
+══════════════════════════════════════════════════ */
+function nextQ(){
+  qIdx++;
+  if(qIdx>=questions.length){
+    showResult();
+  } else {
+    // Clear inputs
+    document.querySelectorAll('.ans-inp,.whole-inp').forEach(i=>{i.value='';i.className=i.className.replace(/\b(ok|no)\b/g,'').trim();});
+    renderQ();
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   SHOW RESULT
+══════════════════════════════════════════════════ */
+function showResult(){
+  const lv=LEVELS[curLevel];
+  const total=questions.length;
+  const pct=correct/total;
+  const passed=pct>=PASS_PCT;
+
+  // Update save
+  if(pct>S_DATA.best[curLevel])S_DATA.best[curLevel]=pct;
+  if(passed&&curLevel<3&&!S_DATA.unlocked[curLevel+1]){
+    S_DATA.unlocked[curLevel+1]=true;
+  }
+  save();
+
+  const pctRound=Math.round(pct*100);
+  const stars=pct>=0.95?'⭐⭐⭐':pct>=0.85?'⭐⭐':pct>=0.7?'⭐':'';
+
+  document.getElementById('done-icon').textContent=passed?'🎉':'💪';
+  document.getElementById('done-h').textContent=passed?'Level fuldført!':'Næsten der!';
+  document.getElementById('done-score').textContent=`${correct}/${total} = ${pctRound}%`;
+  document.getElementById('done-stars').textContent=stars;
+
+  const nxt=document.getElementById('done-next');
+  if(passed&&curLevel<3){
+    document.getElementById('done-sub').textContent=`Fantastisk! Du klarede ${lv.name} med ${pctRound}% — næste level er låst op!`;
+    nxt.textContent='Næste level →';
+    nxt.style.display='';
+  } else if(passed&&curLevel===3){
+    document.getElementById('done-sub').textContent=`Helt utroligt! Du har gennemført ALLE niveauer med ${pctRound}%! Du er en brøkmester! 🏆`;
+    nxt.textContent='Tilbage til menu';
+    nxt.style.display='';
+  } else {
+    document.getElementById('done-sub').textContent=`Du fik ${pctRound}%. Du skal have mindst 90% for at låse næste level op. Prøv igen!`;
+    nxt.style.display='none';
+  }
+  document.getElementById('done-need').textContent=passed?`Gem din fremgang — du har ${pctRound}% her!`:`Du mangler ${Math.ceil(PASS_PCT*total)-correct} korrekte svar for at bestå.`;
+
+  show('s-done');
+}
+
+function doneNext(){
+  if(curLevel<3)startLevel(curLevel+1);
+  else goHome();
+}
+function retryLevel(){startLevel(curLevel);}
+
+/* ══════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════ */
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+/* ══════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════ */
+buildHome();
+</script>
+</body>
+</html>
