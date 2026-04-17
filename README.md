@@ -52,6 +52,10 @@ Matematik og fysik
 
 - [solsystemet.html](https://coldcastlecc.github.io/Stuff/solsystemet.html) – Spil om solsystemet (Nat/Tek) 
 
-- [vandkredslobet.html](https://coldcastlecc.github.io/Stuff/vandkredslobet.html) – Spil om vandkredløbet (Nat/Tek) 
+- [vandkredslobet.html](https://coldcastlecc.github.io/Stuff/vandkredslobet.html) – Spil om vandkredløbet (Nat/Tek)
+
+- [potientielogkinetisk.html](https://coldcastlecc.github.io/Stuff/potientielogkinetisk.html) – Interaktiv quiz om potientiel og kinetisk energi (Fysik)
+
+   
 ---------------------
 ColdcastleCC – 2026
