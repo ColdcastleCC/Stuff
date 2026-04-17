@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Energiomsætning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Nunito+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e1c35; --ep:#ff7043; --ek:#29b6f6; --et:#66bb6a; --gold:#ffd54f;
+  --fh:'Nunito',sans-serif; --fb:'Nunito Sans',sans-serif; --fm:'Share Tech Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px); --sm:clamp(12px,2.8vw,14px); --md:clamp(13px,3.2vw,16px);
+  --lg:clamp(17px,4.5vw,24px); --xl:clamp(22px,6vw,36px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow:hidden;}
+.scr.on{display:flex;}
+
+/* TITLE */
+#s-title{align-items:center;justify-content:center;text-align:center;padding:24px;overflow-y:auto;background:var(--bg);}
+.t-icon{font-size:clamp(52px,13vw,82px);margin-bottom:10px;line-height:1;filter:drop-shadow(0 0 20px rgba(255,200,64,.4));}
+.t-h{font-family:var(--fh);font-weight:900;font-size:var(--xl);color:#fff;letter-spacing:.03em;line-height:1.15;margin-bottom:5px;}
+.t-h .ep{color:var(--ep);} .t-h .ek{color:var(--ek);}
+.t-sub{font-family:var(--fm);font-size:var(--xs);color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:36px;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:480px;margin-bottom:30px;}
+.sc{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);border-radius:14px;padding:18px 12px 14px;cursor:pointer;transition:all .2s;text-align:center;}
+.sc:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.sc .si{font-size:clamp(32px,8vw,50px);margin-bottom:8px;}
+.sc .st{font-family:var(--fh);font-weight:900;font-size:var(--sm);color:#fff;margin-bottom:3px;}
+.sc .sd{font-size:var(--xs);color:rgba(255,255,255,.4);line-height:1.4;}
+
+/* GAME */
+#s-game{background:var(--bg);}
+.topbar{display:flex;align-items:center;gap:8px;background:rgba(8,18,36,.98);border-bottom:1px solid rgba(255,255,255,.07);padding:8px 12px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));}
+.bk{font-family:var(--fh);font-weight:700;font-size:var(--xs);color:rgba(255,255,255,.55);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 11px;cursor:pointer;}
+.bk:hover{color:#fff;}
+.stitle{font-family:var(--fh);font-weight:900;font-size:var(--sm);color:var(--gold);flex:1;text-align:center;}
+.ibtn{font-family:var(--fh);font-weight:700;font-size:var(--xs);color:rgba(255,208,64,.75);background:rgba(255,208,64,.08);border:1px solid rgba(255,208,64,.2);border-radius:6px;padding:6px 11px;cursor:pointer;}
+#cvs{display:block;width:100%;flex:1;touch-action:none;}
+
+/* HUD */
+.hud{background:rgba(8,18,36,.98);border-top:1px solid rgba(255,255,255,.07);padding:10px 12px;flex-shrink:0;padding-bottom:max(10px,env(safe-area-inset-bottom,10px));}
+.ebars{display:flex;gap:6px;margin-bottom:8px;}
+.ebar{flex:1;position:relative;height:clamp(22px,5vw,30px);border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;}
+.efill{position:absolute;left:0;top:0;height:100%;border-radius:6px;transition:width .06s linear;}
+.efill.ep{background:linear-gradient(90deg,#e64a19,var(--ep));}
+.efill.ek{background:linear-gradient(90deg,#0288d1,var(--ek));}
+.efill.et{background:linear-gradient(90deg,#388e3c,var(--et));width:100%!important;}
+.etxt{position:absolute;inset:0;display:flex;align-items:center;padding:0 8px;gap:5px;}
+.esym{font-family:var(--fh);font-weight:900;font-size:clamp(9px,2vw,11px);letter-spacing:.04em;white-space:nowrap;}
+.enum{font-family:var(--fm);font-size:clamp(10px,2.4vw,13px);color:#fff;font-weight:700;}
+.fcards{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.fcard{flex:1;min-width:115px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:7px 10px;}
+.fcard .fn{font-family:var(--fh);font-size:clamp(8px,1.8vw,10px);letter-spacing:.07em;text-transform:uppercase;opacity:.5;margin-bottom:3px;}
+.fcard .feq{font-family:var(--fm);font-weight:700;font-size:clamp(11px,2.8vw,14px);color:#fff;line-height:1.35;}
+.fcard .feq .ep{color:var(--ep);} .fcard .feq .ek{color:var(--ek);} .fcard .feq .et{color:var(--et);}
+.fcard .fnum{font-family:var(--fm);font-size:clamp(9px,2.2vw,11px);color:rgba(255,255,255,.5);margin-top:2px;}
+.ctrls{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.cb{font-family:var(--fh);font-weight:900;font-size:var(--xs);letter-spacing:.04em;border:none;border-radius:8px;padding:9px 16px;cursor:pointer;min-height:38px;white-space:nowrap;}
+.cb.go{background:var(--et);color:#0d1b10;} .cb.go:hover{background:#88ee88;}
+.cb.go.stop{background:var(--ep);color:#fff;}
+.cb.rst{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);}
+.cb.qz{background:rgba(255,208,64,.12);color:var(--gold);border:1px solid rgba(255,208,64,.25);}
+.slrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;}
+.slw{display:flex;align-items:center;gap:7px;flex:1;min-width:150px;}
+.slw label{font-family:var(--fh);font-weight:700;font-size:var(--xs);color:rgba(255,255,255,.45);white-space:nowrap;}
+.slw input{flex:1;}
+.slw .sv{font-family:var(--fm);font-weight:700;font-size:var(--xs);color:var(--gold);min-width:48px;text-align:right;}
+
+/* QUIZ */
+#qscr{position:fixed;inset:0;z-index:60;background:rgba(4,12,26,.94);display:none;align-items:center;justify-content:center;padding:20px;}
+#qscr.on{display:flex;}
+.qbox{background:rgba(10,24,50,.99);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px;max-width:460px;width:100%;}
+.qbox h3{font-family:var(--fh);font-weight:900;font-size:var(--md);color:var(--gold);margin-bottom:14px;line-height:1.35;}
+.qopts{display:flex;flex-direction:column;gap:8px;}
+.qo{font-family:var(--fh);font-weight:700;font-size:var(--sm);background:rgba(255,255,255,.06);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 15px;cursor:pointer;text-align:left;min-height:46px;}
+.qo:hover:not(:disabled){background:rgba(255,255,255,.14);}
+.qo.ok{background:rgba(102,187,106,.2);border-color:rgba(102,187,106,.55);color:var(--et);}
+.qo.no{background:rgba(255,112,67,.15);border-color:rgba(255,112,67,.45);color:#ff9090;}
+.qo:disabled{cursor:default;}
+.qfb{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:var(--xs);line-height:1.55;display:none;}
+.qfb.ok{background:rgba(102,187,106,.1);color:var(--et);border:1px solid rgba(102,187,106,.2);display:block;}
+.qfb.no{background:rgba(255,112,67,.1);color:#ffb0a0;border:1px solid rgba(255,112,67,.2);display:block;}
+.qnx{font-family:var(--fh);font-weight:900;font-size:var(--sm);letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:#1a0800;border:none;border-radius:9px;padding:12px 28px;cursor:pointer;margin-top:12px;display:none;}
+.qnx.on{display:inline-block;}
+.qprog{display:flex;gap:5px;margin-bottom:14px;}
+.qp{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.1);}
+.qp.ok{background:var(--et);} .qp.no{background:var(--ep);}
+
+/* INFO */
+.modal{position:fixed;inset:0;z-index:70;background:rgba(4,12,26,.92);display:none;align-items:center;justify-content:center;padding:20px;}
+.modal.on{display:flex;}
+.mbox{background:rgba(10,24,50,.99);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:22px;max-width:420px;width:100%;}
+.mbox h3{font-family:var(--fh);font-weight:900;font-size:var(--md);color:var(--gold);margin-bottom:12px;}
+.mbox p{font-size:var(--sm);color:rgba(255,255,255,.73);line-height:1.65;margin-bottom:10px;}
+.mbox .fb{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-family:var(--fm);font-size:var(--sm);color:#fff;margin-bottom:10px;line-height:1.75;}
+.mbox .fb .ep{color:var(--ep);} .mbox .fb .ek{color:var(--ek);} .mbox .fb .et{color:var(--et);}
+.mbox .clbtn{font-family:var(--fh);font-weight:900;font-size:var(--sm);background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:11px;cursor:pointer;width:100%;}
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div class="scr on" id="s-title">
+  <div class="t-icon">⚡</div>
+  <h1 class="t-h"><span class="ep">Potentiel</span> &<br><span class="ek">Kinetisk</span> Energi</h1>
+  <p class="t-sub">Ep = mgh &nbsp;·&nbsp; Ek = ½mv² &nbsp;·&nbsp; Ep+Ek = konstant</p>
+  <div class="sgrid">
+    <div class="sc" onclick="launch('slope')"><div class="si">🎿</div><div class="st">Skibakke</div><div class="sd">Bold ruller ned — se Ep→Ek live</div></div>
+    <div class="sc" onclick="launch('pendulum')"><div class="si">🎱</div><div class="st">Pendul</div><div class="sd">Ep og Ek bytter hele tiden</div></div>
+    <div class="sc" onclick="launch('freefall')"><div class="si">🪨</div><div class="st">Frit fald</div><div class="sd">v = √(2gh) — se formlen live</div></div>
+    <div class="sc" onclick="launch('coaster')"><div class="si">🎢</div><div class="st">Rutsjebane</div><div class="sd">Op og ned — Etot er konstant!</div></div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="scr" id="s-game">
+  <div class="topbar">
+    <button class="bk" onclick="goHome()">← Menu</button>
+    <div class="stitle" id="stitle">–</div>
+    <button class="ibtn" onclick="openInfo()">💡 Info</button>
+  </div>
+  <canvas id="cvs"></canvas>
+  <div class="hud">
+    <div class="ebars">
+      <div class="ebar"><div class="efill ep" id="ep-bar" style="width:100%"></div><div class="etxt"><span class="esym" style="color:var(--ep)">Ep</span><span class="enum" id="ep-n">–</span></div></div>
+      <div class="ebar"><div class="efill ek" id="ek-bar" style="width:0%"></div><div class="etxt"><span class="esym" style="color:var(--ek)">Ek</span><span class="enum" id="ek-n">–</span></div></div>
+      <div class="ebar"><div class="efill et"></div><div class="etxt"><span class="esym" style="color:var(--et)">Etot</span><span class="enum" id="et-n">–</span></div></div>
+    </div>
+    <div class="fcards">
+      <div class="fcard" style="border-color:rgba(255,112,67,.25)"><div class="fn" style="color:var(--ep)">Potentiel energi</div><div class="feq"><span class="ep">Ep</span> = m·g·h</div><div class="fnum" id="feq-ep">–</div></div>
+      <div class="fcard" style="border-color:rgba(41,182,246,.25)"><div class="fn" style="color:var(--ek)">Kinetisk energi</div><div class="feq"><span class="ek">Ek</span> = ½·m·v²</div><div class="fnum" id="feq-ek">–</div></div>
+      <div class="fcard" style="border-color:rgba(102,187,106,.25)"><div class="fn" style="color:var(--et)">Energibevaring</div><div class="feq"><span class="et">Etot</span> = Ep+Ek</div><div class="fnum" id="feq-et">–</div></div>
+    </div>
+    <div class="ctrls">
+      <button class="cb go" id="gobtn" onclick="togglePlay()">▶ Start</button>
+      <button class="cb rst" onclick="resetScene()">↺ Nulstil</button>
+      <button class="cb qz" onclick="openQuiz()">🧠 Quiz</button>
+    </div>
+    <div class="slrow" id="slrow"></div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="qscr">
+  <div class="qbox">
+    <div class="qprog" id="qprog"></div>
+    <h3 id="qtxt">–</h3>
+    <div class="qopts" id="qopts"></div>
+    <div class="qfb" id="qfb"></div>
+    <button class="qnx" id="qnx" onclick="nextQ()">Næste →</button>
+  </div>
+</div>
+
+<!-- INFO -->
+<div class="modal" id="imodal">
+  <div class="mbox">
+    <h3 id="ih">–</h3>
+    <p id="ip"></p>
+    <div class="fb"><span class="ep">Ep = m · g · h</span><br><span class="ek">Ek = ½ · m · v²</span><br><span class="et">Etot = Ep + Ek = konstant</span><br>v = √(2·g·h) i bunden</div>
+    <p style="font-size:var(--xs);color:rgba(255,255,255,.4);margin-bottom:14px">m=masse[kg] · g=9,82[m/s²] · h=højde[m] · v=hastighed[m/s]</p>
+    <button class="clbtn" onclick="closeInfo()">Forstået ✓</button>
+  </div>
+</div>
+
+<script>
+const G=9.82;
+let scene='slope', running=false, animId=null, lastT=0, tick=0;
+let S={};
+let mass=2, startH=5, pendA0=55;
+
+/* ═══════ QUIZ ═══════ */
+const QUIZ=[
+  {q:'En bold ruller ned uden friktion. Hvad sker med Ep og Ek?',opts:['Ep stiger, Ek falder','Ep falder, Ek stiger','Begge stiger','Begge falder'],c:1,fb:'Ep=mgh falder når h falder. Al energi omdannes til Ek=½mv². Etot er konstant.'},
+  {q:'Hvad er formlen for potentiel energi?',opts:['Ep=½mv²','Ep=mgh','Ep=mv','Ep=m/h'],c:1,fb:'Ep = m·g·h. Masse × tyngdeacceleration × højde. Enhed: Joule [J].'},
+  {q:'En bold på 3 kg er 4 m over jorden (g=9,82). Hvad er Ep?',opts:['12 J','39,3 J','117,8 J','9,82 J'],c:2,fb:'Ep = m·g·h = 3×9,82×4 = 117,84 J'},
+  {q:'I bunden af et frit fald er alt energi kinetisk. Hvad er hastigheden?',opts:['v=mgh','v=√(2gh)','v=g·h','v=2gh'],c:1,fb:'Fra energibevaring: ½mv²=mgh → v=√(2gh). Massen falder ud!'},
+  {q:'Hvad er Etot i et friktionsfrit system?',opts:['Altid 0','Altid stigende','Konstant','Altid faldende'],c:2,fb:'Energibevaring: Etot=Ep+Ek=konstant. Energi skifter form men forsvinder ikke.'},
+  {q:'I et pendulsving — hvornår er Ek størst?',opts:['I toppen','I bunden','Halvvejs oppe','Den er ens overalt'],c:1,fb:'I bunden er h=0, Ep=0. Al energi er kinetisk → Ek størst i bunden.'},
+  {q:'Ek=72J, masse=4kg. Hvad er hastigheden?',opts:['6 m/s','9 m/s','18 m/s','3 m/s'],c:0,fb:'Ek=½mv² → 72=½·4·v² → v²=36 → v=6 m/s'},
+  {q:'Hvad sker med Ek hvis hastigheden fordobles?',opts:['Ek fordobles','Ek halveres','Ek firedobles','Ek ændres ikke'],c:2,fb:'Ek=½mv². Dobbelt v → v² firedobles → Ek firedobles! v indgår kvadratisk.'},
+  {q:'En skier 70kg starter 12m oppe. Hvad er tophastigheden?',opts:['√(2×9,82×12)≈15,3 m/s','70×9,82×12≈8241 m/s','12×9,82≈117,8 m/s','√(9,82×12)≈10,8 m/s'],c:0,fb:'v=√(2·g·h)=√(2×9,82×12)≈15,3 m/s. Massen er ligegyldig!'},
+  {q:'Hvad er enheden for energi?',opts:['Newton [N]','Watt [W]','Joule [J]','Pascal [Pa]'],c:2,fb:'Energi måles i Joule [J]. 1J=1N·m=1kg·m²/s²'},
+  {q:'Kan et objekt have både Ep og Ek samtidig?',opts:['Nej, kun én','Ja — f.eks. halvvejs ned ad bakken','Nej, de ophæver hinanden','Kun i vakuum'],c:1,fb:'Ja! Halvvejs nede har objektet BÅDE Ep (er over bunden) OG Ek (bevæger sig). Etot=Ep+Ek.'},
+  {q:'Fordobles massen, hvad sker med Ep (samme højde)?',opts:['Ep halveres','Ep fordobles','Ep firedobles','Ep ændres ikke'],c:1,fb:'Ep=m·g·h. Lineær i m: dobbelt masse → dobbelt Ep.'},
+];
+let qIdx=0,qRes=[];
+
+/* ═══════ NAV ═══════ */
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function goHome(){running=false;if(animId){cancelAnimationFrame(animId);animId=null;}show('s-title');}
+
+function launch(sc){
+  scene=sc;running=false;
+  const T={slope:'🎿 Skibakke',pendulum:'🎱 Pendul',freefall:'🪨 Frit fald',coaster:'🎢 Rutsjebane'};
+  document.getElementById('stitle').textContent=T[sc];
+  buildSliders();initScene();show('s-game');
+  requestAnimationFrame(()=>{
+    const c=document.getElementById('cvs');c.width=c.offsetWidth;c.height=c.offsetHeight;
+    if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(loop);
+  });
+}
+
+/* ═══════ SLIDERS ═══════ */
+function buildSliders(){
+  const r=document.getElementById('slrow');r.innerHTML='';
+  addSl(r,'m','Masse','kg',0.5,10,mass,0.5,v=>{mass=v;resetScene();});
+  if(scene!=='pendulum')addSl(r,'h','Højde','m',1,15,startH,0.5,v=>{startH=v;resetScene();});
+  if(scene==='pendulum')addSl(r,'a','Udslag','°',10,85,pendA0,1,v=>{pendA0=v;resetScene();});
+}
+function addSl(r,id,lbl,u,mn,mx,v,st,cb){
+  const d=document.createElement('div');d.className='slw';
+  const dp=st<1?1:0;
+  d.innerHTML=`<label>${lbl}</label><input type="range" id="sl${id}" min="${mn}" max="${mx}" value="${v}" step="${st}"><div class="sv" id="sv${id}">${v.toFixed(dp)} ${u}</div>`;
+  d.querySelector('input').oninput=function(){const n=parseFloat(this.value);document.getElementById('sv'+id).textContent=n.toFixed(dp)+' '+u;cb(n);};
+  r.appendChild(d);
+}
+
+/* ═══════ INIT / RESET ═══════ */
+function initScene(){
+  S={};
+  if(scene==='slope')S={pos:0,v:0,done:false};
+  else if(scene==='pendulum')S={angle:pendA0*Math.PI/180,omega:0};
+  else if(scene==='freefall')S={y:0,vy:0,done:false};
+  else S={t:0};
+  updateHUD();
+}
+function resetScene(){
+  running=false;
+  const b=document.getElementById('gobtn');b.textContent='▶ Start';b.classList.remove('stop');
+  initScene();
+}
+function togglePlay(){
+  running=!running;
+  const b=document.getElementById('gobtn');b.textContent=running?'⏸ Pause':'▶ Start';b.classList.toggle('stop',running);
+}
+
+/* ═══════ PHYSICS ═══════ */
+function step(dt){
+  if(!running)return;dt=Math.min(dt,0.04);
+  if(scene==='slope'){
+    if(S.done)return;
+    // ramp angle: h/base ≈ startH/(startH*1.8) — use sin for acceleration
+    const sinTheta=startH/Math.sqrt(startH*startH+(startH*1.8)*(startH*1.8));
+    const a=G*sinTheta; // acceleration along ramp (m/s²)
+    S.v+=a*dt;
+    // path length in "world units" ~ √(h²+(1.8h)²)
+    const pathLen=Math.sqrt(startH*startH+(startH*1.8)*(startH*1.8));
+    S.pos=Math.min(1,S.pos+S.v*dt/pathLen);
+    if(S.pos>=1){S.pos=1;S.v=0;S.done=true;stop();}
+  } else if(scene==='pendulum'){
+    const Lpx=pendLpx();const Lm=Lpx/100;
+    S.omega+=-(G/Lm)*Math.sin(S.angle)*dt;
+    S.angle+=S.omega*dt;
+  } else if(scene==='freefall'){
+    if(S.done)return;S.vy+=G*dt;S.y+=S.vy*dt;
+    if(S.y>=startH){S.y=startH;S.vy=0;S.done=true;stop();}
+  } else {
+    S.t+=dt*0.65;if(S.t>2*Math.PI)S.t-=2*Math.PI;
+  }
+}
+function stop(){running=false;const b=document.getElementById('gobtn');b.textContent='▶ Start';b.classList.remove('stop');}
+function pendLpx(){const c=document.getElementById('cvs');return Math.min(c.height*0.42,200);}
+function coasterH(t){return 3+2.2*Math.sin(t)-1.2*Math.cos(2*t)+0.7*Math.sin(3*t+0.3);}
+
+/* ═══════ ENERGY ═══════ */
+function getE(){
+  let ep=0,ek=0,etot=0,h=0,v=0;
+  if(scene==='slope'){
+    h=startH*(1-S.pos);etot=mass*G*startH;ep=mass*G*h;ek=Math.max(0,etot-ep);v=ek>0?Math.sqrt(2*ek/mass):0;
+  } else if(scene==='pendulum'){
+    const Lm=pendLpx()/100;const a0=pendA0*Math.PI/180;
+    const hMax=Lm*(1-Math.cos(a0));h=Lm*(1-Math.cos(Math.abs(S.angle)));
+    etot=mass*G*hMax;ep=mass*G*h;ek=Math.max(0,etot-ep);v=ek>0?Math.sqrt(2*ek/mass):0;
+  } else if(scene==='freefall'){
+    h=Math.max(0,startH-S.y);etot=mass*G*startH;ep=mass*G*h;ek=Math.max(0,etot-ep);v=S.vy;
+  } else {
+    const hN=Math.max(0,coasterH(S.t));const hM=coasterH(0);
+    h=hN;etot=mass*G*hM;ep=mass*G*h;ek=Math.max(0,etot-ep);v=ek>0?Math.sqrt(2*ek/mass):0;
+  }
+  return{ep:Math.max(0,ep),ek:Math.max(0,ek),etot:Math.max(0.01,etot),h:Math.max(0,h),v};
+}
+
+/* ═══════ HUD ═══════ */
+function updateHUD(){
+  const{ep,ek,etot,h,v}=getE();
+  document.getElementById('ep-bar').style.width=(ep/etot*100)+'%';
+  document.getElementById('ek-bar').style.width=(ek/etot*100)+'%';
+  document.getElementById('ep-n').textContent=ep.toFixed(1)+' J';
+  document.getElementById('ek-n').textContent=ek.toFixed(1)+' J';
+  document.getElementById('et-n').textContent=etot.toFixed(1)+' J';
+  document.getElementById('feq-ep').textContent=`= ${mass.toFixed(1)}×9,82×${h.toFixed(2)} = ${ep.toFixed(1)} J`;
+  document.getElementById('feq-ek').textContent=`= ½×${mass.toFixed(1)}×${v.toFixed(2)}² = ${ek.toFixed(1)} J`;
+  document.getElementById('feq-et').textContent=`= ${ep.toFixed(1)}+${ek.toFixed(1)} = ${etot.toFixed(1)} J`;
+}
+
+/* ═══════ LOOP ═══════ */
+function loop(ts){
+  animId=requestAnimationFrame(loop);
+  const dt=(ts-lastT)/1000;lastT=ts;tick+=0.04;
+  step(Math.min(dt,0.04));updateHUD();draw();
+}
+
+/* ═══════ DRAW ═══════ */
+function draw(){
+  const cvs=document.getElementById('cvs');const ctx=cvs.getContext('2d');
+  const W=cvs.width,H=cvs.height;
+  ctx.clearRect(0,0,W,H);
+  // sky
+  const sg=ctx.createLinearGradient(0,0,0,H);
+  sg.addColorStop(0,'#0a1830');sg.addColorStop(1,'#0e2040');
+  ctx.fillStyle=sg;ctx.fillRect(0,0,W,H);
+  // stars
+  for(let i=0;i<55;i++){
+    const x=(i*137.5)%W,y=(i*89.3)%(H*0.7);
+    ctx.beginPath();ctx.arc(x,y,.9,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${0.12+((i*73)%12)/40})`;ctx.fill();
+  }
+  if(scene==='slope')drawSlope(ctx,W,H);
+  else if(scene==='pendulum')drawPendulum(ctx,W,H);
+  else if(scene==='freefall')drawFreefall(ctx,W,H);
+  else drawCoaster(ctx,W,H);
+}
+
+function cl(a,v,b){return Math.max(a,Math.min(b,v));}
+function lerpC(c1,c2,t){
+  const p=s=>[parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16)];
+  const [r1,g1,b1]=p(c1),[r2,g2,b2]=p(c2);
+  return`rgb(${Math.round(r1+(r2-r1)*t)},${Math.round(g1+(g2-g1)*t)},${Math.round(b1+(b2-b1)*t)})`;
+}
+function ball(ctx,x,y,r,ep,ek,etot){
+  const f=etot>0?ek/etot:0;const col=lerpC('#ff7043','#29b6f6',f);
+  ctx.save();ctx.shadowColor=col;ctx.shadowBlur=18+f*12;
+  const g=ctx.createRadialGradient(x-r*.32,y-r*.32,r*.06,x,y,r);
+  g.addColorStop(0,'rgba(255,255,255,0.92)');g.addColorStop(0.38,col);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(x-r*.3,y-r*.3,r*.28,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.38)';ctx.fill();
+  ctx.restore();
+}
+function arrow(ctx,x1,y1,x2,y2,col,lbl){
+  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);if(len<4)return;
+  ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  const a=Math.atan2(dy,dx);
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-Math.cos(a-.4)*9,y2-Math.sin(a-.4)*9);
+  ctx.lineTo(x2-Math.cos(a+.4)*9,y2-Math.sin(a+.4)*9);ctx.closePath();ctx.fill();
+  if(lbl){ctx.font=`bold 11px Nunito,sans-serif`;ctx.textAlign='center';
+    ctx.fillText(lbl,x2+Math.cos(a+Math.PI/2)*15,y2+Math.sin(a+Math.PI/2)*15);}
+  ctx.restore();
+}
+function pie(ctx,cx,cy,r,ep,ek,etot){
+  if(etot<0.01)return;const ef=ep/etot,kf=ek/etot;
+  ctx.save();
+  if(ef>0.01){ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+ef*Math.PI*2);ctx.closePath();ctx.fillStyle='rgba(255,112,67,0.75)';ctx.fill();}
+  if(kf>0.01){ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,-Math.PI/2+ef*Math.PI*2,-Math.PI/2+Math.PI*2);ctx.closePath();ctx.fillStyle='rgba(41,182,246,0.75)';ctx.fill();}
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.font='bold 9px Nunito,sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(255,255,255,0.7)';
+  if(ef>0.15)ctx.fillText(`${Math.round(ef*100)}%`,cx-r*.35,cy-r*.3);
+  if(kf>0.15)ctx.fillText(`${Math.round(kf*100)}%`,cx+r*.35,cy+r*.35);
+  ctx.restore();
+}
+function ground(ctx,y,W,H){
+  const g=ctx.createLinearGradient(0,y,0,H);g.addColorStop(0,'#1a4a1a');g.addColorStop(1,'#0d2e0d');
+  ctx.fillStyle=g;ctx.fillRect(0,y,W,H-y);
+  ctx.strokeStyle='#2d7a2d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+}
+
+/* SLOPE */
+function drawSlope(ctx,W,H){
+  const{ep,ek,etot,h,v}=getE();
+  const pad=44,gY=H-52;
+  const rH=cl(60,startH*22,H-110);
+  const tX=pad,tY=gY-rH,bX=W-pad,bY=gY;
+  ground(ctx,gY,W,H);
+  // snow fill
+  ctx.save();ctx.beginPath();ctx.moveTo(tX,tY);ctx.lineTo(bX,bY);ctx.lineTo(bX,gY);ctx.lineTo(tX,gY);ctx.closePath();
+  const sg=ctx.createLinearGradient(tX,tY,bX,bY);sg.addColorStop(0,'rgba(180,210,255,0.22)');sg.addColorStop(1,'rgba(100,160,220,0.08)');
+  ctx.fillStyle=sg;ctx.fill();ctx.restore();
+  ctx.strokeStyle='rgba(220,235,255,0.8)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(tX,tY);ctx.lineTo(bX,bY);ctx.stroke();
+  // h indicator
+  if(h>0.1){
+    const bx2=tX+(bX-tX)*S.pos,by2=tY+(bY-tY)*S.pos;
+    ctx.strokeStyle='rgba(255,112,67,0.5)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(tX-18,by2);ctx.lineTo(bx2,by2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(tX-18,by2);ctx.lineTo(tX-18,gY);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#ff7043';ctx.font=`bold ${cl(10,W*.024,13)}px Nunito,sans-serif`;ctx.textAlign='center';
+    ctx.fillText(`h=${h.toFixed(1)}m`,tX-32,(by2+gY)/2);
+  }
+  const bx=tX+(bX-tX)*S.pos,by=tY+(bY-tY)*S.pos;
+  ball(ctx,bx,by,cl(14,W*.035,22),ep,ek,etot);
+  if(v>0.3){const ang=Math.atan2(bY-tY,bX-tX);const al=cl(10,v*9,65);arrow(ctx,bx,by,bx+Math.cos(ang)*al,by+Math.sin(ang)*al,'rgba(41,182,246,0.85)',`v=${v.toFixed(1)} m/s`);}
+  ctx.fillStyle='rgba(255,255,255,0.55)';ctx.font=`bold ${cl(10,W*.024,13)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('Ep max',tX,tY-14);ctx.fillText('Ek max',bX,bY+18);
+  pie(ctx,W-55,60,36,ep,ek,etot);
+}
+
+/* PENDULUM */
+function drawPendulum(ctx,W,H){
+  const{ep,ek,etot,h,v}=getE();
+  const pvX=W/2,pvY=cl(55,H*.13,90);
+  const Lpx=pendLpx();
+  const bx=pvX+Math.sin(S.angle)*Lpx,by=pvY+Math.cos(S.angle)*Lpx;
+  const refY=pvY+Lpx;
+  // ceiling
+  ctx.fillStyle='rgba(40,60,100,0.5)';ctx.fillRect(0,0,W,pvY-10);
+  ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,pvY-10);ctx.lineTo(W,pvY-10);ctx.stroke();
+  // reference
+  ctx.strokeStyle='rgba(102,187,106,0.2)';ctx.lineWidth=1;ctx.setLineDash([5,5]);
+  ctx.beginPath();ctx.moveTo(pvX-Lpx-20,refY);ctx.lineTo(pvX+Lpx+20,refY);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(102,187,106,0.4)';ctx.font=`${cl(9,W*.022,11)}px Nunito Sans,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('h = 0',pvX,refY+13);
+  // h indicator
+  if(h>0.01){
+    ctx.strokeStyle='rgba(255,112,67,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(bx+28,by);ctx.lineTo(bx+55,by);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(bx+42,by);ctx.lineTo(bx+42,refY);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#ff7043';ctx.font=`bold ${cl(9,W*.022,11)}px Nunito,sans-serif`;ctx.textAlign='left';
+    ctx.fillText(`h=${h.toFixed(2)}m`,bx+58,(by+refY)/2+4);
+  }
+  // arc
+  const a0=pendA0*Math.PI/180;
+  ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(pvX,pvY,Lpx,-Math.PI/2-a0,-Math.PI/2+a0);ctx.stroke();
+  // string
+  ctx.strokeStyle='rgba(200,210,230,0.7)';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(pvX,pvY);ctx.lineTo(bx,by);ctx.stroke();
+  ctx.fillStyle='#8899bb';ctx.beginPath();ctx.arc(pvX,pvY,7,0,Math.PI*2);ctx.fill();
+  ball(ctx,bx,by,cl(16,W*.04,24),ep,ek,etot);
+  if(Math.abs(S.omega)>0.02&&v>0.1){
+    const vx=-Math.cos(S.angle)*S.omega*Lpx,vy=Math.sin(S.angle)*S.omega*Lpx;
+    const vl=Math.hypot(vx,vy);const sc=cl(8,vl*0.4,45);
+    arrow(ctx,bx,by,bx+vx/vl*sc,by+vy/vl*sc,'rgba(41,182,246,0.85)',`v=${v.toFixed(1)}`);
+  }
+  ctx.font=`bold ${cl(9,W*.022,11)}px Nunito,sans-serif`;ctx.textAlign='center';
+  const tpX=pvX+Math.sin(a0)*Lpx,tpY=pvY+Math.cos(a0)*Lpx;
+  ctx.fillStyle='rgba(255,112,67,0.65)';ctx.fillText('Ep max',tpX,tpY-14);
+  ctx.fillStyle='rgba(255,112,67,0.65)';ctx.fillText('Ep max',pvX-Math.sin(a0)*Lpx,tpY-14);
+  ctx.fillStyle='rgba(41,182,246,0.65)';ctx.fillText('Ek max',pvX,refY-14);
+  pie(ctx,W-55,60,36,ep,ek,etot);
+}
+
+/* FREEFALL */
+function drawFreefall(ctx,W,H){
+  const{ep,ek,etot,h,v}=getE();
+  const gY=H-55,topY=60,cx=W/2;
+  const sc=(gY-topY)/startH;
+  const bY=topY+S.y*sc;
+  ground(ctx,gY,W,H);
+  const stp=Math.ceil(startH/5);
+  for(let hm=0;hm<=startH;hm+=stp){
+    const y=gY-hm*sc;
+    ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(cx-60,y);ctx.lineTo(cx+60,y);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,255,255,0.35)';ctx.font=`${cl(9,W*.022,11)}px Nunito Sans,sans-serif`;ctx.textAlign='right';
+    ctx.fillText(`${hm} m`,cx-65,y+4);
+  }
+  if(h>0.05){
+    ctx.strokeStyle='rgba(255,112,67,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(cx-80,bY+22);ctx.lineTo(cx-80,gY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#ff7043';ctx.font=`bold ${cl(10,W*.024,13)}px Nunito,sans-serif`;ctx.textAlign='right';
+    ctx.fillText(`h=${h.toFixed(2)}m`,cx-85,(bY+22+gY)/2+4);
+  }
+  if(S.y>0.05){
+    ctx.strokeStyle='rgba(41,182,246,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(cx+80,topY);ctx.lineTo(cx+80,bY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#29b6f6';ctx.font=`bold ${cl(10,W*.024,13)}px Nunito,sans-serif`;ctx.textAlign='left';
+    ctx.fillText(`fald=${S.y.toFixed(2)}m`,cx+85,(topY+bY)/2+4);
+  }
+  ball(ctx,cx,bY,cl(14,W*.035,22),ep,ek,etot);
+  if(v>0.1){const al=cl(10,v*9,65);arrow(ctx,cx,bY+20,cx,bY+20+al,'rgba(41,182,246,0.85)',`v=${v.toFixed(1)} m/s`);}
+  ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font=`${cl(9,W*.022,11)}px Share Tech Mono,monospace`;ctx.textAlign='center';
+  ctx.fillText(`v = √(2·g·h_fald) = ${v.toFixed(2)} m/s`,cx,gY+18);
+  pie(ctx,W-55,60,36,ep,ek,etot);
+}
+
+/* COASTER */
+function drawCoaster(ctx,W,H){
+  const{ep,ek,etot,h,v}=getE();
+  const amp=cl(60,H*0.3,115),cy2=H-55-amp*0.75;
+  const N=240,pts=[];
+  for(let i=0;i<=N;i++){
+    const t=i/N*2*Math.PI;
+    pts.push({x:50+(W-100)*i/N,y:cy2-coasterH(t)*amp*0.22,h:coasterH(t)});
+  }
+  const maxY=Math.max(...pts.map(p=>p.y))+10;
+  ground(ctx,maxY,W,H);
+  ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=8;ctx.lineCap='round';
+  ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+  ctx.strokeStyle='rgba(220,230,255,0.75)';ctx.lineWidth=4;
+  ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+  const pIdx=Math.min(Math.round(((S.t%(2*Math.PI))/(2*Math.PI))*N),N);
+  const bp=pts[pIdx];
+  if(h>0.1){
+    const hPx=h*amp*0.22;
+    ctx.strokeStyle='rgba(255,112,67,0.4)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(bp.x,bp.y);ctx.lineTo(bp.x,bp.y+hPx);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#ff7043';ctx.font=`bold ${cl(9,W*.022,11)}px Nunito,sans-serif`;ctx.textAlign='left';
+    ctx.fillText(`h=${h.toFixed(1)}m`,bp.x+6,bp.y+hPx*0.6);
+  }
+  ball(ctx,bp.x,bp.y,cl(13,W*.033,20),ep,ek,etot);
+  if(ek>0.5&&pIdx<N){
+    const np=pts[Math.min(pIdx+3,N)];
+    const dx=np.x-bp.x,dy=np.y-bp.y,vl=Math.hypot(dx,dy)||1;
+    const sc=cl(8,Math.sqrt(ek/2)*14,55);
+    arrow(ctx,bp.x,bp.y,bp.x+dx/vl*sc,bp.y+dy/vl*sc,'rgba(41,182,246,0.85)','');
+  }
+  ctx.font=`bold ${cl(9,W*.022,11)}px Nunito,sans-serif`;ctx.textAlign='center';
+  [0.14,0.62].forEach(f=>{const p=pts[Math.min(Math.round(f*N),N)];ctx.fillStyle='rgba(255,112,67,0.65)';ctx.fillText('Ep max',p.x,p.y-12);});
+  [0.38,0.88].forEach(f=>{const p=pts[Math.min(Math.round(f*N),N)];ctx.fillStyle='rgba(41,182,246,0.65)';ctx.fillText('Ek max',p.x,p.y+16);});
+  pie(ctx,W-55,60,36,ep,ek,etot);
+}
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('s-game').classList.contains('on')){const c=document.getElementById('cvs');c.width=c.offsetWidth;c.height=c.offsetHeight;}
+});
+
+/* ═══════ QUIZ ═══════ */
+function openQuiz(){qIdx=0;qRes=[];buildProg();renderQ();document.getElementById('qscr').classList.add('on');}
+function buildProg(){document.getElementById('qprog').innerHTML=QUIZ.map((_,i)=>`<div class="qp" id="qp${i}"></div>`).join('');}
+function renderQ(){
+  if(qIdx>=QUIZ.length){
+    const s=qRes.filter(Boolean).length;
+    document.getElementById('qtxt').textContent=`Færdig! ${s}/${QUIZ.length} rigtige (${Math.round(s/QUIZ.length*100)}%)`;
+    document.getElementById('qopts').innerHTML='';document.getElementById('qfb').className='qfb';
+    const nb=document.getElementById('qnx');nb.textContent='Luk ✓';nb.className='qnx on';nb.onclick=()=>document.getElementById('qscr').classList.remove('on');
+    return;
+  }
+  const q=QUIZ[qIdx];
+  document.getElementById('qtxt').textContent=`Spørgsmål ${qIdx+1}/${QUIZ.length}: ${q.q}`;
+  document.getElementById('qopts').innerHTML=q.opts.map((o,i)=>`<button class="qo" onclick="ansQ(${i})">${o}</button>`).join('');
+  document.getElementById('qfb').className='qfb';document.getElementById('qnx').className='qnx';
+}
+function ansQ(c){
+  const q=QUIZ[qIdx];
+  document.querySelectorAll('.qo').forEach((b,i)=>{b.disabled=true;if(i===q.c)b.classList.add('ok');else if(i===c&&c!==q.c)b.classList.add('no');});
+  const ok=c===q.c;qRes.push(ok);
+  const d=document.getElementById('qp'+qIdx);if(d)d.classList.add(ok?'ok':'no');
+  const fb=document.getElementById('qfb');fb.className='qfb '+(ok?'ok':'no');fb.textContent=(ok?'✅ ':'❌ ')+q.fb;
+  document.getElementById('qnx').className='qnx on';
+}
+function nextQ(){qIdx++;renderQ();}
+
+/* ═══════ INFO ═══════ */
+const INFO={
+  slope:{h:'🎿 Skibakken',p:'Bolden starter i toppen med al energi som potentiel (Ep=mgh). Når den ruller ned falder h, Ep falder og Ek stiger. I bunden (h=0) er al energi kinetisk.'},
+  pendulum:{h:'🎱 Pendulet',p:'I de yderste positioner er h størst og al energi potentiel. I bunden er h=0 og al energi kinetisk. Energien svinger kontinuerligt frem og tilbage.'},
+  freefall:{h:'🪨 Frit fald',p:'Objektet falder fra hvile. Ep falder og Ek stiger jævnt. Sluthastighed: v=√(2·g·h). To genstande af forskellig masse falder ens (uden luftmodstand)!'},
+  coaster:{h:'🎢 Rutsjebanen',p:'I toppen af en bakke er Ep størst, i dalen er Ek størst. Etot er konstant hele vejen — energi skifter kun form, forsvinder aldrig.'},
+};
+function openInfo(){const i=INFO[scene];document.getElementById('ih').textContent=i.h;document.getElementById('ip').textContent=i.p;document.getElementById('imodal').classList.add('on');}
+function closeInfo(){document.getElementById('imodal').classList.remove('on');}
+</script>
+</body>
+</html>
