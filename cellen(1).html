@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Cellen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#1a0f2e;
+  --cell-bg:#2d1f4e;
+  --membrane:#7c4dbd;
+  --nucleus:#e8a020;
+  --mito:#e05530;
+  --ribo:#55c4a0;
+  --er:#5090e0;
+  --golgi:#c060d0;
+  --lyso:#e04080;
+  --vac:#40b0c0;
+  --cyto:#2a4a6a;
+  --white:#f8f4ff;
+  --muted:rgba(248,244,255,0.5);
+  --fh:'Fraunces',serif;
+  --fb:'Nunito',sans-serif;
+  --xs:clamp(11px,2.4vw,13px);
+  --sm:clamp(13px,3vw,15px);
+  --md:clamp(14px,3.2vw,17px);
+  --lg:clamp(18px,4.5vw,24px);
+  --xl:clamp(24px,6vw,34px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow:hidden;}
+.scr.on{display:flex;}
+
+/* ══ HOME ══ */
+#s-home{background:linear-gradient(160deg,#1a0f2e 0%,#0d1a1f 100%);align-items:center;justify-content:center;text-align:center;padding:24px;overflow-y:auto;}
+.home-blob{font-size:clamp(52px,13vw,84px);margin-bottom:12px;animation:float 4s ease-in-out infinite;filter:drop-shadow(0 0 30px rgba(124,77,189,.6));}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.03)}}
+.home-h{font-family:var(--fh);font-style:italic;font-size:var(--xl);color:var(--white);margin-bottom:6px;text-shadow:0 0 40px rgba(200,150,255,.4);}
+.home-sub{font-size:var(--sm);color:var(--muted);margin-bottom:36px;line-height:1.6;}
+.home-btn{font-family:var(--fh);font-style:italic;font-size:var(--lg);background:linear-gradient(135deg,#7c4dbd,#e8a020);color:#fff;border:none;border-radius:100px;padding:16px 52px;cursor:pointer;letter-spacing:.02em;box-shadow:0 8px 32px rgba(124,77,189,.45);transition:all .2s;}
+.home-btn:hover{transform:scale(1.04);box-shadow:0 12px 44px rgba(124,77,189,.6);}
+.home-facts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:28px;max-width:480px;}
+.hfact{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 16px;font-size:var(--xs);color:var(--muted);line-height:1.5;flex:1;min-width:130px;}
+.hfact .hf-icon{font-size:clamp(22px,5.5vw,30px);display:block;margin-bottom:6px;}
+.hfact b{color:var(--white);}
+
+/* ══ EXPLORE ══ */
+#s-explore{background:linear-gradient(160deg,#1a0f2e 0%,#0d1a1f 100%);}
+.exbar{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));}
+.bk{font-family:var(--fb);font-weight:700;font-size:var(--xs);color:rgba(255,255,255,.55);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:#fff;}
+.ex-title{font-family:var(--fh);font-style:italic;font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.ex-prog{font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.07);border-radius:20px;padding:5px 12px;white-space:nowrap;}
+#cell-cvs{display:block;width:100%;flex:1;cursor:pointer;touch-action:none;}
+.hint-bar{background:rgba(0,0,0,.5);border-top:1px solid rgba(255,255,255,.07);padding:7px 14px;flex-shrink:0;padding-bottom:max(7px,env(safe-area-inset-bottom,7px));text-align:center;}
+.hint-bar p{font-size:var(--xs);color:var(--muted);}
+.hint-bar .hl{color:rgba(255,220,100,.8);}
+
+/* ══ ORGANELLE PANEL ══ */
+#s-panel{background:linear-gradient(160deg,#1a0f2e 0%,#0d1822 100%);}
+.panel-top{display:flex;align-items:center;gap:10px;padding:10px 14px;flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));}
+.panel-top .bk{font-size:var(--xs);}
+.panel-icon{font-size:clamp(36px,9vw,56px);line-height:1;filter:drop-shadow(0 0 20px currentColor);}
+.panel-name{font-family:var(--fh);font-style:italic;font-size:var(--xl);color:var(--white);flex:1;}
+.panel-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 24px;}
+.panel-canvas-wrap{width:100%;max-width:500px;margin:0 auto 18px;}
+#panel-cvs{display:block;width:100%;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);}
+.panel-body{max-width:500px;margin:0 auto;}
+.panel-tagline{font-family:var(--fh);font-style:italic;font-size:var(--lg);color:var(--white);margin-bottom:10px;line-height:1.3;}
+.panel-desc{font-size:var(--sm);color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:14px;}
+.panel-desc b{color:var(--white);}
+.fact-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.chip{font-size:var(--xs);border-radius:100px;padding:6px 14px;font-weight:700;}
+.panel-continue{font-family:var(--fh);font-style:italic;font-size:var(--md);background:linear-gradient(135deg,#7c4dbd,#c060d0);color:#fff;border:none;border-radius:100px;padding:13px 40px;cursor:pointer;display:block;margin:0 auto;box-shadow:0 6px 24px rgba(124,77,189,.4);transition:all .18s;}
+.panel-continue:hover{transform:scale(1.03);}
+
+/* ══ QUIZ ══ */
+#s-quiz{background:linear-gradient(160deg,#1a0f2e 0%,#0d1822 100%);overflow-y:auto;}
+.quiz-wrap{max-width:500px;margin:0 auto;padding:16px 16px 40px;}
+.quiz-h{font-family:var(--fh);font-style:italic;font-size:var(--xl);color:var(--white);text-align:center;margin-bottom:6px;}
+.quiz-sub{font-size:var(--sm);color:var(--muted);text-align:center;margin-bottom:24px;}
+.qprog{display:flex;gap:5px;margin-bottom:20px;}
+.qp{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.12);}
+.qp.ok{background:#55c4a0;}.qp.no{background:#e04080;}
+.q-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px 18px;margin-bottom:14px;}
+.q-num{font-size:var(--xs);color:var(--muted);margin-bottom:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.q-text{font-size:var(--md);color:var(--white);line-height:1.5;margin-bottom:16px;font-weight:700;}
+.q-opts{display:flex;flex-direction:column;gap:9px;}
+.qo{font-size:var(--sm);background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;padding:13px 16px;cursor:pointer;text-align:left;transition:all .14s;line-height:1.4;}
+.qo:hover:not(:disabled){background:rgba(255,255,255,.14);}
+.qo.ok{background:rgba(85,196,160,.2);border-color:rgba(85,196,160,.55);color:#a0ffdc;}
+.qo.no{background:rgba(224,64,128,.15);border-color:rgba(224,64,128,.45);color:#ffb0cc;}
+.qo:disabled{cursor:default;}
+.qfb{border-radius:12px;padding:12px 15px;font-size:var(--xs);line-height:1.6;margin-top:10px;display:none;}
+.qfb.ok{background:rgba(85,196,160,.1);border:1px solid rgba(85,196,160,.25);color:#a0ffdc;display:block;}
+.qfb.no{background:rgba(224,64,128,.1);border:1px solid rgba(224,64,128,.22);color:#ffb0cc;display:block;}
+.qnxt{font-family:var(--fh);font-style:italic;font-size:var(--md);background:linear-gradient(135deg,#55c4a0,#5090e0);color:#fff;border:none;border-radius:100px;padding:12px 36px;cursor:pointer;margin-top:14px;display:none;}
+.qnxt.on{display:inline-block;}
+
+/* ══ MINI-QUIZ (in panel) ══ */
+.mq-section{max-width:500px;margin:18px auto 0;border-top:1px solid rgba(255,255,255,.1);padding-top:18px;}
+.mq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.mq-title{font-family:var(--fh);font-style:italic;font-size:var(--lg);color:var(--white);}
+.mq-score{font-family:var(--fb);font-weight:700;font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.07);border-radius:20px;padding:5px 12px;}
+.mq-pips{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:14px;}
+.mqp{width:14px;height:5px;border-radius:3px;background:rgba(255,255,255,.12);}
+.mqp.ok{background:#55c4a0;}.mqp.no{background:#e04080;}.mqp.cur{background:rgba(255,220,100,.6);}
+.mq-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 15px;margin-bottom:10px;}
+.mq-num{font-size:var(--xs);color:var(--muted);margin-bottom:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.mq-q{font-size:var(--md);color:var(--white);line-height:1.5;margin-bottom:13px;font-weight:700;}
+.mq-opts{display:flex;flex-direction:column;gap:8px;}
+.mqo{font-size:var(--sm);background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);border:1.5px solid rgba(255,255,255,.12);border-radius:10px;padding:11px 14px;cursor:pointer;text-align:left;transition:all .12s;line-height:1.4;}
+.mqo:hover:not(:disabled){background:rgba(255,255,255,.14);}
+.mqo.ok{background:rgba(85,196,160,.2);border-color:rgba(85,196,160,.55);color:#a0ffdc;}
+.mqo.no{background:rgba(224,64,128,.15);border-color:rgba(224,64,128,.4);color:#ffb0cc;}
+.mqo:disabled{cursor:default;}
+.mq-fb{border-radius:10px;padding:10px 13px;font-size:var(--xs);line-height:1.55;margin-top:9px;display:none;}
+.mq-fb.ok{background:rgba(85,196,160,.1);border:1px solid rgba(85,196,160,.22);color:#a0ffdc;display:block;}
+.mq-fb.no{background:rgba(224,64,128,.1);border:1px solid rgba(224,64,128,.2);color:#ffb0cc;display:block;}
+.mq-nxt{font-family:var(--fh);font-style:italic;font-size:var(--sm);background:linear-gradient(135deg,#55c4a0,#5090e0);color:#fff;border:none;border-radius:100px;padding:10px 28px;cursor:pointer;margin-top:12px;display:none;}
+.mq-nxt.on{display:inline-block;}
+.mq-done{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;text-align:center;margin-bottom:16px;}
+.mq-done-score{font-family:var(--fh);font-style:italic;font-size:var(--xl);color:var(--nucleus);margin-bottom:6px;}
+.mq-done-msg{font-size:var(--sm);color:var(--muted);line-height:1.6;margin-bottom:14px;}
+.mq-retry{font-family:var(--fh);font-style:italic;font-size:var(--sm);background:rgba(255,255,255,.08);color:var(--white);border:1px solid rgba(255,255,255,.14);border-radius:100px;padding:9px 24px;cursor:pointer;}
+
+/* DONE */
+#s-done{background:linear-gradient(160deg,#1a0f2e 0%,#0d1a1f 100%);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.done-icon{font-size:clamp(56px,14vw,84px);margin-bottom:14px;animation:float 3s ease-in-out infinite;}
+.done-h{font-family:var(--fh);font-style:italic;font-size:var(--xl);color:var(--white);margin-bottom:8px;}
+.done-sub{font-size:var(--md);color:var(--muted);max-width:360px;line-height:1.6;margin-bottom:28px;}
+.done-score{font-family:var(--fh);font-style:italic;font-size:clamp(48px,12vw,70px);color:var(--nucleus);line-height:1;margin-bottom:8px;}
+.done-btn{font-family:var(--fh);font-style:italic;font-size:var(--md);background:linear-gradient(135deg,#7c4dbd,#e8a020);color:#fff;border:none;border-radius:100px;padding:14px 48px;cursor:pointer;box-shadow:0 8px 28px rgba(124,77,189,.4);}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="scr on" id="s-home">
+  <div class="home-blob">🔬</div>
+  <h1 class="home-h">Cellen</h1>
+  <p class="home-sub">Udforsk den menneskelige celles verden —<br>klik på organellerne og lær deres hemmeligheder</p>
+  <button class="home-btn" onclick="showExplore()">Udforsk cellen →</button>
+  <div class="home-facts">
+    <div class="hfact"><span class="hf-icon">🧬</span><b>37 billioner</b> celler i kroppen</div>
+    <div class="hfact"><span class="hf-icon">⚡</span>Mitokondrier laver <b>ATP — energi</b> til alt</div>
+    <div class="hfact"><span class="hf-icon">📖</span>DNA indeholder <b>3 mia. basepar</b></div>
+  </div>
+</div>
+
+<!-- EXPLORE -->
+<div class="scr" id="s-explore">
+  <div class="exbar">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="ex-title">Klik på en organelle</div>
+    <div class="ex-prog" id="ex-prog">0 / 8 udforsket</div>
+  </div>
+  <canvas id="cell-cvs"></canvas>
+  <div class="hint-bar">
+    <p id="hint-txt">Tap på en <span class="hl">farvet organelle</span> for at lære om den — udforsk alle 8 for at låse quizzen op</p>
+  </div>
+</div>
+
+<!-- ORGANELLE PANEL -->
+<div class="scr" id="s-panel">
+  <div class="panel-top">
+    <button class="bk" onclick="closePanel()">← Cellen</button>
+    <div class="panel-icon" id="pi">🫁</div>
+    <div class="panel-name" id="pn">–</div>
+  </div>
+  <div class="panel-scroll">
+    <div class="panel-canvas-wrap"><canvas id="panel-cvs"></canvas></div>
+    <div class="panel-body">
+      <div class="panel-tagline" id="pt">–</div>
+      <div class="panel-desc" id="pd">–</div>
+      <div class="fact-chips" id="pchips"></div>
+      <div class="mq-section" id="mq-section">
+        <div class="mq-head">
+          <div class="mq-title">🧠 Quiz</div>
+          <div class="mq-score" id="mq-score">0/0 rigtige</div>
+        </div>
+        <div class="mq-pips" id="mq-pips"></div>
+        <div id="mq-area"></div>
+      </div>
+      <button class="panel-continue" onclick="closePanel()" style="margin-top:20px">← Tilbage til cellen</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="scr" id="s-quiz">
+  <div class="quiz-wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+      <button class="bk" onclick="show('s-explore')">← Cellen</button>
+      <div style="flex:1"></div>
+    </div>
+    <h2 class="quiz-h">🧠 Quiz</h2>
+    <p class="quiz-sub">Test din viden om cellens organeller</p>
+    <div class="qprog" id="qprog"></div>
+    <div id="qarea"></div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="scr" id="s-done">
+  <div class="done-icon">🏆</div>
+  <h2 class="done-h">Cellen mestret!</h2>
+  <div class="done-score" id="done-score">–</div>
+  <p class="done-sub" id="done-sub">–</p>
+  <button class="done-btn" onclick="show('s-home')">Spil igen</button>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   ORGANELLE DATA
+══════════════════════════════════════════════ */
+const ORGANELLES = [
+  {
+    id: 'membrane',
+    name: 'Cellemembranen',
+    icon: '🫧',
+    color: '#7c4dbd',
+    tagline: 'Cellens vagter — hvem kommer ind og ud?',
+    desc: `Cellemembranen er et <b>dobbelt lag af fedtstoffer</b> (fosfolipider) der omgiver hele cellen. Den fungerer som en <b>intelligent grænse</b> — den lader visse stoffer passere og blokerer andre.<br><br>Membranens overflade er besat med <b>proteiner</b> der fungerer som portner, receptor og kommunikationscentral. Uden membranen ville cellen opløses.`,
+    chips: [{t:'Tykkelse: 7-8 nm',c:'rgba(124,77,189,.3)',tc:'#c9a0ff'},{t:'Fosfolipid dobbeltlag',c:'rgba(124,77,189,.3)',tc:'#c9a0ff'},{t:'Selektivt permeabel',c:'rgba(124,77,189,.3)',tc:'#c9a0ff'}],
+    draw: drawMembrane,
+  },
+  {
+    id: 'nucleus',
+    name: 'Cellekærnen',
+    icon: '🧬',
+    color: '#e8a020',
+    tagline: 'Cellens kommandocentral og bibliotek',
+    desc: `Cellekærnen indeholder cellens <b>DNA</b> — den komplette opskrift på alle proteiner kroppen kan lave. DNA er pakket ind i <b>kromosomer</b>.<br><br>Kærnen styrer cellen ved at sende <b>mRNA</b> (budbringer-RNA) ud til ribosomerne med instruktioner om hvilke proteiner der skal laves. Den er omgivet af en <b>dobbeltvæg med porer</b>.`,
+    chips: [{t:'46 kromosomer',c:'rgba(232,160,32,.25)',tc:'#ffd080'},{t:'3 mia. basepar DNA',c:'rgba(232,160,32,.25)',tc:'#ffd080'},{t:'~6 μm i diameter',c:'rgba(232,160,32,.25)',tc:'#ffd080'}],
+    draw: drawNucleus,
+  },
+  {
+    id: 'mito',
+    name: 'Mitokondrier',
+    icon: '⚡',
+    color: '#e05530',
+    tagline: 'Cellens kraftværk — laver livets energi',
+    desc: `Mitokondrier er cellens <b>energifabrikker</b>. De omdanner sukker (glukose) og ilt til <b>ATP</b> — adenosintriphosphat — den universelle energivaluta som alle processer i kroppen bruger.<br><br>Processen hedder <b>celleånding</b>: C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP<br><br>Mitokondrier har deres <b>eget DNA</b> og formodes at have været selvstændige bakterier for 2 milliarder år siden!`,
+    chips: [{t:'Laver ~36 ATP pr. glukose',c:'rgba(224,85,48,.25)',tc:'#ff9977'},{t:'Eget DNA!',c:'rgba(224,85,48,.25)',tc:'#ff9977'},{t:'Dobbeltvæg (cristae)',c:'rgba(224,85,48,.25)',tc:'#ff9977'}],
+    draw: drawMito,
+  },
+  {
+    id: 'ribosome',
+    name: 'Ribosomer',
+    icon: '🔩',
+    color: '#55c4a0',
+    tagline: 'Proteinfabrikken — bygger alt fra DNA-opskriften',
+    desc: `Ribosomer er cellens <b>proteinfabrikker</b>. De aflæser mRNA-instruktioner fra cellekærnen og sætter <b>aminosyrer</b> sammen til proteiner i den rigtige rækkefølge.<br><br>En celle kan have <b>millioner af ribosomer</b>. De sidder enten frit i cytoplasmaet eller på det ru endoplasmatiske retikulum. Proteiner er nøglen til alt: enzymer, hormoner, strukturelle fibre, immunforsvar.`,
+    chips: [{t:'2 underenheder (stor+lille)',c:'rgba(85,196,160,.22)',tc:'#a0ffe0'},{t:'Aflæser mRNA',c:'rgba(85,196,160,.22)',tc:'#a0ffe0'},{t:'~10 millioner pr. celle',c:'rgba(85,196,160,.22)',tc:'#a0ffe0'}],
+    draw: drawRibosome,
+  },
+  {
+    id: 'er',
+    name: 'Endoplasmatisk Retikulum',
+    icon: '🌊',
+    color: '#5090e0',
+    tagline: 'Cellens motorvej og produktionslinje',
+    desc: `Det endoplasmatiske retikulum (ER) er et <b>labyrintisk netværk af membraner</b> der gennemstrømmer cellen. Det findes i to former:<br><br><b>Ru ER</b> er besat med ribosomer og producerer proteiner der skal ud af cellen.<br><br><b>Glat ER</b> har ingen ribosomer og producerer <b>fedtstoffer, steroidhormoner og afgifter</b> stoffer (leverceller har meget glat ER).`,
+    chips: [{t:'Ru ER: proteinsyntese',c:'rgba(80,144,224,.22)',tc:'#a0c8ff'},{t:'Glat ER: fedt & hormoner',c:'rgba(80,144,224,.22)',tc:'#a0c8ff'},{t:'Forbundet med kærnen',c:'rgba(80,144,224,.22)',tc:'#a0c8ff'}],
+    draw: drawER,
+  },
+  {
+    id: 'golgi',
+    name: 'Golgi-apparatet',
+    icon: '📦',
+    color: '#c060d0',
+    tagline: 'Cellens postkontor — pakker og sender proteiner',
+    desc: `Golgi-apparatet er cellens <b>pakke- og forsendelsescenter</b>. Det modtager proteiner fra ER, <b>modificerer, sorterer og pakker</b> dem ind i blærer (vesikler) der sendes til det rette sted.<br><br>Nogle proteiner sendes ud af cellen (eksocytose), andre til lysosomer eller cellemembranen. Det ligner en stak <b>flade sækkepapirposer</b> (cisternae).`,
+    chips: [{t:'Modificerer proteiner',c:'rgba(192,96,208,.22)',tc:'#e0a0ff'},{t:'Producerer vesikler',c:'rgba(192,96,208,.22)',tc:'#e0a0ff'},{t:'4-6 lag (cisternae)',c:'rgba(192,96,208,.22)',tc:'#e0a0ff'}],
+    draw: drawGolgi,
+  },
+  {
+    id: 'lyso',
+    name: 'Lysosomer',
+    icon: '🧹',
+    color: '#e04080',
+    tagline: 'Cellens skraldemand og forsvar',
+    desc: `Lysosomer er cellens <b>affaldsbehandlingsanlæg</b>. De er fyldt med <b>fordøjelsesenzymer</b> der nedbryder affaldsstoffer, beskadigede organeller og fremmede stoffer (som bakterier).<br><br>De virker i <b>surt miljø (pH 4.5-5)</b>. Hvis et lysosom brister og enzymerne slipper ud kan de skade cellen selv. Processen med at nedbryde egne organeller hedder <b>autofagi</b>.`,
+    chips: [{t:'pH 4.5 — surt indre',c:'rgba(224,64,128,.22)',tc:'#ffaac8'},{t:'~50 enzymer',c:'rgba(224,64,128,.22)',tc:'#ffaac8'},{t:'Autofagi — selvoprydning',c:'rgba(224,64,128,.22)',tc:'#ffaac8'}],
+    draw: drawLyso,
+  },
+  {
+    id: 'cyto',
+    name: 'Cytoplasma & Cytoskelet',
+    icon: '🕸️',
+    color: '#40a0c0',
+    tagline: 'Cellens fyld og indre skelet',
+    desc: `Cytoplasmaet er den <b>geléagtige væske</b> der fylder cellen og holder organellerne på plads. Det består af vand, salte, sukker og proteiner.<br><br>I cytoplasmaet findes <b>cytoskelettet</b> — et netværk af proteinfibre der giver cellen form og transport-motorveje: <b>mikrotubuli</b> (tykke rør), <b>aktinfilamenter</b> (tynde tråde) og <b>intermediærfilamenter</b>.`,
+    chips: [{t:'70% af cellens vægt er vand',c:'rgba(64,160,192,.22)',tc:'#a0e0ff'},{t:'Mikrotubuli: 24 nm tykke',c:'rgba(64,160,192,.22)',tc:'#a0e0ff'},{t:'Motor for celledeling',c:'rgba(64,160,192,.22)',tc:'#a0e0ff'}],
+    draw: drawCyto,
+  },
+];
+
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+let visited = new Set();
+let animId = null;
+let tick = 0;
+let curOrg = null;
+let panAnimId = null;
+let panTick = 0;
+let mqIdx=0, mqRes=[], mqOrg=null;
+
+/* ══════════════════════════════════════════════
+   PER-ORGANELLE QUIZ (30 spørgsmål per organelle)
+══════════════════════════════════════════════ */
+const ORG_QUIZ = {
+  membrane: [
+    {q:'Hvad er cellemembranen primært lavet af?',opts:['Proteiner','Fosfolipider','DNA','Kulhydrater'],c:1,fb:'Cellemembranen er et dobbeltlag af fosfolipider — fedtmolekyler med vandelsket hoved og vandafvisende haler.'},
+    {q:'Hvad betyder "selektivt permeabel"?',opts:['Uigennemtrængelig','Alt passerer','Vælger hvad der passerer','Kan opløses'],c:2,fb:'Selektivt permeabel: membranen tillader visse stoffer at passere, men blokerer andre — som en intelligent vagter.'},
+    {q:'Hvad er tykkelsen af en cellemembran?',opts:['7-8 nm','1 μm','0,1 mm','50 nm'],c:0,fb:'Cellemembranen er blot 7-8 nanometer (milliarddele af en meter) tyk.'},
+    {q:'Hvad hedder de proteiner i cellemembranen?',opts:['Ribosom-proteiner','Membranproteiner','Kerne-proteiner','DNA-proteiner'],c:1,fb:'Membranproteiner er indlejret i eller på cellemembranen og varetager mange funktioner.'},
+    {q:'Hvad er fosfolipidbilaget?',opts:['To lag proteiner','To lag fosfolipider med halerne indad','Et lag DNA','To lag kulhydrater'],c:1,fb:'Fosfolipidbilaget: to lag fosfolipider, vandafvisende haler mod hinanden, vandelskende hoveder udad.'},
+    {q:'Hvad sker med cellen hvis membranen mangler?',opts:['Cellen vokser','Cellen opløses','Cellen deler sig','Intet sker'],c:1,fb:'Uden membran ville cellens indhold blande sig med omgivelserne og cellen opløses.'},
+    {q:'Hvad er osmose?',opts:['Transport af proteiner','Vandtransport over membranen','ATP-produktion','DNA-kopiering'],c:1,fb:'Osmose er diffusion af vand over en semipermeabel membran — fra lavt til højt koncentrationsområde.'},
+    {q:'Hvad kræver aktiv transport?',opts:['Intet','Lys','ATP (energi)','Vand'],c:2,fb:'Aktiv transport kræver ATP for at flytte stoffer mod koncentrationsgradienten.'},
+    {q:'Hvad er endocytose?',opts:['Cellen sender stoffer ud','Cellen optager stoffer ved at folde membranen','ATP-produktion','Proteinsyntese'],c:1,fb:'Endocytose: cellen optager store molekyler ved at "sluge" dem — membranen folder sig og skaber en blære.'},
+    {q:'Hvad er eksocytose?',opts:['Cellen optager stoffer','Cellen sender stoffer ud via vesikler','DNA-replikation','Celledeling'],c:1,fb:'Eksocytose: cellen frigiver stoffer ved at vesikler fusionerer med cellemembranen.'},
+    {q:'Hvilke stoffer passerer membranen uden hjælp?',opts:['Store proteiner','DNA','O₂ og CO₂','Natrium-ioner'],c:2,fb:'Små, uladede molekyler som O₂ og CO₂ diffunderer frit over membranen.'},
+    {q:'Hvad er glykokalyxen?',opts:['Et proteinkompleks inde i cellen','Kulhydrater på cellens ydre overflade','En form for DNA','En type ribosom'],c:1,fb:'Glykokalyxen er et lag sukkergrupper på cellens ydre overflade — vigtig for cellekommunikation.'},
+    {q:'Hvad er en jonkanal?',opts:['En tunnel i membranen for ioner','En type ribosom','En del af DNA','Et enzym'],c:0,fb:'Jonkanaler er proteinrør i membranen der tillader ioner (Na⁺, K⁺) at passere — essentielle for nerveceller.'},
+    {q:'Hvad er flydende mosaikmodellen?',opts:['DNA-modellen','Membranens struktur — proteiner flyder i fosfolipidhav','Et enzymmodel','En celledeling-model'],c:1,fb:'Flydende mosaikmodellen (1972): cellemembranen er et flydende fosfolipidhav med flydende proteiner.'},
+    {q:'Hvad gør receptorproteiner i membranen?',opts:['Producerer ATP','Binder til signalmolekyler (hormoner)','Lagrer DNA','Producerer ribosomer'],c:1,fb:'Receptorproteiner genkender og binder specifikke signalmolekyler og starter en reaktion i cellen.'},
+    {q:'Hvad er diffusion?',opts:['Transport mod gradienten','Transport fra høj til lav koncentration','Transport med ATP','Celledeling'],c:1,fb:'Diffusion er spontan bevægelse fra høj til lav koncentration — ingen energi kræves.'},
+    {q:'Hvad er den hydrofobe del af fosfolipidet?',opts:['Halerne','Hovedet','Hele molekylet','Ingen del'],c:0,fb:'Fosfolipidets haler er hydrofobe (vandafvisende) — de gemmes inde i dobbeltlaget.'},
+    {q:'Hvad er cholesterols rolle i membranen?',opts:['Ingen','Regulerer fleksibilitet og stabilitet','Producerer energi','Syntetiserer proteiner'],c:1,fb:'Cholesterol regulerer membranens fleksibilitet — forhindrer den i at blive for stiv eller for flydende.'},
+    {q:'Hvad er faciliteret diffusion?',opts:['Aktiv transport','Endocytose','Transport via protein uden energi','Osmose'],c:2,fb:'Faciliteret diffusion bruger proteinkanaler eller -bærere — ingen energi, men kræver et specifikt protein.'},
+    {q:'Hvad er membranpotentiale i hvile?',opts:['+70 mV','0 mV','-70 mV','100 mV'],c:2,fb:'Hvilemembranpotentialet er ca. -70 mV — negativt inde i cellen. Essentielt for nerveceller.'},
+    {q:'Hvad er fagocytose?',opts:['Vandtransport','"Cellespising" — cellen sluger store partikler','DNA-syntese','ATP-produktion'],c:1,fb:'Fagocytose er endocytose af store partikler — bruges af immunforsvarets celler (makrofager).'},
+    {q:'Hvad er pinocytose?',opts:['"Cellespising"','Vandtransport','"Celledrikning" — cellen optager dråber','Proteinsyntese'],c:2,fb:'Pinocytose er "celledrikning" — cellen optager dråber af ekstracellulær væske.'},
+    {q:'Hvad pumper Na⁺/K⁺-pumpen ud af cellen?',opts:['Kalium (K⁺)','Natrium (Na⁺)','Calcium (Ca²⁺)','Klorid (Cl⁻)'],c:1,fb:'Na⁺/K⁺-pumpen pumper 3 Na⁺ ud og 2 K⁺ ind per ATP — essentiel for nervefunktion.'},
+    {q:'Hvad er en vesikkel?',opts:['En type ribosom','En lille membranomsluttet blære','Et kromosom','En type enzym'],c:1,fb:'Vesikler er små membranomsluttede blærer der transporterer stoffer inde i cellen.'},
+    {q:'Hvad er transmembranproteiner?',opts:['Proteiner der flyder frit','Proteiner der går igennem hele membranen','Kun på indersiden','Kun på ydersiden'],c:1,fb:'Transmembranproteiner spænder hele vejen igennem membranens dobbeltlag.'},
+    {q:'Hvad er celladhæsion?',opts:['Celledeling','Cellers evne til at hæfte til hinanden','Proteinsyntese','DNA-reparation'],c:1,fb:'Celladhæsion er bindingen af celler til hinanden via adhesionsproteiner i membranen.'},
+    {q:'Hvad er lipid rafts?',opts:['Lipider der synker','Tætte regioner i membranen med specielle lipider og proteiner','Affaldsstoffer','En type DNA'],c:1,fb:'Lipid rafts er organiserede regioner i membranen — vigtige for cellekommunikation.'},
+    {q:'Hvad er membranfusion?',opts:['Membraner der nedbrydes','To membraner der smelter sammen','Ny membran dannes','DNA-syntese'],c:1,fb:'Membranfusion: to membraner smelter sammen — f.eks. når vesikler leverer indhold.'},
+    {q:'Hvad er flippaser?',opts:['DNA-enzymer','Proteiner der vender fosfolipider fra et lag til et andet','En type ribosom','En del af Golgi'],c:1,fb:'Flippaser flytter fosfolipider mellem de to lag i membranen — vedligeholder membranens asymmetri.'},
+    {q:'Hvad er protonmotivkraft i membransammenhæng?',opts:['En muskelkraft','Gradient af H⁺-ioner over membranen der driver ATP-produktion','En type ATP','DNA-kraft'],c:1,fb:'Protonmotivkraften er et H⁺-gradient over en membran — bruges af ATP-synthase i mitokondrier.'},
+  ],
+  nucleus: [
+    {q:'Hvad indeholder cellekærnen?',opts:['Ribosomer','DNA og kromosomer','Mitokondrier','Lysosomer'],c:1,fb:'Cellekærnen indeholder DNA pakket i 46 kromosomer — den komplette genetiske information.'},
+    {q:'Hvad er nukleoluset?',opts:['En del af cellemembranen','Struktur i kærnen der producerer ribosomalt RNA','Et enzym','Et kromosom'],c:1,fb:'Nukleoluset producerer rRNA og samler ribosomernes underenheder i cellekærnen.'},
+    {q:'Hvad er kerneporer?',opts:['Kanaler der styrer transport ind/ud af kærnen','Strukturer der producerer DNA','En type kromosom','Ribosomer'],c:0,fb:'Kerneporer er store proteinkomplekser der tillader udveksling af molekyler mellem kærnen og cytoplasmaet.'},
+    {q:'Hvad er DNA?',opts:['Et protein','Desoxribonukleinsyre — bærer genetisk information','Et fedt','En sukker'],c:1,fb:'DNA (desoxribonukleinsyre) bærer den genetiske information — opskriften på alle proteiner.'},
+    {q:'Hvad er et kromosom?',opts:['Et protein','DNA pakket tæt med histonproteiner','En type ribosom','En lipid'],c:1,fb:'Kromosomer er tæt pakkede strukturer af DNA og histoner — menneskeceller har 46.'},
+    {q:'Hvad er histoner?',opts:['Enzymer der klipper DNA','Proteiner som DNA pakkes om','RNA-molekyler','Membranproteiner'],c:1,fb:'Histoner er proteiner som DNA-tråden vikles tæt rundt om — danner nukleosomer.'},
+    {q:'Hvad er transkription?',opts:['DNA-kopiering','DNA aflæses og mRNA laves','Protein-fremstilling','Celledeling'],c:1,fb:'Transkription: DNA aflæses af RNA-polymerase og der produceres en mRNA-kopi.'},
+    {q:'Hvad er mRNA?',opts:['Mikro-RNA','Budbringer-RNA fra kærnen til ribosomerne','Ribosom-RNA','Et kromosom'],c:1,fb:'mRNA bærer proteininstruktioner fra cellekærnens DNA til ribosomerne i cytoplasmaet.'},
+    {q:'Hvad er translation?',opts:['DNA-kopiering','mRNA aflæses og protein produceres','Celledeling','Transkription'],c:1,fb:'Translation: ribosomet aflæser mRNA-koden og samler aminosyrer til et protein.'},
+    {q:'Hvad er et gen?',opts:['Et helt kromosom','En DNA-sekvens der koder for et protein','Et ribosom','Et enzym'],c:1,fb:'Et gen er en DNA-sekvens der indeholder koden for et specifikt protein eller RNA.'},
+    {q:'Hvor mange basepar er der i menneskets DNA?',opts:['3 millioner','3 milliarder','3 billioner','3.000'],c:1,fb:'Menneskets genom indeholder ca. 3 milliarder basepar fordelt på 46 kromosomer.'},
+    {q:'Hvad er de fire DNA-baser?',opts:['ABCD','ATCG','AUCG','WXYZ'],c:1,fb:'DNA-baserne: Adenin (A), Tymin (T), Cytosin (C) og Guanin (G).'},
+    {q:'Hvad baseparrer med adenin (A) i DNA?',opts:['Cytosin','Guanin','Tymin','Uracil'],c:2,fb:'A parres altid med T i DNA — Watsons og Cricks baseparkomplemantaritet.'},
+    {q:'Hvad er DNA-replikation?',opts:['RNA-produktion','DNA kopierer sig selv inden celledeling','Proteinsyntese','Celledeling'],c:1,fb:'DNA-replikation: DNA-molekylet kopierer sig selv præcist inden cellen deler sig.'},
+    {q:'Hvad er et intron?',opts:['Kodende del af et gen','Ikke-kodende sekvens der fjernes fra mRNA','Et protein','En DNA-skade'],c:1,fb:'Introner er DNA-sekvenser der transkriberes men fjernes fra mRNA inden translation.'},
+    {q:'Hvad er epigenetik?',opts:['Genetisk mutation','Ændringer i genudtryk uden ændring af DNA-sekvensen','En ribosom-type','DNA-reparation'],c:1,fb:'Epigenetik: ændringer i genekspression uden at DNA-sekvensen ændres — f.eks. methylering.'},
+    {q:'Hvad er telomerer?',opts:['Midten af et kromosom','Beskyttende ende-kapper på kromosomer','Histonproteiner','RNA-molekyler'],c:1,fb:'Telomerer er repetitive DNA-sekvenser i enderne af kromosomerne — forkortes ved hver celledeling.'},
+    {q:'Hvad er en mutation?',opts:['En normal celleproces','En ændring i DNA-sekvensen','Et ribosom','Celledeling'],c:1,fb:'En mutation er en permanent ændring i DNA-sekvensen — kan være harmløs, gavnlig eller skadelig.'},
+    {q:'Hvad gør RNA-polymerase?',opts:['Nedbryder RNA','Aflæser DNA og producerer mRNA','Oversætter mRNA til protein','Kopierer DNA'],c:1,fb:'RNA-polymerase aflæser DNA og producerer et mRNA-molekyle — starten af transkription.'},
+    {q:'Hvad er et codon?',opts:['Et helt gen','3 RNA-baser der koder for en aminosyre','Et kromosom','Et protein'],c:1,fb:'Et codon er en triplet (3 mRNA-baser) der koder for en specifik aminosyre.'},
+    {q:'Hvad er tRNA?',opts:['Budbringer-RNA','Transport-RNA der bringer aminosyren til ribosomet','Ribosom-RNA','Lille RNA'],c:1,fb:'tRNA bringer aminosyrer til ribosomet under translation — hvert tRNA har et anticodon.'},
+    {q:'Hvad er en promotor?',opts:['En reklamefunktion','DNA-sekvens foran et gen som RNA-polymerase binder til','Et ribosom','Et enzym'],c:1,fb:'En promotor er en DNA-sekvens foran et gen som RNA-polymerase genkender for at starte transkription.'},
+    {q:'Hvad er kerneenveloppen?',opts:['Cellemembranen','Kærnens dobbeltvæg med kerneporer','Et kromosom','En type ribosom'],c:1,fb:'Kerneenveloppen er kærnens dobbeltvæg — to membraner med kerneporer der styrer transporten.'},
+    {q:'Hvad er heterochromatin?',opts:['Aktivt DNA','Tæt pakket, inaktivt chromatin','Ribosom-DNA','Et protein'],c:1,fb:'Heterochromatin er tæt pakket og transcriptionelt inaktivt — modsat euchromatin der er aktivt.'},
+    {q:'Hvad er mitose?',opts:['RNA produceres','Cellen deler sig i to identiske datterceller','Proteiner laves','DNA repareres'],c:1,fb:'Mitose er celledelingen hvor en celle deler sig til to identiske datterceller med samme antal kromosomer.'},
+    {q:'Hvad er splicing?',opts:['DNA-kopiering','Introner klippes ud og eksoner samles i mRNA','Celledeling','Proteinnedbrydning'],c:1,fb:'RNA-splicing: introner klippes ud og eksoner samles til det modne mRNA.'},
+    {q:'Hvad er CRISPR-Cas9?',opts:['En type ribosom','Et genetisk redigeringsværktøj','Et cellemembraneprotein','En type mRNA'],c:1,fb:'CRISPR-Cas9 er et præcist genetisk redigeringsværktøj der kan klippe og ændre DNA.'},
+    {q:'Hvad er det centrale dogme?',opts:['DNA → Lipid → Protein','DNA → RNA → Protein','RNA → DNA → Protein','Protein → RNA → DNA'],c:1,fb:'Det centrale dogme (Crick, 1958): genetisk information flyder DNA → RNA → Protein.'},
+    {q:'Hvad er nukleosomets opbygning?',opts:['DNA alene','DNA viklet om 8 histonproteiner','RNA og proteiner','DNA og lipider'],c:1,fb:'Et nukleosom er DNA-tråden viklet ca. 1,7 gange rundt om en oktamer af 8 histonproteiner.'},
+    {q:'Hvad er et stop-codon?',opts:['AUG','Et codon der koder for en aminosyre','UAA, UAG eller UGA — signalerer slutning af protein','GGG'],c:2,fb:'Stop-codoner (UAA, UAG, UGA) koder ikke for aminosyrer — de signalerer at proteinsyntesen er slut.'},
+  ],
+  mito: [
+    {q:'Hvad er mitokondriernes funktion?',opts:['Nedbryde affald','Producere ATP via celleånding','Lave proteiner','Lagre DNA'],c:1,fb:'Mitokondrier er cellens kraftværk — omdanner glukose og ilt til ATP.'},
+    {q:'Hvad er ATP?',opts:['Et protein','Adenosintriphosphat — cellens energivaluta','Et kromosom','Et ribosom'],c:1,fb:'ATP er cellens universelle energimolekyle — alle processer bruger ATP.'},
+    {q:'Hvad er celleåndingens ligning?',opts:['H₂O + CO₂ → O₂ + sukker','C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP','2H₂ + O₂ → 2H₂O','ATP → ADP + P'],c:1,fb:'Celleånding: C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ~36 ATP.'},
+    {q:'Hvad er cristae?',opts:['Ydre membran','Indre foldninger i mitokondriets membran','En type DNA','Ribosom-type'],c:1,fb:'Cristae er foldninger af mitokondriets indre membran — øger overfladearealet og er sæde for ATP-syntese.'},
+    {q:'Hvad er mitokondriematrix?',opts:['Den ydre membran','Rummet inde i den indre membran','Et protein','En type kanal'],c:1,fb:'Mitokondriematrix indeholder enzymer til citronsyrecyklus og mitokondrielt DNA.'},
+    {q:'Hvad er unikt ved mitokondrier?',opts:['De kan teleportere','De har eget DNA og ribosomer','De er udenfor cellen','De producerer mRNA'],c:1,fb:'Mitokondrier har eget cirkulært DNA og ribosomer — tegn på bakteriel oprindelse.'},
+    {q:'Hvad er endosymbiose-teorien?',opts:['En membranteori','At mitokondrier engang var selvstændige bakterier','En DNA-teori','En ribosomteori'],c:1,fb:'Endosymbiose: mitokondrier var frie bakterier optaget i en archaea-celle for ~2 mia. år siden.'},
+    {q:'Hvad er glykolyse?',opts:['Fedtsyresyntese','Glukose nedbrydes til pyruvat i cytoplasmaet','ATP-syntese i mitokondriet','Proteinsyntese'],c:1,fb:'Glykolyse: glukose nedbrydes til 2 pyruvat i cytoplasmaet — kræver ingen ilt, giver 2 ATP.'},
+    {q:'Hvad er citronsyrecyklus?',opts:['DNA-kopiering','Pyruvat oxideres og NADH/FADH₂ produceres','Glykolyse','Fermentering'],c:1,fb:'Citronsyrecyklus: pyruvat oxideres i mitokondriematrix og producerer NADH og FADH₂.'},
+    {q:'Hvad er elektrontransportkæden?',opts:['En proteinkæde i den indre membran der producerer ATP','En DNA-sekvens','En type ribosom','En celleoverflade'],c:0,fb:'Elektrontransportkæden er proteinkomplekser i den indre membran — overfører elektroner og pumper H⁺-ioner til ATP-produktion.'},
+    {q:'Hvad er ATP-synthase?',opts:['Et DNA-enzym','Et enzym der producerer ATP ved H⁺-strøm','Et ribosom','Et membranprotein'],c:1,fb:'ATP-synthase producerer ATP når H⁺-ioner strømmer igennem det — et molekylært maskineri.'},
+    {q:'Hvad er anaerob respiration?',opts:['Celleånding med ilt','Energiproduktion uden ilt','ATP-produktion','DNA-syntese'],c:1,fb:'Anaerob respiration er energiproduktion uden ilt — kun 2 ATP (vs ~36) og producerer laktat.'},
+    {q:'Hvor mange ATP fra én glukose?',opts:['2','8','36','100'],c:2,fb:'Aerob celleånding giver ca. 36-38 ATP per glukose.'},
+    {q:'Hvad er mitokondrielt DNA?',opts:['Det samme som cellekærnens DNA','Cirkulært DNA — arvet kun fra moren','Et lineært DNA','Et ribosom'],c:1,fb:'mtDNA er cirkulært og arves udelukkende fra moren.'},
+    {q:'Hvad er ROS?',opts:['En type ATP','Skadelige bi-produkter fra elektrontransportkæden','Et ribosom','En type lipid'],c:1,fb:'ROS (reactive oxygen species) er skadelige bi-produkter der kan beskadige DNA og proteiner.'},
+    {q:'Hvad er beta-oxidation?',opts:['DNA-kopiering','Nedbrydning af fedtsyrer til acetyl-CoA','Proteinnedbrydning','Celledeling'],c:1,fb:'Beta-oxidation nedbryder fedtsyrer til acetyl-CoA i mitokondriet — vigtig energikilde under faste.'},
+    {q:'Hvad er NADH?',opts:['Et protein','En elektronbærer fra celleånding','Et kromosom','En lipid'],c:1,fb:'NADH er en elektronbærer dannet under glykolyse og Krebs-cyklus — afleverer elektroner til ETC.'},
+    {q:'Hvad er mitofagi?',opts:['Mitokondriel deling','Nedbrydning af skadede mitokondrier via autofagi','DNA-reparation','ATP-syntese'],c:1,fb:'Mitofagi er selektiv autofagi af skadede mitokondrier — PINK1/Parkin-medieret.'},
+    {q:'Hvad er protonmotivkraft?',opts:['En muskelkraft','H⁺-gradient over den indre membran der driver ATP-synthase','En type ATP','DNA-kraft'],c:1,fb:'Protonmotivkraften er energien i H⁺-gradienten over den indre membran — driver ATP-synthase.'},
+    {q:'Hvad er oxidativ phosphorylering?',opts:['Glykolyse','ATP-produktion via ETC og ATP-synthase','DNA-syntese','Proteinsyntese'],c:1,fb:'Oxidativ phosphorylering er den mest produktive fase af celleånding — ~32 ATP.'},
+    {q:'Hvad er mitokondriel fission?',opts:['ATP-produktion','Mitokondriets deling i to','DNA-kopiering','Apoptose'],c:1,fb:'Mitokondriel fission er deling af et mitokondrie i to — styret af DRP1-proteinet.'},
+    {q:'Hvad er mitokondriel fusion?',opts:['Nedbrydning','To mitokondrier der smelter sammen','ATP-produktion','DNA-syntese'],c:1,fb:'Mitokondriel fusion er sammensmelting af to mitokondrier — reparerer skadede mitokondrier.'},
+    {q:'Hvad er acetyl-CoA?',opts:['Et kromosom','Centralt metabolit der indgår i Krebs-cyklus','Et membranprotein','En type ribosom'],c:1,fb:'Acetyl-CoA er produceret fra pyruvat, fedtsyrer og aminosyrer — indgår i Krebs-cyklus.'},
+    {q:'Hvad er termogenin (UCP1)?',opts:['Et ATP-produkt','Et protein i brunt fedtvæv der producerer varme','Et DNA-protein','Et ribosom'],c:1,fb:'UCP1 i brunt fedtvæv tillader H⁺-lækage — energi frigives som varme (termogenese).'},
+    {q:'Hvad sker under apoptose i mitokondrier?',opts:['De vokser','De frigiver cytochrom c der aktiverer celle-selvmord','De producerer mere ATP','De deler sig'],c:1,fb:'Ved apoptose frigiver mitokondrier cytochrom c der aktiverer caspase-enzymer og celledød.'},
+    {q:'Hvad er Warburg-effekten?',opts:['Normal celleånding','Kræftcellers brug af glykolyse selv med ilt','DNA-mutation','Celledeling'],c:1,fb:'Warburg-effekten: kræftceller bruger primært glykolyse selv i tilstedeværelse af ilt.'},
+    {q:'Hvad er FADH₂?',opts:['DNA-syntese','En elektronbærer der afleverer elektroner til ETC','Proteinsyntese','Celledeling'],c:1,fb:'FADH₂ er en elektronbærer produceret i Krebs-cyklus — afleverer elektroner til ETC.'},
+    {q:'Hvad er intermembranrummet?',opts:['Intet rum','Rummet mellem de to mitokondriemembraner','Mitokondriematrix','Cytoplasmaet'],c:1,fb:'Intermembranrummet ligger mellem de to mitokondriemembraner — H⁺-ioner pumpes hertil.'},
+    {q:'Hvad er cyanid forgiftnings mekanisme?',opts:['Ødelægger membranen','Blokerer Kompleks IV og stopper ATP-produktion','Ødelægger ribosomer','Klipper DNA'],c:1,fb:'Cyanid blokerer cytochrom c oxidase (Kompleks IV) i ETC — stopper ATP-produktion hurtigt.'},
+    {q:'Hvad er mitokondriers størrelse?',opts:['1 mm','1-10 μm i diameter','1 nm','1 cm'],c:1,fb:'Mitokondrier er 1-10 mikrometer i diameter — omtrent på størrelse med en bakterie.'},
+  ],
+  ribosome: [
+    {q:'Hvad bygger ribosomerne?',opts:['ATP','Proteiner fra mRNA-instruktioner','DNA','Lipider'],c:1,fb:'Ribosomer er cellens proteinfabrikker — de aflæser mRNA og sætter aminosyrer i rækkefølge.'},
+    {q:'Hvad er et ribosom lavet af?',opts:['DNA og lipider','rRNA og proteiner','mRNA og proteiner','ATP og aminosyrer'],c:1,fb:'Ribosomer består af ribosomalt RNA (rRNA) og proteiner — to underenheder.'},
+    {q:'Hvad er de eukaryote ribosomers underenheder?',opts:['30S og 50S','40S og 60S','10S og 20S','50S og 70S'],c:1,fb:'Eukaryote ribosomer har 40S (lille) og 60S (stor) underenhed — tilsammen 80S.'},
+    {q:'Hvad er translation?',opts:['DNA kopiering','mRNA aflæses og protein produceres','RNA til DNA','Celledeling'],c:1,fb:'Translation: mRNA-koden oversættes til en aminosyresekvens (protein) i ribosomet.'},
+    {q:'Hvad er et codon?',opts:['En aminosyre','3 mRNA-baser der koder for én aminosyre','Et gen','Et ribosom'],c:1,fb:'Et codon er en triplet af RNA-baser der koder for en specifik aminosyre.'},
+    {q:'Hvad er anticodonnet?',opts:['Et ribosomprotein','3-base sekvens i tRNA der parres med mRNA-codonet','Et DNA-segment','En aminosyre'],c:1,fb:'Anticodonnet er tRNAs 3-base sekvens der baseparrer med mRNA-codonet.'},
+    {q:'Hvad er start-codonet?',opts:['UAA','UGA','AUG','UAG'],c:2,fb:'AUG er start-codonet — koder for methionin og starter proteinsyntesen.'},
+    {q:'Hvad er stop-codoner?',opts:['AUG, GAU, GGU','UAA, UAG, UGA','AAA, GGG, CCC','ACU, GCA, UAC'],c:1,fb:'Stop-codoner (UAA, UAG, UGA) signalerer at proteinsyntesen er færdig.'},
+    {q:'Hvad er et polysom?',opts:['Et enkelt ribosom','Mange ribosomer på samme mRNA','En type mRNA','Et protein'],c:1,fb:'Et polysom er mange ribosomer der aflæser samme mRNA simultant — øger effektiviteten.'},
+    {q:'Hvad er det ru ER?',opts:['Glat membrannetværk','Membrannetværk med ribosomer der laver sekretoriske proteiner','Et lysosom','Et mitokondrie'],c:1,fb:'Ru ER er besat med ribosomer og producerer proteiner til sekretion og membraner.'},
+    {q:'Hvad er en aminosyre?',opts:['En sukker','Byggesten i proteiner — 20 standard typer','Et DNA-base','Et ribosom'],c:1,fb:'Aminosyrer er proteinernes byggesten — der er 20 standard aminosyrer.'},
+    {q:'Hvad er en peptidbinding?',opts:['En binding i DNA','Kemisk binding mellem aminosyrer i proteinkæden','En ribosombinding','En membranbinding'],c:1,fb:'Peptidbindingen forbinder aminosyrerne i polypeptidkæden — dannes i ribosomet.'},
+    {q:'Hvad er chaperone-proteiner?',opts:['Proteiner der nedbryder andre','Proteiner der hjælper med korrekt proteinfolding','Membranproteiner','DNA-bindende proteiner'],c:1,fb:'Chaperone-proteiner hjælper nysyntetiserede proteiner med at folde korrekt.'},
+    {q:'Hvad er proteinets primærstruktur?',opts:['Aminosyrerækkefølgen','Proteinets 3D-form','Proteinets funktion','Antal aminosyrer'],c:0,fb:'Primærstrukturen er aminosyrernes rækkefølge — bestemt af mRNA-koden.'},
+    {q:'Hvad er en alpha-helix?',opts:['En DNA-struktur','En spiralformet sekundærstruktur i proteiner','Et ribosom','Et kromosom'],c:1,fb:'Alpha-helix er en spiralformet sekundærstruktur i proteiner — holdt af hydrogenbindinger.'},
+    {q:'Hvad er et enzym?',opts:['Et kromosom','Et protein der katalyserer kemiske reaktioner','Et ribosom','En lipid'],c:1,fb:'Et enzym er et biologisk katalysator — fremskynder reaktioner uden selv at forbruges.'},
+    {q:'Hvad er den centrale dogme?',opts:['DNA → Lipid → Protein','DNA → RNA → Protein','RNA → DNA → Protein','Protein → RNA → DNA'],c:1,fb:'Den centrale dogme: DNA → RNA → Protein — informationen flyder i denne retning.'},
+    {q:'Hvad er tRNA?',opts:['Budbringer-RNA','Transport-RNA der bringer aminosyrer til ribosomet','Ribosom-RNA','Lille RNA'],c:1,fb:'tRNA bringer de rette aminosyrer til ribosomet under translation.'},
+    {q:'Hvad er ubiquitin?',opts:['Et vitamin','En lille protein der markerer proteiner til nedbrydning','Et ribosom','Et DNA-protein'],c:1,fb:'Ubiquitin markerer fejlede proteiner til nedbrydning i proteasomet.'},
+    {q:'Hvad er proteasomet?',opts:['En type ribosom','En stor proteinkompleks der nedbryder ubiquitin-mærkede proteiner','Et mitokondrie','En type kanal'],c:1,fb:'Proteasomet nedbryder ubiquitin-mærkede proteiner — cellens primære proteinkvalitetskontrol.'},
+    {q:'Hvad er de fire proteinstruktur niveauer?',opts:['Primær, sekundær, tertiær, kvartær','Enkel, dobbelt, tredobbelt, firdobbelt','Mini, mellem, stor, kæmpe','Alfa, beta, gamma, delta'],c:0,fb:'Proteinstrukturer: Primær (sekvens), Sekundær (helix/sheet), Tertiær (3D), Kvartær (flere kæder).'},
+    {q:'Hvad er antibiotika og ribosomer?',opts:['Antibiotika styrker ribosomerne','Antibiotika blokerer bakterieribosomernes proteinsyntese','Antibiotika ødelægger membraner','Antibiotika blokerer ATP'],c:1,fb:'Mange antibiotika (tetracyklin, streptomycin) blokerer bakterielle ribosomers (70S) proteinsyntese.'},
+    {q:'Hvad er et signalpeptid?',opts:['Et elektrisk signal','Sekvens i N-terminalen der dirigerer proteinet til ER','Et DNA-signal','En type antibiotika'],c:1,fb:'Signal-peptidet er en amino-syre-sekvens der dirigerer ribosomet til ER og proteinet til sekretionsvejen.'},
+    {q:'Hvad er elongering i translation?',opts:['Starten af proteinsyntese','Aminosyrer tilføjes en ad gangen til kæden','Afslutning','DNA-kopiering'],c:1,fb:'Elongering er translationens midterfase — aminosyrer tilføjes én ad gangen.'},
+    {q:'Hvad er terminering i translation?',opts:['Start','Forlængelse','Stop-codon nås og proteinet frigives','RNA-syntese'],c:2,fb:'Terminering: stop-codon nås, frigivesfaktorer binder og proteinet frigives fra ribosomet.'},
+    {q:'Hvad er et beta-sheet?',opts:['Et proteinnedbrydningsprodukt','Sekundærstruktur af parallelle kædesegmenter','En type lipid','Et ribosom'],c:1,fb:'Beta-sheet er en sekundærstruktur af parallelle polypeptidkæder holdt af hydrogenbindinger.'},
+    {q:'Hvad er post-translationel modifikation?',opts:['Ændring af DNA','Kemisk modifikation af proteinet efter produktion','Celledeling','RNA-syntese'],c:1,fb:'Post-translationelle modifikationer (phosphorylering, glycosylering) ændrer proteinets funktion.'},
+    {q:'Hvad er rRNA?',opts:['Budbringer-RNA','RNA der udgør ribosomet og har katalytisk aktivitet','Transport-RNA','Et lille RNA'],c:1,fb:'rRNA udgør størstedelen af ribosomet og katalyserer dannelsen af peptidbindinger.'},
+    {q:'Hvad er en prion?',opts:['Et normalt protein','Et fejlfoldet protein der inducerer fejlfoldning af normale proteiner','Et ribosom','Et virus'],c:1,fb:'En prion er et fejlfoldet protein der kan "smitte" normalt protein til at folde forkert.'},
+    {q:'Hvad er sekretion?',opts:['Celledeling','Cellen frigiver proteiner ud af cellen','DNA-kopiering','ATP-produktion'],c:1,fb:'Sekretion: cellen frigiver proteiner (hormoner, enzymer) ud via vesikler og eksocytose.'},
+  ],
+  er: [
+    {q:'Hvad er det endoplasmatiske retikulum (ER)?',opts:['En type ribosom','Et labyrintisk membrannetværk inde i cellen','Et mitokondrie','Et lysosom'],c:1,fb:'ER er et labyrintisk netværk af sammenhængende membraner der gennemstrømmer cytoplasmaet.'},
+    {q:'Hvad er forskellen på ru og glat ER?',opts:['Størrelse','Ru ER har ribosomer, glat ER har ikke','Ru ER er sur','Ingen forskel'],c:1,fb:'Ru ER: ribosomer og proteinsyntese. Glat ER: ingen ribosomer, lipider og hormoner.'},
+    {q:'Hvad producerer ru ER?',opts:['ATP','Proteiner til sekretion og membraner','DNA','Lipider'],c:1,fb:'Ru ER producerer proteiner til sekretion, cellemembranen og organellemembraner.'},
+    {q:'Hvad producerer glat ER?',opts:['DNA og RNA','Lipider, steroidhormoner og neutraliserer giftstoffer','Proteiner til kærnen','Ribosomer'],c:1,fb:'Glat ER syntetiserer lipider, steroidhormoner og detoxificerer giftstoffer (lever).'},
+    {q:'Hvad er ER-stress?',opts:['ER under mekanisk pres','Akkumulering af fejlfoldede proteiner i ER','DNA-skade','Mitokondrie-stress'],c:1,fb:'ER-stress opstår ved akkumulering af fejlfoldede proteiner — aktiverer UPR-respons.'},
+    {q:'Hvad er signal recognition particle (SRP)?',opts:['Et DNA-protein','Kompleks der dirigerer ribosomet til ru ER','Et lysosom-protein','En type tRNA'],c:1,fb:'SRP genkender signalpeptidet og dirigerer ribosomet til ru ER.'},
+    {q:'Hvad er translokon?',opts:['Et genudtryk','Proteinkanal i ru ER-membranen som proteiner trækkes igennem','En type ribosom','Et mitokondrie-kompleks'],c:1,fb:'Translokonet (Sec61) er en proteinkanal proteiner translokeres igennem ind i ER-lumenet.'},
+    {q:'Hvad er ERAD?',opts:['En type DNA-reparation','Fejlfoldede ER-proteiner tilbagesendes til cytoplasmaet og nedbrydes','ATP-produktion','Celledeling'],c:1,fb:'ERAD (ER-associated degradation): fejlfoldede proteiner sendes til proteasom-nedbrydning.'},
+    {q:'Hvad er sarcoplasmatisk retikulum?',opts:['En ribosomtype','Specialiseret glat ER i muskelceller der lagrer Ca²⁺','En mitokondrietype','En cellemembranktype'],c:1,fb:'Sarcoplasmatisk retikulum er specialiseret glat ER i muskelceller — Ca²⁺-frigivelse aktiverer muskelsammentrækning.'},
+    {q:'Hvad er N-glycosylering?',opts:['Tilsætning af fosfat','Tilsætning af sukker til asparagin-aminosyrer i ER','DNA-modifikation','Proteinnedbrydning'],c:1,fb:'N-glycosylering: sukkergrupper tilsættes til asparagin-rester i ER — påvirker proteinfoldning.'},
+    {q:'Hvad er CYP-enzymer?',opts:['Ribosomer','Enzymer i glat ER der metaboliserer medicin og giftstoffer','DNA-enzymer','Mitokondrie-proteiner'],c:1,fb:'CYP-enzymer (cytochrom P450) i glat ER metaboliserer medicin, giftstoffer og hormoner.'},
+    {q:'Hvad er KDEL-sekvensen?',opts:['Et DNA-signal','En aminosyresekvens der holder proteiner i ER','Et membransignal','En type codon'],c:1,fb:'KDEL er et ER-retention-signal — proteiner med KDEL returneres til ER fra Golgi.'},
+    {q:'Hvad er ER-exit-sites (ERES)?',opts:['Nedbrydningssteder','Regioner hvorfra COPII-vesikler knopper af til Golgi','DNA-steder','ATP-steder'],c:1,fb:'ERES er specialiserede ER-regioner hvorfra COPII-vesikler transporterer proteiner til Golgi.'},
+    {q:'Hvad er UPR (Unfolded Protein Response)?',opts:['En type celledeling','Adaptiv respons der reducerer proteinsyntese under ER-stress','DNA-reparation','ATP-regulering'],c:1,fb:'UPR er cellens svar på ER-stress — reducerer proteinsyntese og øger ER-kapacitet.'},
+    {q:'Hvad er disulfidbindinger?',opts:['DNA-bindinger','Kovalente bindinger mellem cysteinaminosyrer der stabiliserer proteiner','Lipidbindinger','Ribosombindinger'],c:1,fb:'Disulfidbindinger (S-S) dannes i ERs oxidative miljø og stabiliserer proteinstrukturen.'},
+    {q:'Hvad er PDI (Protein Disulfide Isomerase)?',opts:['Et DNA-enzym','Et ER-enzym der katalyserer dannelse af disulfidbindinger','Et ribosomprotein','Et membranprotein'],c:1,fb:'PDI katalyserer korrekt dannelse og omarrangering af disulfidbindinger i ER.'},
+    {q:'Hvad er lipid droplets?',opts:['DNA-pakker','Intracellulære lagerorgan for neutrale lipider fra ER','Ribosomer','En type mitokondrie'],c:1,fb:'Lipid droplets er lagerorgan for triglycerider — dannes fra ER-membranen.'},
+    {q:'Hvad er IP3 i ER-sammenhæng?',opts:['Et protein','Signalmolekyle der frigiver Ca²⁺ fra ER','Et kromosom','En type lipid'],c:1,fb:'IP3 binder til receptorer i ER-membranen og frigiver lagret Ca²⁺ — vigtigt i signalering.'},
+    {q:'Hvad er ER-lumenet?',opts:['Cytoplasmaet','Det indre rum i ER','Cellekærnen','Mitokondriematrix'],c:1,fb:'ER-lumenet er det indre rum — oxidativt miljø med chaperone-proteiner der sikrer korrekt foldning.'},
+    {q:'Hvad er kolesterolsyntese?',opts:['DNA-kopiering','Syntese af kolesterol primært i glat ER','ATP-produktion','Celledeling'],c:1,fb:'Kolesterolsyntese foregår i glat ER — vigtig for cellemembraners fluiditet og steroidhormoner.'},
+    {q:'Hvad er O-glycosylering?',opts:['Kun i ER','Tilsætning af sukker til serin/threonin — sker primært i Golgi','DNA-modifikation','Proteinnedbrydning'],c:1,fb:'O-glycosylering sker primært i Golgi og tilsætter sukkergrupper til serin eller threonin.'},
+    {q:'Hvad er calnexin?',opts:['Et ribosomprotein','Et ER-chaperone-protein der hjælper med korrekt proteinfoldning','Et DNA-protein','Et membranprotein'],c:1,fb:'Calnexin er et ER-chaperone der binder til glycoproteiner og sikrer korrekt foldning.'},
+    {q:'Hvad forbindes ER med direkte?',opts:['Lysosomerne','Cellekærnens enveloppe','Mitokondrierne','Cellemembranen'],c:1,fb:'ER er direkte forbundet med kerneenveloppens ydre membran — de er kontinuerlige strukturer.'},
+    {q:'Hvad er COPII-vesikler?',opts:['Vesikler inden for Golgi','Vesikler der transporterer proteiner fra ER til Golgi','Lysosomale vesikler','Sekretoriske vesikler'],c:1,fb:'COPII-vesikler transporterer korrekt foldede proteiner fra ER-exit-sites til cis-Golgi.'},
+    {q:'Hvad sker med fejlfoldede proteiner i ER?',opts:['De frigives direkte','De retrotranslokeres og nedbrydes i proteasomet (ERAD)','De sendes til mitokondrier','De tilsættes mere sukker'],c:1,fb:'Fejlfoldede ER-proteiner holdes tilbage af chaperone-proteiner og sendes til ERAD.'},
+    {q:'Hvad er brefeldin A?',opts:['Et antibiotika','Et toksin der forstyrrer COPI og kollapser Golgi ind i ER','En ATP-hæmmer','Et DNA-alkylerende stof'],c:1,fb:'Brefeldin A hæmmer COPI-vesikeldannelse — Golgi-membraner fusionerer tilbage til ER.'},
+    {q:'Hvad er Protein Disulfide Isomerase funktion?',opts:['Nedbryder proteiner','Danner og omarrangerer disulfidbindinger i ER','Binder til DNA','Producerer ATP'],c:1,fb:'PDI katalyserer korrekt dannelse af S-S bindinger som er essentielle for mange sekretoriske proteiner.'},
+    {q:'Hvad er ERs rolle i steroidproduktion?',opts:['Ingen','Glat ER syntetiserer alle steroidhormoner ud fra kolesterol','Ru ER producerer dem','Mitokondrier alene'],c:1,fb:'Glat ER i steroidproducerende celler (binyre, gonade) syntetiserer steroidhormoner fra kolesterol.'},
+    {q:'Hvad er SP (signal peptide) i ER-kontekst?',opts:['Et elektrisk signal','N-terminal aminosyresekvens der dirigerer proteinet til ER','Et DNA-signal','En type codon'],c:1,fb:'Signalpeptidet er en N-terminal sekvens på sekretoriske proteiner der dirigerer dem til ru ER.'},
+    {q:'Hvad sker med ER under ER-stress?',opts:['ER vokser','ER ekspanderer og chaperone-ekspression øges via UPR','ER nedbrydes','Intet'],c:1,fb:'Under ER-stress ekspanderer ER-netværket og ekspression af chaperone-proteiner øges via UPR.'},
+  ],
+  golgi: [
+    {q:'Hvad er Golgi-apparatets funktion?',opts:['ATP-produktion','Modificerer, sorterer og sender proteiner','DNA-syntese','Celledeling'],c:1,fb:'Golgi er cellens "postkontor" — modificerer, sorterer og sender proteiner til de rette destinationer.'},
+    {q:'Hvad er cisternae?',opts:['Et protein','Flade membranomsluttede sekker i Golgi-stakken','En type DNA','Et ribosom'],c:1,fb:'Cisternae er de flade membransekker der udgør Golgi-stakken — proteiner passerer fra cis til trans.'},
+    {q:'Hvad er cis-Golgi?',opts:['Siden mod cellemembranen','Siden mod ER — modtager proteiner fra ER','Den midterste del','En type ribosom'],c:1,fb:'Cis-Golgi modtager COPII-vesikler fra ER — proteiner træder ind her.'},
+    {q:'Hvad er trans-Golgi-netværket?',opts:['Den inkommende side','Sorterings- og pakkeregionen til forsendelse','En type DNA','Et ribosomnetværk'],c:1,fb:'TGN (trans-Golgi-netværk) sorterer og pakker proteiner til specifikke destinationer.'},
+    {q:'Hvad er O-glycosylering?',opts:['Kun i ER','Tilsætning af sukker til serin/threonin i Golgi','DNA-modifikation','Proteinnedbrydning'],c:1,fb:'O-glycosylering sker primært i Golgi — sukkergrupper tilsættes serin- eller threoninrester.'},
+    {q:'Hvad er sulfonering?',opts:['Addition af alkohol','Tilsætning af sulfatgrupper til proteiner og lipider i Golgi','DNA-modifikation','Fedtsyresyntese'],c:1,fb:'Sulfonering i Golgi tilsætter sulfatgrupper — vigtig for cellesignalering.'},
+    {q:'Hvad er COPI-vesikler?',opts:['Vesikler fra ER','Vesikler der transporterer inden for Golgi og tilbage til ER','Lysosomale vesikler','Sekretoriske vesikler'],c:1,fb:'COPI-vesikler transporterer retrograde (mod ER) og inden for Golgi-stakken.'},
+    {q:'Hvad er mannose-6-phosphat (M6P)?',opts:['Et energimolekyle','Sorteringsmærke der sender lysosomale enzymer fra Golgi til lysosomer','Et DNA-base','En aminosyre'],c:1,fb:'M6P er et glykan-mærke tilsat lysosomale enzymer i Golgi — receptorer i TGN sender dem til lysosomer.'},
+    {q:'Hvad er sialylering?',opts:['Addition af salte','Tilsætning af sialsyre til proteiner og lipider i Golgi','DNA-modifikation','Proteinnedbrydning'],c:1,fb:'Sialylering tilsætter sialsyre til glykankæder i Golgi — vigtig for immunforsvar.'},
+    {q:'Hvad er klatrin-belagte vesikler?',opts:['Vesikler fra ER','Vesikler fra TGN til lysosomer og ved endocytose','COPI-vesikler','Sekretoriske vesikler'],c:1,fb:'Klatrin-vesikler dannes fra TGN mod lysosomer og ved endocytose ved cellemembranen.'},
+    {q:'Hvad er SNARE-proteiner?',opts:['DNA-bindende','Proteiner der medierer vesikelfusion med målmembraner','Ribosomproteiner','Membrankanaler'],c:1,fb:'SNARE-proteiner på vesikler og målmembraner parres og driver membranfusion.'},
+    {q:'Hvad sker med Golgi under mitose?',opts:['Intet','Golgi fragmenterer og fordeles til dattercellerne','Golgi forbliver','Golgi nedbrydes permanent'],c:1,fb:'Under mitose fragmenterer Golgi og fordeles jævnt til begge datterceller.'},
+    {q:'Hvad er en sekretorisk granule?',opts:['En type ribosom','Et tæt pakket vesikkel med sekretoriske proteiner','Et mitokondrie','Et lysosom'],c:1,fb:'Sekretoriske granuler oplagres og frigives ved reguleret eksocytose (f.eks. insulin).'},
+    {q:'Hvad er mucin?',opts:['Et enzym','Tungt O-glycosylerede proteiner der udgør slim','Et kromosom','En lipid'],c:1,fb:'Muciner er store, glycosylerede proteiner produceret i Golgi — udgør slim i luftveje og tarm.'},
+    {q:'Hvad er eksosomer?',opts:['En type mitokondrie','Små ekstracellulære vesikler frigivet ved eksocytose','En type DNA','Golgi-cisternae'],c:1,fb:'Eksosomer er membranvesikler frigivet af celler — bruges i intercellulær kommunikation.'},
+    {q:'Hvad er lysosomal biogenese via Golgi?',opts:['DNA-syntese','Lysosomale enzymer modtager M6P i Golgi og sendes til lysosomer','Celledeling','ATP-produktion'],c:1,fb:'Lysosomale enzymer tagges med M6P i Golgi — TGN-receptorer sorterer dem til pre-lysosomer.'},
+    {q:'Hvad er Golgi matrix proteiner?',opts:['DNA-proteiner','Strukturelle proteiner (golgins) der opretholder Golgi-stakkens form','Ribosomproteiner','Lysosomale enzymer'],c:1,fb:'Golgins er strukturelle proteiner der vedligeholder Golgi-stakkens arkitektur.'},
+    {q:'Hvad er polariseret sekretion?',opts:['Vilkårlig sekretion','Directed sekretion til en specifik celle-side','DNA-syntese','Celledeling'],c:1,fb:'Polariseret sekretion: proteiner sendes specifikt til apikale eller basolaterale celleoverflade.'},
+    {q:'Hvad er GDP-mannose?',opts:['En energikilde','En aktiveret sukker-donor til glycosylering i Golgi','Et DNA-molekyle','En aminosyre'],c:1,fb:'GDP-mannose er en nukleotid-sukker der bruges til glycosylering i Golgi.'},
+    {q:'Hvad er proteoglykaner?',opts:['Et protein','Makromolekyle med glykosaminoglykan-kæder tilsat i Golgi','Et kromosom','Et enzym'],c:1,fb:'Proteoglykaner har glykosaminoglykan-kæder tilsat i Golgi — vigtige i bindevæv.'},
+    {q:'Hvad er GPI-ankeret?',opts:['Et DNA-anker','Glycolipidanker der forankrer proteiner i ydersiden af membranen','Et proteinanker','En ribosomfastsættelse'],c:1,fb:'GPI-ankeret fastgøres til proteiners C-terminus i ER og modnes i Golgi — forankrer proteiner i membranen.'},
+    {q:'Hvad er cisternal maturation modellen?',opts:['En DNA-model','Golgi-cisternerne modnes frem istedet for proteintransport via vesikler','En proteinfoldningsmodel','En lipidmodel'],c:1,fb:'Cisternal maturation: Golgi-cisternerne modnes og bevæger sig fra cis til trans.'},
+    {q:'Hvad er furin?',opts:['En sukker','En protease i TGN der aktiverer sekretoriske proteiner','Et DNA-enzym','En type lipid'],c:1,fb:'Furin er en proprotein-konvertase i TGN der klipper og aktiverer proproteiner (som proinsulin).'},
+    {q:'Hvad er ARF (ADP-Ribosylation Factor)?',opts:['Et DNA-protein','Et GTPase der rekrutterer COPI til Golgi','Et ribosomprotein','Et lysosomenzym'],c:1,fb:'ARF er et lille GTPase der i aktiv form rekrutterer COPI-mantelproteiner til Golgi-membraner.'},
+    {q:'Hvad er Golgi-stakkens polarisering?',opts:['Tilfældig','Cis mod ER, trans mod cellemembranen','Cis mod cellemembranen','Ingen orientering'],c:1,fb:'Golgi er polariseret: cis-siden modtager fra ER, trans-siden (TGN) sender til destinationer.'},
+    {q:'Hvad er multi-vesikulære legemer (MVB)?',opts:['Golgi-cisternae','Endosomale compartments med intraluminale vesikler','Mitokondrier','En type ribosom'],c:1,fb:'MVBer er sene endosomer der enten fusionerer med lysosomer eller frigiver eksosomer.'},
+    {q:'Hvad er steatose og Golgi?',opts:['Golgi er urelateret','Fedtakkumulering i lever kan påvirke Golgi-struktur og sekretionsfunktion','En Golgi-sygdom','En DNA-ændring'],c:1,fb:'Fedtleversygdom (steatose) kan forstyrre Golgi-funktion og sekretionen af lipoproteiner.'},
+    {q:'Hvad er N-glycosylering i Golgi?',opts:['Starter i Golgi','Trimning og tilsætning af sukkergrupper til N-glycan-kæder fra ER','Sker kun i ER','DNA-modifikation'],c:1,fb:'I Golgi modificeres N-glycan-kæderne fra ER — mannosegrupper fjernes og nye sukkergrupper tilsættes.'},
+    {q:'Hvad er GRASPs?',opts:['DNA-proteiner','Proteiner der medierer stapling af Golgi-cisternerne','Ribosomproteiner','Lysosomale proteiner'],c:1,fb:'GRASP65 og GRASP55 er membranproteiner der sammenkoblet Golgi-cisternerne i en stabel.'},
+    {q:'Hvad er intracellulair transport generelt?',opts:['Alt sker tilfældigt','Vesikler transporterer "last" fra donator-organelle til målorganelle','DNA-transport','ATP-transport'],c:1,fb:'Intracellulær transport foregår via vesikler belagt med mantelproteiner (COPII, COPI, klatrin).'},
+  ],
+  lyso: [
+    {q:'Hvad er lysosomers funktion?',opts:['ATP-produktion','Nedbryde affald og beskadigede organeller','Lave proteiner','Lagre DNA'],c:1,fb:'Lysosomer er affaldsbehandlingsanlægget — ~50 hydrolyseenzymer nedbryder alle typer biomolekyler.'},
+    {q:'Hvad er pH i et lysosom?',opts:['7 (neutral)','10 (basisk)','4.5-5 (surt)','1 (meget surt)'],c:2,fb:'Lysosomernes indre er surt (pH 4.5-5) — nødvendigt for enzymatisk aktivitet.'},
+    {q:'Hvad er autofagi?',opts:['Celledeling','Nedbrydning af cellens egne beskadigede organeller','DNA-reparation','ATP-produktion'],c:1,fb:'Autofagi ("selvfortæring"): cellen nedbryder og genbruger egne beskadigede organeller.'},
+    {q:'Hvad er makroautofagi?',opts:['En celledeling','Fagofor omslutter indhold og fusionerer med lysosom','DNA-syntese','Proteinsekretion'],c:1,fb:'Makroautofagi: dobbeltmembranfagofor dannes, omslutter indhold og fusionerer med lysosom.'},
+    {q:'Hvad er lysosomal lagersygdom?',opts:['En muskelsvaghed','Genetisk defekt i lysosomal enzymfunktion med substrat-ophobning','En DNA-fejl','En proteinfejl'],c:1,fb:'Lysosomale lagersygdomme: genetiske defekter i lysosomale enzymer — substrater ophober sig.'},
+    {q:'Hvad er fagosomer?',opts:['En lysosomtype','Endosomer dannet ved fagocytose — fusionerer med lysosomer','ATP-organeller','DNA-lagre'],c:1,fb:'Fagosomer dannes ved fagocytose og fusionerer med lysosomer til fagolysosomer.'},
+    {q:'Hvad er v-H⁺-ATPase?',opts:['Et mitokondrieenzym','Protonpumpe der sænker lysosomets pH','Et ribosomenzym','En DNA-polymerase'],c:1,fb:'V-H⁺-ATPase pumper H⁺-ioner ind i lysosomets lumen ved hjælp af ATP.'},
+    {q:'Hvad er LAMP-proteiner?',opts:['DNA-proteiner','Strukturelle proteiner i lysosommembranen der beskytter den','Ribosomale proteiner','Mitokondriemembranproteiner'],c:1,fb:'LAMP-proteiner (LAMP-1, LAMP-2) beskytter lysosommembranen mod enzymatisk nedbrydning.'},
+    {q:'Hvad er cathepsiner?',opts:['Ribosomproteiner','Lysosomale proteaser der nedbryder proteiner','DNA-enzymer','Mitokondriemembranproteiner'],c:1,fb:'Cathepsiner er lysosomale proteaser der nedbryder proteiner i det sure lysosomale miljø.'},
+    {q:'Hvad er mitofagi?',opts:['Mitokondrievækst','Selektiv autofagi af skadede mitokondrier','DNA-reparation','Celledeling'],c:1,fb:'Mitofagi: PINK1/Parkin markerer skadede mitokondrier til autofagisk nedbrydning.'},
+    {q:'Hvad er Tay-Sachs sygdom?',opts:['En hjertelidelse','Lysosomal lagersygdom med defekt hexosaminidase A','En muskelsvaghed','En type allergi'],c:1,fb:'Tay-Sachs: mangel på hexosaminidase A — GM2 gangliosid ophober sig i nerveceller.'},
+    {q:'Hvad er xenofagi?',opts:['En celledeling','Selektiv autofagi af intracellulære patogener','DNA-syntese','ATP-produktion'],c:1,fb:'Xenofagi er selektiv autofagi af intracellulære patogener som bakterier.'},
+    {q:'Hvad er TFEB?',opts:['Et ribosomprotein','Transkriptionsfaktor der regulerer lysosomal biogenese','Et DNA-enzym','Et membranprotein'],c:1,fb:'TFEB er masterregulator af lysosomal biogenese og autofagi.'},
+    {q:'Hvad er mTOR ved lysosomer?',opts:['Et lysosom-enzym','En kinase der hæmmer autofagi når næringsstoffer er til stede','Et DNA-enzym','Et ribosomprotein'],c:1,fb:'mTORC1 på lysosomoverfladen hæmmer autofagi ved tilstedeværelse af næring.'},
+    {q:'Hvad er Gauchers sygdom?',opts:['En nervesygdom','Lysosomal lagersygdom med defekt glukocerebrosidase','En hjertelidelse','En nyregrygdom'],c:1,fb:'Gauchers sygdom: mangel på glukocerebrosidase — glukocerebrosid ophober sig i makrofager.'},
+    {q:'Hvad er Pompes sygdom?',opts:['En hjertelidelse','Lysosomal lagersygdom med mangel på alfa-glucosidase','En nervesygdom','En allergi'],c:1,fb:'Pompes sygdom: mangel på lysosomal α-glucosidase — glykogen ophober sig i muskler.'},
+    {q:'Hvad er autofagi-processen i trin?',opts:['Tilfældig nedbrydning','Nukleering → fagofor → autofagosomfusion med lysosom → nedbrydning','DNA-syntese','ATP-produktion'],c:1,fb:'Autofagi: nukleering af fagofor → omslutter indhold → autofagosom → fusion med lysosom → nedbrydning.'},
+    {q:'Hvad er lysosomal eksocytose?',opts:['Normal lysosomfunktion','Lysosomer fusionerer med cellemembranen og frigiver indhold ud','DNA-syntese','ATP-produktion'],c:1,fb:'Lysosomal eksocytose frigiver enzymer ud — vigtigt ved plasmamembranreparation.'},
+    {q:'Hvad er chaperone-medieret autofagi?',opts:['En celledeling','Direkte translokation af KFERQ-proteiner til lysosomet','DNA-reparation','ATP-produktion'],c:1,fb:'CMA: proteiner med KFERQ-motiv transporteres direkte over lysosommembranen via LAMP-2A.'},
+    {q:'Hvad er Niemann-Pick type C?',opts:['En hjertelidelse','Lysosomal kolesterol-transportdefekt pga. NPC1/NPC2-defekt','En muskelsvaghed','En allergi'],c:1,fb:'NPC: kolesterol ophober sig i lysosomer pga. defekte NPC1/NPC2 transport-proteiner.'},
+    {q:'Hvad er lysosomal membranpermeabilisering?',opts:['Normal funktion','Ruptur af lysosommembranen med cathepsin-frigivelse — aktiverer celledød','ATP-produktion','DNA-reparation'],c:1,fb:'LMP: lysosommembranen permeabiliseres og cathepsiner slipper ud — initierer apoptose.'},
+    {q:'Hvad er de 5 enzymer-kategorier i lysosomer?',opts:['Kun proteaser','Proteaser, nukleaser, lipaser, glycosidaser og fosfataser','Kun lipase','Kun DNA-enzymer'],c:1,fb:'Lysosomale enzymer: proteaser (proteiner), nukleaser (DNA/RNA), lipaser (fedt), glycosidaser (sukker), fosfataser.'},
+    {q:'Hvad er et zymogen?',opts:['Et DNA-enzym','Et inaktivt enzymforstadie der aktiveres ved klikning','En type lipid','Et ribosom'],c:1,fb:'Zymogener er inaktive enzymforsatser — lysosomale enzymer aktiveres ved klikning i det sure miljø.'},
+    {q:'Hvad er Batten sygdom?',opts:['En hjertelidelse','Neuronale cereoide lipofuscinoser — lysosomale lagersygdomme i nerveceller','En muskellidelse','En immundefekt'],c:1,fb:'Batten sygdom er lysosomale lagersygdomme med lipofuscin-akkumulering i nerveceller.'},
+    {q:'Hvad er ubiquitin-proteasom vs autofagi?',opts:['De er identiske','Proteasom: enkeltproteiner. Autofagi: organeller og aggregater','Autofagi er hurtigere','Proteasom nedbryder organeller'],c:1,fb:'Proteasom nedbryder ubiquitinerede enkeltproteiner. Autofagi nedbryder store substrater via lysosomer.'},
+    {q:'Hvad er necroptose og lysosomer?',opts:['Normal celledeling','Programmeret nekrose der kan involvere lysosomal ruptur','DNA-reparation','ATP-produktion'],c:1,fb:'Necroptose er caspase-uafhængig celledød — RIPK3/MLKL-signalering kan føre til lysosomal ruptur.'},
+    {q:'Hvad er intracellulær fordøjelse?',opts:['En ekstern proces','Nedbrydning af biomolekyler inde i cellen via lysosomale enzymer','DNA-syntese','Proteinsyntese'],c:1,fb:'Intracellulær fordøjelse: lysosomale enzymer nedbryder endocytoserede materialer og beskadigede organeller.'},
+    {q:'Hvad er glycogenolyse i lysosomer?',opts:['DNA-nedbrydning','Nedbrydning af glykogen til glukose via alfa-glucosidase','Proteinnedbrydning','Lipidnedbrydning'],c:1,fb:'Lysosomal glykogenolyse: alfa-glucosidase nedbryder glykogen til glukose — defekt i Pompes.'},
+    {q:'Hvad er endolysosomal pH-gradient?',opts:['Ingen gradient','pH falder fra tidlige endosomer (~6) til lysosomer (~4.5)','Konstant pH','pH stiger'],c:1,fb:'pH falder progressivt: tidlige endosomer pH ~6 → sene endosomer pH ~5.5 → lysosomer pH ~4.5.'},
+    {q:'Hvad er Beclin-1?',opts:['Et ribosomprotein','Et nøglelprotein i autofagi-nukleering — reguleres af mTOR og Bcl-2','Et DNA-protein','Et membranprotein'],c:1,fb:'Beclin-1 er et centralt autofagi-protein — det initierer nukleering af autofagosomfagoforen.'},
+  ],
+  cyto: [
+    {q:'Hvad er cytoplasmaet?',opts:['En organelle','Den geléagtige opløsning der fylder cellen','Et kromosom','En cellemembran'],c:1,fb:'Cytoplasmaet er det geléagtige indre — indeholder cytosolen, organellerne og cytoskelettet.'},
+    {q:'Hvad er cytosolen?',opts:['Et organelle','Den vandige del af cytoplasmaet uden organellerne','Et kromosom','En membran'],c:1,fb:'Cytosolen er den flydende del — her foregår mange metaboliske reaktioner som glykolyse.'},
+    {q:'Hvad er cytoskelettet?',opts:['Et ydre skelet','Et proteinfilamentnetværk der giver form og transport','Et DNA-netværk','En membran'],c:1,fb:'Cytoskelettet er et dynamisk netværk — mikrotubuli, aktinfilamenter og intermediærfilamenter.'},
+    {q:'Hvad er mikrotubuli?',opts:['Tynde aktinfilamenter','Hule tubulinrør på 24 nm — transportveje og mitosespindler','DNA-filamenter','Lipidfilamenter'],c:1,fb:'Mikrotubuli er hule rør (24 nm) af α/β-tubulin — transportveje og mitosespindelen.'},
+    {q:'Hvad er aktinfilamenter?',opts:['Tykke proteinrør','Tynde filamenter (7 nm) der driver cellebevægelse','DNA-tråde','Lipidfilamenter'],c:1,fb:'Aktinfilamenter (F-aktin) er dynamiske, tynde filamenter — essentielle for celleform og motilitet.'},
+    {q:'Hvad er intermediærfilamenter?',opts:['Tykkere end mikrotubuli','Mellemtykke filamenter (10 nm) der giver mekanisk stabilitet','DNA-filamenter','Membranfilamenter'],c:1,fb:'Intermediærfilamenter (vimentin, keratin, lamin) giver mekanisk styrke — stabile og robuste.'},
+    {q:'Hvad er dynamisk instabilitet?',opts:['Stabil polymerisering','Mikrotubulernes vekslen mellem vækst og katastrofe (depolymerisering)','DNA-ustabilitet','Membranfluktation'],c:1,fb:'Dynamisk instabilitet: mikrotubuli vokser ved GTP-tubulin og kollapser ved GDP-tubulin.'},
+    {q:'Hvad er et centrosom?',opts:['En type ribosom','Cellens mikrotubuli-organiseringscentrum med to centrioles','Et kromosom','En type mitokondrie'],c:1,fb:'Centrosomet er MTOC (mikrotubuli-organiseringscentrum) — indeholder to centrioles.'},
+    {q:'Hvad er motorproteiner?',opts:['DNA-proteiner','Proteiner (kinesin, dynein, myosin) der bruger ATP til at bevæge sig','Membranproteiner','Ribosomproteiner'],c:1,fb:'Motorproteiner bruger ATP til mekanisk bevægelse langs cytoskelettale filamenter.'},
+    {q:'Hvad er kinesin?',opts:['Et membranprotein','Et motorprotein der bevæger sig mod mikrotubuliens plus-ende','Et DNA-enzym','En ribosomtype'],c:1,fb:'Kinesin bevæger sig mod plus-enden (ud mod periferien) — anterograd transport.'},
+    {q:'Hvad er dynein?',opts:['Et kinesin-lignende protein','Et motorprotein der bevæger sig mod minus-enden (retrograd)','Et DNA-protein','En ribosomenhed'],c:1,fb:'Dynein bevæger sig mod minus-enden (mod centrosomet) — retrograd transport.'},
+    {q:'Hvad er myosin II?',opts:['Et membranprotein','Motorprotein der interagerer med aktinfilamenter under sammentrækning','Et DNA-enzym','Et ribosomprotein'],c:1,fb:'Myosin II glider langs aktinfilamenter ved ATP — essentielt for muskelsammentrækning og cytokinese.'},
+    {q:'Hvad er lamellipodia?',opts:['En type organelle','Brede aktinmesh-fremspring der driver cellebevægelse','Et DNA-struktur','En membrantype'],c:1,fb:'Lamellipodia er brede aktinrige fremspring ved cellens front — driver cellebevægelse.'},
+    {q:'Hvad er filopodia?',opts:['En type organelle','Tynde stavformede aktinfilamenter-fremspring til sensing','Et DNA-struktur','En ribosomtype'],c:1,fb:'Filopodia er tynde fingerliknende aktinfilamenter fremspring — bruges til sensorisk guidance.'},
+    {q:'Hvad er fokal adhæsion?',opts:['En type organelle','Proteinkompleks der forbinder aktin til ECM via integriner','Et DNA-kompleks','Et ribosomkompleks'],c:1,fb:'Fokale adhæsioner forbinder aktincytoskelettet til extracellulær matrix via integriner.'},
+    {q:'Hvad er integriner?',opts:['DNA-bindende proteiner','Transmembranreceptorer der forbinder ECM til cytoskelettet','Ribosomproteiner','Lysosomale enzymer'],c:1,fb:'Integriner binder ECM-proteiner (fibronektin, kollagen) og forbindes til aktincytoskelettet inde i cellen.'},
+    {q:'Hvad er Arp2/3-komplekset?',opts:['Et DNA-kompleks','Aktinnukleator der skaber forgrenet aktinnetværk','Et ribosomkompleks','En type mitokondrie'],c:1,fb:'Arp2/3 skaber forgrenede aktinnetværk — essentielt for lamellipodia og endocytose.'},
+    {q:'Hvad er cytoskelettets rolle i celledeling?',opts:['Ingen','Mikrotubuli danner mitosespindlen, aktinring medierer cytokinese','DNA kopieres af cytoskelettet','Ribosomerne syntetiseres her'],c:1,fb:'Mikrotubuli danner mitosespindlen — aktomyosin-ringen trækker cellen i to ved cytokinese.'},
+    {q:'Hvad er axonaltransport?',opts:['Transport i membranen','Transport langs mikrotubuli i nervecellens axon','DNA-transport','ATP-transport'],c:1,fb:'Axonaltransport: kinesin anterograd (til synapse), dynein retrograd (til soma).'},
+    {q:'Hvad er lamin?',opts:['En fedtsyre','Intermediærfilamenter under kerneenveloppens indre membran','Et membranprotein','Et ribosom'],c:1,fb:'Laminer danner den nukleære lamina — giver kærnen mekanisk støtte og regulerer genudtryk.'},
+    {q:'Hvad er cortikalt aktin?',opts:['Hjerneaktin','Tæt aktinnetværk under cellemembranen','DNA-aktin','Et mitokondrienetværk'],c:1,fb:'Cortikalt aktin ligger direkte under cellemembranen — giver membranrigiditet og form.'},
+    {q:'Hvad er stressfibrer?',opts:['Stressmarkører','Bundter af aktinfilamenter og myosin II der giver mekanisk spænding','DNA-strukturer','Mitokondriefil.'],c:1,fb:'Stressfibrer er aktomyosin-bundter der genererer mekanisk kraft og forankrer cellen.'},
+    {q:'Hvad er Rho GTPaser?',opts:['Et DNA-protein','Signalproteiner (RhoA, Rac1, Cdc42) der regulerer aktincytoskelettet','Ribosomproteiner','Lysosomale enzymer'],c:1,fb:'Rho GTPaser: RhoA→stressfibrer, Rac1→lamellipodia, Cdc42→filopodia.'},
+    {q:'Hvad er phalloidin?',opts:['Et vitamin','Toksin der binder F-aktin — bruges til aktin-mærkning','En aminosyre','Et antibiotika'],c:1,fb:'Phalloidin binder og stabiliserer F-aktin — fluorescensmærkede versioner bruges til visualisering.'},
+    {q:'Hvad er nocodazol?',opts:['En naturlig aminosyre','Et stof der depolymeriserer mikrotubuli','Et DNA-alkylerende stof','Et membranprotein'],c:1,fb:'Nocodazol destabiliserer mikrotubuli — bruges til at synkronisere celler i mitose.'},
+    {q:'Hvad er taxol (paclitaxel)?',opts:['Et antibiotika','Kræftlægemiddel der stabiliserer mikrotubuli og blokerer mitose','Et vitamin','Et membranprotein'],c:1,fb:'Taxol stabiliserer mikrotubuli og forhindrer depolymerisering — blokerer celledeling.'},
+    {q:'Hvad er septiner?',opts:['En type vitamin','GTP-bindende proteiner der danner filamenter — roller i cytokinese','En aminosyre','Et DNA-protein'],c:1,fb:'Septiner danner filamenter og ringe — vigtige for celledeling og membranorganisering.'},
+    {q:'Hvad er tubulin?',opts:['Et DNA-protein','Protein-subenheden der bygger mikrotubuli — α og β dimerer','Et membranprotein','Et ribosom'],c:1,fb:'α-tubulin og β-tubulin danner dimerer der polymeriserer til mikrotubuli.'},
+    {q:'Hvad er cytochalasin?',opts:['Et DNA-enzym','Svampetoksiner der hæmmer aktinpolymerisering','Et membranprotein','En ribosominhibitor'],c:1,fb:'Cytochalasiner hæmmer aktinpolymerisering — blokerer cellebevægelse og cytokinese.'},
+    {q:'Hvad er G-aktin vs F-aktin?',opts:['De er identiske','G-aktin er monomerer, F-aktin er polymeriserede filamenter','G er filamenter','F er monomerer'],c:1,fb:'G-aktin monomerer polymeriserer til F-aktin filamenter — dynamisk ligevægt i cellen.'},
+  ],
+};
+
+/* ══════════════════════════════════════════════
+   MINI-QUIZ STATE & FUNCTIONS
+══════════════════════════════════════════════ */
+function initMiniQuiz(orgId){
+  mqIdx=0; mqRes=[]; mqOrg=orgId;
+  renderMQ();
+}
+
+function renderMQ(){
+  const qs=ORG_QUIZ[mqOrg];
+  if(!qs){document.getElementById('mq-section').style.display='none';return;}
+  const pips=document.getElementById('mq-pips');
+  pips.innerHTML=qs.map((_,i)=>{
+    let cls='mqp';
+    if(i<mqRes.length)cls+=(mqRes[i]?' ok':' no');
+    else if(i===mqIdx)cls+=' cur';
+    return`<div class="${cls}"></div>`;
+  }).join('');
+  const cor=mqRes.filter(Boolean).length;
+  document.getElementById('mq-score').textContent=`${cor}/${mqRes.length} rigtige`;
+
+  if(mqIdx>=qs.length){
+    const pct=Math.round(cor/qs.length*100);
+    const stars=pct>=90?'⭐⭐⭐':pct>=70?'⭐⭐':pct>=50?'⭐':'';
+    document.getElementById('mq-area').innerHTML=`
+      <div class="mq-done">
+        <div class="mq-done-score">${cor}/${qs.length} = ${pct}% ${stars}</div>
+        <div class="mq-done-msg">${pct>=80?'Fremragende! Du kender denne organelle godt.':pct>=60?'Godt klaret! Læs forklaringen igen for at øge scoren.':'Læs forklaringen øverst grundigt og prøv igen.'}</div>
+        <button class="mq-retry" onclick="initMiniQuiz('${mqOrg}')">Prøv igen ↺</button>
+      </div>`;
+    return;
+  }
+
+  const q=qs[mqIdx];
+  document.getElementById('mq-area').innerHTML=`
+    <div class="mq-card">
+      <div class="mq-num">Spørgsmål ${mqIdx+1} af ${qs.length}</div>
+      <div class="mq-q">${q.q}</div>
+      <div class="mq-opts">${q.opts.map((o,i)=>`<button class="mqo" onclick="ansMQ(${i})">${o}</button>`).join('')}</div>
+      <div class="mq-fb" id="mq-fb"></div>
+      <button class="mq-nxt" id="mq-nxt" onclick="nextMQ()">${mqIdx<qs.length-1?'Næste →':'Se resultat →'}</button>
+    </div>`;
+}
+
+function ansMQ(chosen){
+  const q=ORG_QUIZ[mqOrg][mqIdx];
+  document.querySelectorAll('.mqo').forEach((b,i)=>{b.disabled=true;if(i===q.c)b.classList.add('ok');else if(i===chosen&&chosen!==q.c)b.classList.add('no');});
+  const ok=chosen===q.c;mqRes.push(ok);
+  const cor=mqRes.filter(Boolean).length;
+  document.getElementById('mq-score').textContent=`${cor}/${mqRes.length} rigtige`;
+  const pips=document.getElementById('mq-pips');
+  const dots=pips.querySelectorAll('.mqp');
+  if(dots[mqIdx]){dots[mqIdx].className='mqp'+(ok?' ok':' no');}
+  if(dots[mqIdx+1])dots[mqIdx+1].classList.add('cur');
+  const fb=document.getElementById('mq-fb');
+  fb.className='mq-fb '+(ok?'ok':'no');
+  fb.innerHTML=(ok?'✅ Rigtigt! ':'❌ ')+q.fb;
+  document.getElementById('mq-nxt').className='mq-nxt on';
+}
+
+function nextMQ(){mqIdx++;renderMQ();}
+
+
+/* ══════════════════════════════════════════════
+   CELL CANVAS — organelle positions (fractions of W/H)
+══════════════════════════════════════════════ */
+const POSITIONS = {
+  membrane: null, // drawn as outer ring
+  nucleus:  {fx:.45, fy:.42, rx:.14, ry:.12},
+  mito:     [{fx:.25, fy:.3, a:-.4},{fx:.68, fy:.65, a:.3},{fx:.72, fy:.3, a:.8}],
+  ribosome: 'scattered',
+  er:       {fx:.62, fy:.44},
+  golgi:    {fx:.33, fy:.65},
+  lyso:     [{fx:.55, fy:.72},{fx:.48, fy:.58},{fx:.38, fy:.78}],
+  cyto:     'bg',
+};
+
+/* ══════════════════════════════════════════════
+   CELL DRAW
+══════════════════════════════════════════════ */
+function drawCell(){
+  const cvs = document.getElementById('cell-cvs');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+  const W = cvs.width, H = cvs.height;
+  const cx = W*.5, cy = H*.49;
+  const rx = W*.44, ry = H*.46;
+
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  const bg = ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry)*1.4);
+  bg.addColorStop(0,'#0d1a2a');bg.addColorStop(1,'#06080f');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // ── Cytoplasm fill (inside cell) ──
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
+  const cytoG=ctx.createRadialGradient(cx,cy*0.85,0,cx,cy,Math.max(rx,ry));
+  cytoG.addColorStop(0,'rgba(40,80,120,.55)');cytoG.addColorStop(.6,'rgba(20,50,80,.4)');cytoG.addColorStop(1,'rgba(10,20,40,.3)');
+  ctx.fillStyle=cytoG;ctx.fill();
+  ctx.restore();
+
+  // ── Cytoskeleton fibers (subtle) ──
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.clip();
+  const fibers = [[.2,.2,.75,.8],[.15,.65,.8,.35],[.4,.15,.6,.85],[.1,.5,.9,.4]];
+  fibers.forEach(([x1,y1,x2,y2],i)=>{
+    ctx.strokeStyle=`rgba(64,160,192,${.06+Math.sin(tick*.03+i)*.02})`;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx+(x1-.5)*rx*2,cy+(y1-.5)*ry*2);ctx.lineTo(cx+(x2-.5)*rx*2,cy+(y2-.5)*ry*2);ctx.stroke();
+  });
+  ctx.restore();
+
+  // ── Endoplasmic Reticulum ──
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.clip();
+  const erX=cx+rx*.15, erY=cy-.03*ry;
+  ctx.strokeStyle=visited.has('er')?'rgba(80,144,224,.75)':'rgba(80,144,224,.4)';ctx.lineWidth=visited.has('er')?2.5:1.5;
+  for(let i=0;i<6;i++){
+    const ang=i*.55+tick*.008;const r2=rx*.28+Math.sin(ang*2)*rx*.04;
+    ctx.beginPath();ctx.ellipse(erX+Math.cos(ang)*rx*.1,erY+Math.sin(ang)*ry*.1,r2,r2*.28,ang,0,Math.PI*2);ctx.stroke();
+  }
+  if(visited.has('er')||true){
+    ctx.fillStyle='rgba(80,144,224,.6)';ctx.font=`bold ${Math.max(10,W*.024)}px Nunito,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('ER',erX,erY);
+  }
+  ctx.restore();
+
+  // ── Golgi apparatus ──
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.clip();
+  const gx=cx-rx*.18, gy=cy+ry*.24;
+  const golgiCol=visited.has('golgi')?'rgba(192,96,208,.85)':'rgba(192,96,208,.45)';
+  for(let i=0;i<5;i++){
+    const w=rx*.22-i*rx*.015, h=ry*.035, dy=i*ry*.055;
+    ctx.strokeStyle=golgiCol;ctx.lineWidth=visited.has('golgi')?2.5:1.8;
+    ctx.beginPath();ctx.ellipse(gx,gy+dy,w,h,.1,0,Math.PI*2);ctx.stroke();
+  }
+  // Vesicles
+  ctx.fillStyle='rgba(192,96,208,.55)';
+  [[rx*.08,ry*.08],[rx*.14,-ry*.04],[-rx*.06,ry*.12]].forEach(([dx,dy])=>{
+    ctx.beginPath();ctx.arc(gx+dx,gy+dy,Math.max(3,W*.012),0,Math.PI*2);ctx.fill();
+  });
+  ctx.fillStyle='rgba(192,96,208,.7)';ctx.font=`bold ${Math.max(9,W*.022)}px Nunito,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('Golgi',gx,gy-ry*.07);
+  ctx.restore();
+
+  // ── Mitochondria ──
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.clip();
+  const mitoPositions=[{fx:.22,fy:.28,a:-.5},{fx:.7,fy:.6,a:.4},{fx:.75,fy:.28,a:.9},{fx:.28,fy:.72,a:-.2}];
+  mitoPositions.forEach(({fx,fy,a},mi)=>{
+    const mx=cx+(fx-.5)*rx*2, my=cy+(fy-.5)*ry*2;
+    const mw=rx*.18+Math.sin(tick*.04+mi)*.5, mh=ry*.09;
+    const col=visited.has('mito')?'rgba(224,85,48,.9)':'rgba(224,85,48,.55)';
+    ctx.save();ctx.translate(mx,my);ctx.rotate(a);
+    // outer
+    ctx.strokeStyle=col;ctx.lineWidth=visited.has('mito')?2:1.5;
+    ctx.beginPath();ctx.ellipse(0,0,mw,mh,0,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle=col.replace('.9','0.15').replace('.55','0.08');ctx.fill();
+    // cristae (inner folds)
+    ctx.strokeStyle=col;ctx.lineWidth=1;
+    for(let c=0;c<3;c++){
+      const cx3=-mw*.4+c*mw*.4;
+      ctx.beginPath();ctx.moveTo(cx3,-mh*.7);ctx.bezierCurveTo(cx3+mw*.06,-mh*.1,cx3+mw*.06,mh*.1,cx3,mh*.7);ctx.stroke();
+    }
+    ctx.restore();
+    ctx.fillStyle='rgba(224,85,48,.8)';ctx.font=`bold ${Math.max(8,W*.02)}px Nunito,sans-serif`;ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillText('⚡',mx,my-mh-4);
+  });
+  ctx.restore();
+
+  // ── Lysosomes ──
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.clip();
+  [[.57,.7],[.47,.56],[.35,.77],[.64,.52]].forEach(([fx,fy],i)=>{
+    const lx=cx+(fx-.5)*rx*2, ly=cy+(fy-.5)*ry*2;
+    const lr=Math.max(5,W*.016)*(1+Math.sin(tick*.05+i)*.05);
+    const col=visited.has('lyso')?'rgba(224,64,128,.9)':'rgba(224,64,128,.5)';
+    ctx.beginPath();ctx.arc(lx,ly,lr,0,Math.PI*2);
+    ctx.fillStyle=col.replace('.9','0.25').replace('.5','0.12');ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=visited.has('lyso')?2:1.5;ctx.stroke();
+    if(i===0){ctx.fillStyle='rgba(224,64,128,.75)';ctx.font=`${Math.max(8,W*.02)}px Nunito,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🧹',lx,ly);}
+  });
+  ctx.restore();
+
+  // ── Ribosomes (scattered dots) ──
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.clip();
+  const riboSeeds=[[.42,.3],[.55,.36],[.38,.52],[.62,.52],[.5,.25],[.3,.42],[.65,.4],[.44,.62],[.6,.7],[.32,.62],[.58,.28],[.4,.7]];
+  riboSeeds.forEach(([fx,fy])=>{
+    const rbx=cx+(fx-.5)*rx*2, rby=cy+(fy-.5)*ry*2;
+    const rbr=Math.max(3,W*.007);
+    ctx.fillStyle=visited.has('ribosome')?'rgba(85,196,160,.8)':'rgba(85,196,160,.45)';
+    ctx.beginPath();ctx.arc(rbx,rby,rbr,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(rbx-rbr*.6,rby,rbr*.65,0,Math.PI*2);ctx.fill();
+  });
+  ctx.restore();
+
+  // ── Nucleus ──
+  const nR = rx*.28, nRy = ry*.25;
+  const nX = cx+rx*.02, nY = cy-ry*.08;
+  ctx.save();
+  // Nuclear envelope
+  const nucG=ctx.createRadialGradient(nX,nY*.95,0,nX,nY,nR);
+  nucG.addColorStop(0,'rgba(232,160,32,.25)');nucG.addColorStop(.7,'rgba(200,120,20,.15)');nucG.addColorStop(1,'rgba(160,90,10,.1)');
+  ctx.beginPath();ctx.ellipse(nX,nY,nR,nRy,0,0,Math.PI*2);ctx.fillStyle=nucG;ctx.fill();
+  ctx.strokeStyle=visited.has('nucleus')?'rgba(232,160,32,.9)':'rgba(232,160,32,.55)';ctx.lineWidth=visited.has('nucleus')?3:2;ctx.stroke();
+  // Inner nuclear membrane
+  ctx.strokeStyle='rgba(232,160,32,.3)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.ellipse(nX,nY,nR*.88,nRy*.88,0,0,Math.PI*2);ctx.stroke();
+  // Nuclear pores
+  for(let p=0;p<7;p++){
+    const a=p/7*Math.PI*2;
+    const px2=nX+Math.cos(a)*nR, py2=nY+Math.sin(a)*nRy*.98;
+    ctx.fillStyle='rgba(232,160,32,.55)';ctx.beginPath();ctx.arc(px2,py2,Math.max(2,W*.005),0,Math.PI*2);ctx.fill();
+  }
+  // Nucleolus (darker inside)
+  ctx.fillStyle='rgba(232,160,32,.35)';ctx.beginPath();ctx.ellipse(nX+nR*.08,nY+nRy*.05,nR*.35,nRy*.32,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(232,160,32,.5)';ctx.lineWidth=1;ctx.stroke();
+  // DNA helix hint
+  ctx.strokeStyle='rgba(232,160,32,.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();for(let i=0;i<20;i++){const a=i/20*Math.PI*4+tick*.02;ctx.lineTo(nX-nR*.15+i/20*nR*.3,nY+Math.sin(a)*nRy*.18);}ctx.stroke();
+  ctx.beginPath();for(let i=0;i<20;i++){const a=i/20*Math.PI*4+tick*.02+Math.PI;ctx.lineTo(nX-nR*.15+i/20*nR*.3,nY+Math.sin(a)*nRy*.18);}ctx.stroke();
+  // Label
+  ctx.fillStyle='rgba(232,160,32,.85)';ctx.font=`bold ${Math.max(9,W*.022)}px Nunito,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🧬 Kærne',nX,nY);
+  ctx.restore();
+
+  // ── Cell Membrane ──
+  // Outer ring with proteins
+  const pulse = 1 + Math.sin(tick*.025)*.008;
+  ctx.save();
+  // Outer glow
+  ctx.shadowColor='rgba(124,77,189,.4)';ctx.shadowBlur=12;
+  ctx.strokeStyle=visited.has('membrane')?'rgba(124,77,189,.9)':'rgba(124,77,189,.6)';ctx.lineWidth=visited.has('membrane')?5:3.5;
+  ctx.beginPath();ctx.ellipse(cx,cy,rx*pulse,ry*pulse,0,0,Math.PI*2);ctx.stroke();
+  ctx.shadowBlur=0;
+  // Inner leaflet
+  ctx.strokeStyle='rgba(124,77,189,.3)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(cx,cy,rx*.97*pulse,ry*.97*pulse,0,0,Math.PI*2);ctx.stroke();
+  // Membrane proteins (dots on outer ring)
+  for(let i=0;i<14;i++){
+    const a=i/14*Math.PI*2+tick*.005;
+    const px2=cx+Math.cos(a)*rx*pulse, py2=cy+Math.sin(a)*ry*pulse;
+    ctx.fillStyle='rgba(180,140,255,.7)';ctx.beginPath();ctx.arc(px2,py2,Math.max(3,W*.007),0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+
+  // ── Hit labels (only when not visited) ──
+  drawHitLabel(ctx,W,H,cx,cy,rx,ry);
+}
+
+function drawHitLabel(ctx,W,H,cx,cy,rx,ry){
+  // Small "tap" indicators on unvisited organelles
+  const tips=[
+    {id:'nucleus',  x:cx+rx*.02, y:cy-ry*.08,  lbl:'🧬 Kærnen'},
+    {id:'mito',     x:cx-rx*.28, y:cy-ry*.22,  lbl:'⚡ Mito.'},
+    {id:'golgi',    x:cx-rx*.18, y:cy+ry*.22,  lbl:'📦 Golgi'},
+    {id:'er',       x:cx+rx*.15, y:cy-.03*ry,  lbl:'🌊 ER'},
+    {id:'lyso',     x:cx+rx*.1,  y:cy+ry*.2,   lbl:'🧹 Lyso.'},
+    {id:'ribosome', x:cx-rx*.08, y:cy-ry*.25,  lbl:'🔩 Ribo.'},
+    {id:'membrane', x:cx+rx*.92, y:cy-ry*.1,   lbl:'🫧 Membran'},
+    {id:'cyto',     x:cx-rx*.5,  y:cy+ry*.05,  lbl:'🕸️ Cyto.'},
+  ];
+  tips.forEach(({id,x,y,lbl})=>{
+    if(visited.has(id)) return;
+    const a=.5+.4*Math.abs(Math.sin(tick*.04));
+    ctx.fillStyle=`rgba(255,240,180,${a})`;ctx.font=`bold ${Math.max(9,W*.021)}px Nunito,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(lbl,x,y);
+  });
+}
+
+/* ══ HIT DETECTION ══ */
+function hitOrganelle(mx,my,W,H){
+  const cvs=document.getElementById('cell-cvs');
+  const cx=W*.5,cy=H*.49,rx=W*.44,ry=H*.46;
+  const nX=cx+rx*.02,nY=cy-ry*.08,nR=rx*.28,nRy=ry*.25;
+
+  // Nucleus
+  if(hitEllipse(mx,my,nX,nY,nR*1.1,nRy*1.1)) return 'nucleus';
+
+  // Mitochondria
+  const mitoPos=[{fx:.22,fy:.28},{fx:.7,fy:.6},{fx:.75,fy:.28},{fx:.28,fy:.72}];
+  for(const {fx,fy} of mitoPos){
+    const mmx=cx+(fx-.5)*rx*2,mmy=cy+(fy-.5)*ry*2;
+    if(Math.hypot(mx-mmx,my-mmy)<rx*.22) return 'mito';
+  }
+
+  // Golgi
+  const gx=cx-rx*.18,gy=cy+ry*.24;
+  if(Math.hypot(mx-gx,my-gy)<rx*.24) return 'golgi';
+
+  // ER
+  const erX=cx+rx*.15,erY=cy-.03*ry;
+  if(Math.hypot(mx-erX,my-erY)<rx*.3) return 'er';
+
+  // Lysosomes
+  for(const [fx,fy] of [[.57,.7],[.47,.56],[.35,.77],[.64,.52]]){
+    const lx=cx+(fx-.5)*rx*2,ly=cy+(fy-.5)*ry*2;
+    if(Math.hypot(mx-lx,my-ly)<rx*.1) return 'lyso';
+  }
+
+  // Ribosomes
+  for(const [fx,fy] of [[.42,.3],[.55,.36],[.38,.52],[.62,.52],[.5,.25],[.3,.42],[.65,.4],[.44,.62],[.6,.7],[.32,.62]]){
+    const rbx=cx+(fx-.5)*rx*2,rby=cy+(fy-.5)*ry*2;
+    if(Math.hypot(mx-rbx,my-rby)<rx*.07) return 'ribosome';
+  }
+
+  // Membrane (outer ring region)
+  const distFromCentre=Math.sqrt(((mx-cx)/rx)**2+((my-cy)/ry)**2);
+  if(distFromCentre>0.88&&distFromCentre<1.12) return 'membrane';
+
+  // Cytoplasm (inside cell, not hitting anything else)
+  if(distFromCentre<0.88) return 'cyto';
+
+  return null;
+}
+
+function hitEllipse(px,py,cx,cy,rx,ry){
+  return ((px-cx)/rx)**2+((py-cy)/ry)**2 < 1;
+}
+
+/* ══════════════════════════════════════════════
+   PANEL DRAW FUNCTIONS (animated diagrams)
+══════════════════════════════════════════════ */
+function drawMembrane(ctx,W,H,t){
+  ctx.fillStyle='#0d1420';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2,R=Math.min(W,H)*.32;
+  // Outer leaflet
+  for(let i=0;i<40;i++){
+    const a=i/40*Math.PI*2;
+    const hx=cx+Math.cos(a)*R, hy=cy+Math.sin(a)*R;
+    const hdx=Math.cos(a)*12,hdy=Math.sin(a)*12;
+    ctx.fillStyle='rgba(160,100,255,.8)';
+    ctx.beginPath();ctx.arc(hx,hy,4,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(120,70,220,.6)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+hdx,hy+hdy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(hx+hdx,hy+hdy);ctx.lineTo(hx+hdx*1.6+Math.cos(a+.3)*6,hy+hdy*1.6+Math.sin(a+.3)*6);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(hx+hdx,hy+hdy);ctx.lineTo(hx+hdx*1.6+Math.cos(a-.3)*6,hy+hdy*1.6+Math.sin(a-.3)*6);ctx.stroke();
+  }
+  // Inner leaflet
+  for(let i=0;i<40;i++){
+    const a=i/40*Math.PI*2+.08;
+    const R2=R-18;
+    const hx=cx+Math.cos(a)*R2, hy=cy+Math.sin(a)*R2;
+    const hdx=-Math.cos(a)*10,hdy=-Math.sin(a)*10;
+    ctx.fillStyle='rgba(180,120,255,.6)';ctx.beginPath();ctx.arc(hx,hy,3.5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(120,70,220,.5)';ctx.lineWidth=1.8;
+    ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+hdx,hy+hdy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(hx+hdx,hy+hdy);ctx.lineTo(hx+hdx*1.5+Math.cos(a+.35)*5,hy+hdy*1.5+Math.sin(a+.35)*5);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(hx+hdx,hy+hdy);ctx.lineTo(hx+hdx*1.5+Math.cos(a-.35)*5,hy+hdy*1.5+Math.sin(a-.35)*5);ctx.stroke();
+  }
+  // Protein channel
+  const pa=t*.5;
+  const px=cx+Math.cos(pa)*R,py=cy+Math.sin(pa)*R;
+  ctx.fillStyle='rgba(255,200,80,.9)';
+  ctx.beginPath();ctx.roundRect(px-8,py-14,16,28,4);ctx.fill();
+  // Molecule passing through (animated)
+  const molProgress=((t*.3)%1);
+  const molX=px,molY=py-14+molProgress*28;
+  ctx.fillStyle='rgba(100,255,180,.9)';ctx.beginPath();ctx.arc(molX,molY,5,0,Math.PI*2);ctx.fill();
+  // Labels
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font=`bold ${Math.max(10,W*.024)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('Fosfolipid dobbeltlag',cx,cy);
+  ctx.fillStyle='rgba(255,200,80,.8)';ctx.fillText('Protein-kanal',px+24,py);
+}
+
+function drawNucleus(ctx,W,H,t){
+  ctx.fillStyle='#120e04';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2,rx=W*.34,ry=H*.3;
+  // Glow
+  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,rx);
+  g.addColorStop(0,'rgba(232,160,32,.22)');g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fill();
+  // Envelope
+  ctx.strokeStyle='rgba(232,160,32,.85)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='rgba(232,160,32,.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.ellipse(cx,cy,rx*.9,ry*.9,0,0,Math.PI*2);ctx.stroke();
+  // Pores
+  for(let i=0;i<8;i++){
+    const a=i/8*Math.PI*2;
+    const px=cx+Math.cos(a)*rx,py=cy+Math.sin(a)*ry;
+    ctx.fillStyle='rgba(232,160,32,.7)';ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=1;ctx.stroke();
+    // mRNA coming out of one pore
+    if(i===2){
+      const mlen=((t*.4)%1)*rx*.5;
+      ctx.strokeStyle='rgba(255,120,60,.8)';ctx.lineWidth=2;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+Math.cos(a)*mlen,py+Math.sin(a)*mlen);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='rgba(255,120,60,.8)';ctx.font=`${Math.max(9,W*.02)}px Nunito,sans-serif`;ctx.textAlign='center';
+      ctx.fillText('mRNA →',px+Math.cos(a)*mlen+18,py+Math.sin(a)*mlen);
+    }
+  }
+  // DNA helix inside
+  ctx.save();ctx.beginPath();ctx.ellipse(cx,cy,rx*.85,ry*.85,0,0,Math.PI*2);ctx.clip();
+  const hx=cx-rx*.3;
+  for(let strand=0;strand<2;strand++){
+    ctx.strokeStyle=strand?'rgba(255,180,60,.65)':'rgba(232,120,20,.65)';ctx.lineWidth=2.5;ctx.setLineDash([]);
+    ctx.beginPath();
+    for(let i=0;i<=40;i++){
+      const frac=i/40;const ang=frac*Math.PI*4+t*.05+(strand?Math.PI:0);
+      const x=hx+frac*rx*.6, y=cy+Math.sin(ang)*ry*.22;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }ctx.stroke();
+  }
+  // Rungs
+  for(let i=0;i<12;i++){
+    const frac=i/12,ang=frac*Math.PI*4+t*.05;
+    const x=hx+frac*rx*.6, y=cy+Math.sin(ang)*ry*.22;
+    ctx.strokeStyle='rgba(255,200,100,.4)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,cy-Math.sin(ang)*ry*.22);ctx.stroke();
+  }
+  ctx.restore();
+  // Nucleolus
+  ctx.fillStyle='rgba(232,160,32,.3)';ctx.beginPath();ctx.ellipse(cx+rx*.06,cy+ry*.05,rx*.22,ry*.18,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(232,160,32,.55)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='rgba(232,160,32,.7)';ctx.font=`${Math.max(9,W*.021)}px Nunito,sans-serif`;ctx.textAlign='center';ctx.fillText('Nucleolus',cx+rx*.06,cy+ry*.06);
+}
+
+function drawMito(ctx,W,H,t){
+  ctx.fillStyle='#12040a';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2,mw=W*.36,mh=H*.2;
+  // Outer membrane
+  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,mw);
+  g.addColorStop(0,'rgba(224,85,48,.18)');g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,mw,mh,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(224,85,48,.85)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.ellipse(cx,cy,mw,mh,0,0,Math.PI*2);ctx.stroke();
+  // Cristae
+  for(let i=0;i<5;i++){
+    const x=-mw*.5+i*mw*.22;
+    const amp=mh*.65*(1+Math.sin(t*.06+i)*.05);
+    ctx.strokeStyle='rgba(224,85,48,.65)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx+x,-amp);
+    ctx.bezierCurveTo(cx+x+mw*.06,-amp*.3,cx+x+mw*.06,amp*.3,cx+x,amp);
+    ctx.stroke();
+  }
+  // ATP molecules being produced
+  for(let i=0;i<6;i++){
+    const a=i/6*Math.PI*2+t*.15;
+    const r=mw*.7;
+    const ax=cx+Math.cos(a)*r,ay=cy+Math.sin(a)*r*.5;
+    ctx.fillStyle=`rgba(255,220,50,${.4+Math.sin(t*.1+i)*.3})`;
+    ctx.font=`bold ${Math.max(10,W*.025)}px Nunito,sans-serif`;ctx.textAlign='center';
+    ctx.fillText('ATP',ax,ay+4);
+  }
+  // O2 in / CO2 out arrows
+  ctx.strokeStyle='rgba(120,200,255,.7)';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(cx-mw-20,cy);ctx.lineTo(cx-mw+5,cy);ctx.stroke();
+  ctx.fillStyle='rgba(120,200,255,.8)';ctx.font=`${Math.max(9,W*.021)}px Nunito,sans-serif`;ctx.textAlign='right';
+  ctx.fillText('O₂ + Glukose',cx-mw-22,cy-6);
+  ctx.strokeStyle='rgba(255,100,100,.7)';ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(cx+mw-5,cy);ctx.lineTo(cx+mw+20,cy);ctx.stroke();
+  ctx.fillStyle='rgba(255,100,100,.8)';ctx.textAlign='left';
+  ctx.fillText('CO₂ + H₂O',cx+mw+22,cy-6);
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,220,50,.9)';ctx.font=`bold ${Math.max(12,W*.028)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('36× ATP',cx,cy+mh+28);
+}
+
+function drawRibosome(ctx,W,H,t){
+  ctx.fillStyle='#041210';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H*.4,R=Math.min(W,H)*.18;
+  // Large subunit
+  const g1=ctx.createRadialGradient(cx,cy-R*.3,0,cx,cy,R*1.2);
+  g1.addColorStop(0,'rgba(85,196,160,.45)');g1.addColorStop(1,'transparent');
+  ctx.fillStyle=g1;ctx.beginPath();ctx.ellipse(cx,cy-R*.2,R,R*.65,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(85,196,160,.85)';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.ellipse(cx,cy-R*.2,R,R*.65,0,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='rgba(85,196,160,.7)';ctx.font=`bold ${Math.max(10,W*.023)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('60S (stor)',cx,cy-R*.2);
+  // Small subunit
+  ctx.strokeStyle='rgba(100,220,180,.75)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(cx,cy+R*.45,R*.85,R*.42,0,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='rgba(100,220,180,.6)';ctx.fillText('40S (lille)',cx,cy+R*.47);
+  // mRNA thread
+  const mstart=cx-W*.3, mend=cx+W*.3, my2=cy+R*.12;
+  ctx.strokeStyle='rgba(255,140,60,.8)';ctx.lineWidth=3;ctx.setLineDash([6,3]);
+  ctx.beginPath();ctx.moveTo(mstart,my2);ctx.lineTo(mend,my2);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,140,60,.85)';ctx.font=`${Math.max(9,W*.02)}px Nunito,sans-serif`;ctx.fillText('mRNA',mstart-10,my2-8);
+  // Amino acid chain (growing)
+  const nAA=Math.floor(((t*.08)%1)*12)+2;
+  const chainX=cx+R+10, chainY=cy-R*.5;
+  for(let i=0;i<nAA;i++){
+    const ax=chainX+i*14,ay=chainY+Math.sin(i*.8)*8;
+    const col=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff'][i%5];
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(ax,ay,6,0,Math.PI*2);ctx.fill();
+    if(i>0){ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax-12,ay-Math.sin((i-1)*.8)*8+Math.sin(i*.8)*8);ctx.lineTo(ax,ay);ctx.stroke();}
+  }
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font=`bold ${Math.max(9,W*.022)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('← Voksende proteinkæde',cx+R*.5,chainY+28);
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font=`${Math.max(9,W*.021)}px Nunito,sans-serif`;
+  ctx.fillText('Amino-syrer samles i korrekt rækkefølge',cx,H-20);
+}
+
+function drawER(ctx,W,H,t){
+  ctx.fillStyle='#040c18';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2;
+  // Rough ER (left)
+  for(let i=0;i<5;i++){
+    const y=cy-H*.22+i*H*.11;
+    const x1=cx-W*.32,x2=cx;
+    ctx.strokeStyle='rgba(80,144,224,.75)';ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(x1,y);ctx.bezierCurveTo(x1+W*.08,y-H*.04,x2-W*.08,y+H*.04,x2,y);ctx.stroke();
+    // Ribosomes on top
+    for(let r=0;r<4;r++){
+      const rx2=x1+r*(x2-x1)/4+W*.04;
+      const ry2=y-8-Math.sin(t*.04+r)*.5;
+      ctx.fillStyle='rgba(85,196,160,.8)';ctx.beginPath();ctx.arc(rx2,ry2,4,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(rx2-3,ry2,3,0,Math.PI*2);ctx.fill();
+    }
+  }
+  ctx.fillStyle='rgba(80,144,224,.75)';ctx.font=`bold ${Math.max(10,W*.025)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('Ru ER',cx-W*.16,cy-H*.28);
+  ctx.fillStyle='rgba(85,196,160,.7)';ctx.font=`${Math.max(9,W*.021)}px Nunito,sans-serif`;
+  ctx.fillText('(med ribosomer)',cx-W*.16,cy-H*.28+16);
+  // Smooth ER (right)
+  for(let i=0;i<4;i++){
+    const r=W*.12+i*W*.04;const a=t*.03+i*.8;
+    ctx.strokeStyle='rgba(100,180,255,.55)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.ellipse(cx+W*.2,cy+H*.05,r,r*.35,a,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.fillStyle='rgba(100,180,255,.75)';ctx.font=`bold ${Math.max(10,W*.025)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('Glat ER',cx+W*.2,cy-H*.18);
+  ctx.fillStyle='rgba(100,180,255,.6)';ctx.font=`${Math.max(9,W*.021)}px Nunito,sans-serif`;
+  ctx.fillText('(hormoner, fedt)',cx+W*.2,cy-H*.18+16);
+  // Vesicle leaving
+  const vp=((t*.1)%1);
+  const vx=cx+vp*W*.25, vy=cy+H*.18;
+  ctx.fillStyle='rgba(80,144,224,.7)';ctx.beginPath();ctx.arc(vx,vy,10,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.6)';ctx.font=`${Math.max(9,W*.02)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('vesikkel →',vx,vy+18);
+}
+
+function drawGolgi(ctx,W,H,t){
+  ctx.fillStyle='#0d0414';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H*.48;
+  // Cisternae (stacked curved sheets)
+  const layers=6;
+  for(let i=0;i<layers;i++){
+    const frac=i/(layers-1);
+    const w=W*.3-frac*W*.04,h=H*.025+frac*H*.008;
+    const y=cy-H*.14+i*H*.055;
+    const col=`rgba(192,96,208,${.5+frac*.35})`;
+    ctx.strokeStyle=col;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.ellipse(cx,y,w,h,.05,0,Math.PI*2);ctx.stroke();
+    const grd=ctx.createLinearGradient(cx-w,y,cx+w,y);
+    grd.addColorStop(0,'transparent');grd.addColorStop(.5,`rgba(192,96,208,${.08+frac*.07})`);grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;ctx.fill();
+  }
+  // Input vesicles (from ER, left)
+  for(let i=0;i<3;i++){
+    const vp=((t*.08+i*.33)%1);
+    const vx=cx-W*.38+vp*W*.12,vy=cy-H*.12+i*H*.06;
+    ctx.fillStyle='rgba(80,144,224,.6)';ctx.beginPath();ctx.arc(vx,vy,7,0,Math.PI*2);ctx.fill();
+  }
+  ctx.fillStyle='rgba(80,144,224,.7)';ctx.font=`${Math.max(9,W*.021)}px Nunito,sans-serif`;ctx.textAlign='right';
+  ctx.fillText('← Fra ER',cx-W*.3,cy-H*.14);
+  // Output vesicles (right, multiple destinations)
+  const dests=[{col:'rgba(57,255,20,.7)',lbl:'→ Lysosom'},{col:'rgba(255,200,50,.7)',lbl:'→ Cellemembran'},{col:'rgba(255,120,60,.7)',lbl:'→ Udskillelse'}];
+  dests.forEach(({col,lbl},i)=>{
+    const vp2=((t*.08+i*.33+.5)%1);
+    const vx=cx+W*.3+vp2*W*.08,vy=cy-H*.1+i*H*.07;
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(vx,vy,8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=col;ctx.font=`${Math.max(9,W*.02)}px Nunito,sans-serif`;ctx.textAlign='left';ctx.fillText(lbl,vx+12,vy+4);
+  });
+  ctx.fillStyle='rgba(192,96,208,.85)';ctx.font=`bold ${Math.max(10,W*.024)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('Golgi-apparatet',cx,cy+H*.25);
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font=`${Math.max(9,W*.021)}px Nunito,sans-serif`;
+  ctx.fillText('Pakker og sorterer proteiner',cx,cy+H*.25+17);
+}
+
+function drawLyso(ctx,W,H,t){
+  ctx.fillStyle='#120408';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H*.45,R=Math.min(W,H)*.25;
+  // Lysosome bubble
+  const g=ctx.createRadialGradient(cx-R*.2,cy-R*.2,R*.05,cx,cy,R);
+  g.addColorStop(0,'rgba(224,64,128,.35)');g.addColorStop(.7,'rgba(180,20,80,.2)');g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R*(1+Math.sin(t*.04)*.02),0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(224,64,128,.85)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
+  // Enzymes inside
+  const enzymes=['Lipase','Protease','DNase','RNase','Fosfatase'];
+  enzymes.forEach((e,i)=>{
+    const a=i/enzymes.length*Math.PI*2+t*.03;
+    const er=R*.52;
+    ctx.fillStyle='rgba(255,150,180,.8)';ctx.font=`${Math.max(9,W*.02)}px Nunito,sans-serif`;ctx.textAlign='center';
+    ctx.fillText(e,cx+Math.cos(a)*er,cy+Math.sin(a)*er+4);
+  });
+  // pH label
+  ctx.fillStyle='rgba(255,80,120,.9)';ctx.font=`bold ${Math.max(13,W*.032)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('pH 4.5 🔴',cx,cy);
+  // Bacteria being digested (animated)
+  const bp=((t*.06)%1);
+  const bx=cx+Math.cos(t*.1)*R*.3,by=cy+Math.sin(t*.08)*R*.25;
+  const bscale=1-bp*.8;
+  if(bscale>0.1){
+    ctx.save();ctx.globalAlpha=bscale;
+    ctx.fillStyle='rgba(150,220,100,.8)';ctx.beginPath();ctx.ellipse(bx,by,12*bscale,6*bscale,t*.2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(100,180,60,.6)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.restore();
+  }
+  ctx.fillStyle='rgba(255,200,80,.8)';ctx.font=`${Math.max(9,W*.022)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('← Nedbryder bakterier og affald',cx,cy+R+28);
+}
+
+function drawCyto(ctx,W,H,t){
+  ctx.fillStyle='#030d18';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2;
+  // Microtubules (thick)
+  const tubes=[[.1,.2,.9,.85],[.05,.7,.95,.3],[.2,.05,.75,.95]];
+  tubes.forEach(([x1,y1,x2,y2],i)=>{
+    ctx.strokeStyle=`rgba(64,160,192,${.55+Math.sin(t*.04+i)*.1})`;ctx.lineWidth=3.5;
+    ctx.beginPath();ctx.moveTo(x1*W,y1*H);ctx.bezierCurveTo(x1*W+W*.2,y1*H+H*.1,x2*W-W*.2,y2*H-H*.1,x2*W,y2*H);ctx.stroke();
+    ctx.fillStyle='rgba(64,160,192,.75)';ctx.font=`${Math.max(8,W*.019)}px Nunito,sans-serif`;ctx.textAlign='center';
+    ctx.fillText('Mikrotubuli',cx,y1*H+H*.12);
+  });
+  // Actin filaments (thin, web-like)
+  for(let i=0;i<8;i++){
+    const a=i/8*Math.PI*2;const b=(i+2.5)/8*Math.PI*2;
+    ctx.strokeStyle='rgba(200,120,255,.22)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*W*.38,cy+Math.sin(a)*H*.38);ctx.lineTo(cx+Math.cos(b)*W*.32,cy+Math.sin(b)*H*.32);ctx.stroke();
+  }
+  // Motor protein (animated blob on microtubule)
+  const mt=tubes[0];
+  const mp=((t*.06)%1);
+  const mpx=mt[0]*W+(mt[2]-mt[0])*W*mp,mpy=mt[1]*H+(mt[3]-mt[1])*H*mp;
+  ctx.fillStyle='rgba(255,200,50,.85)';ctx.beginPath();ctx.arc(mpx,mpy,9,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,200,50,.9)';ctx.font=`bold ${Math.max(8,W*.02)}px Nunito,sans-serif`;ctx.textAlign='left';
+  ctx.fillText('Motorprotein →',mpx+12,mpy+4);
+  // Cytoplasm fluid particles
+  for(let i=0;i<20;i++){
+    const px=cx+Math.cos(i*2.4+t*.04)*(W*.3),py=cy+Math.sin(i*1.8+t*.03)*(H*.28);
+    ctx.fillStyle=`rgba(100,180,220,${.12+Math.sin(t*.05+i)*.06})`;ctx.beginPath();ctx.arc(px,py,3,0,Math.PI*2);ctx.fill();
+  }
+  ctx.fillStyle='rgba(64,160,192,.8)';ctx.font=`bold ${Math.max(10,W*.024)}px Nunito,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('Cytoskelet — cellens indre skelet',cx,H-28);
+  ctx.fillStyle='rgba(255,255,255,.45)';ctx.font=`${Math.max(9,W*.021)}px Nunito,sans-serif`;
+  ctx.fillText('Giver form · transport-motorveje · cell-deling',cx,H-12);
+}
+
+/* ══════════════════════════════════════════════
+   CELL ANIMATION LOOP
+══════════════════════════════════════════════ */
+function cellLoop(){
+  animId=requestAnimationFrame(cellLoop);
+  tick+=0.6;
+  const cvs=document.getElementById('cell-cvs');
+  if(!cvs||!cvs.offsetParent)return;
+  if(cvs.width!==cvs.offsetWidth||cvs.height!==cvs.offsetHeight){
+    cvs.width=cvs.offsetWidth;cvs.height=cvs.offsetHeight;
+  }
+  drawCell();
+}
+
+function panelLoop(){
+  panAnimId=requestAnimationFrame(panelLoop);
+  panTick+=0.7;
+  const cvs=document.getElementById('panel-cvs');
+  if(!cvs||!cvs.offsetParent){return;}
+  const W=cvs.width,H=cvs.height;
+  if(!curOrg)return;
+  const ctx=cvs.getContext('2d');
+  curOrg.draw(ctx,W,H,panTick);
+}
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function goHome(){if(animId){cancelAnimationFrame(animId);animId=null;}if(panAnimId){cancelAnimationFrame(panAnimId);panAnimId=null;}show('s-home');}
+
+function showExplore(){
+  show('s-explore');
+  visited.clear();
+  updateProg();
+  requestAnimationFrame(()=>{
+    const cvs=document.getElementById('cell-cvs');
+    cvs.width=cvs.offsetWidth;cvs.height=cvs.offsetHeight;
+    if(animId)cancelAnimationFrame(animId);
+    animId=requestAnimationFrame(cellLoop);
+  });
+}
+
+function updateProg(){
+  const n=visited.size;
+  document.getElementById('ex-prog').textContent=`${n} / 8 udforsket`;
+  if(n>=8){
+    document.getElementById('hint-txt').innerHTML='🎉 Alle organeller udforsket! <span class="hl">Tag quizzen nu!</span>';
+    // Add quiz button
+    const bar=document.querySelector('.hint-bar');
+    if(!document.getElementById('quiz-btn')){
+      const btn=document.createElement('button');
+      btn.id='quiz-btn';btn.textContent='🧠 Start Quiz →';
+      btn.style.cssText='margin-top:8px;font-family:var(--fh);font-style:italic;font-size:var(--sm);background:linear-gradient(135deg,#7c4dbd,#e8a020);color:#fff;border:none;border-radius:100px;padding:10px 28px;cursor:pointer;';
+      btn.onclick=startQuiz;
+      bar.appendChild(btn);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════
+   CLICK HANDLING
+══════════════════════════════════════════════ */
+const cvse=document.getElementById('cell-cvs');
+function getPos(e){
+  const r=cvse.getBoundingClientRect();
+  const s=e.touches?e.touches[0]:e;
+  return{x:s.clientX-r.left,y:s.clientY-r.top};
+}
+cvse.addEventListener('click',e=>{handleTap(getPos(e));});
+cvse.addEventListener('touchend',e=>{e.preventDefault();if(e.changedTouches.length){const r=cvse.getBoundingClientRect();const t=e.changedTouches[0];handleTap({x:t.clientX-r.left,y:t.clientY-r.top});}},{passive:false});
+
+function handleTap({x,y}){
+  const W=cvse.width,H=cvse.height;
+  const id=hitOrganelle(x,y,W,H);
+  if(!id)return;
+  const org=ORGANELLES.find(o=>o.id===id);
+  if(!org)return;
+  visited.add(id);
+  updateProg();
+  openPanel(org);
+}
+
+function openPanel(org){
+  curOrg=org;
+  if(panAnimId){cancelAnimationFrame(panAnimId);panAnimId=null;}
+  document.getElementById('pi').textContent=org.icon;
+  document.getElementById('pn').textContent=org.name;
+  document.getElementById('pt').textContent=org.tagline;
+  document.getElementById('pd').innerHTML=org.desc;
+  const chips=document.getElementById('pchips');
+  chips.innerHTML=org.chips.map(c=>`<span class="chip" style="background:${c.c};color:${c.tc}">${c.t}</span>`).join('');
+  initMiniQuiz(org.id);
+  show('s-panel');
+  requestAnimationFrame(()=>{
+    const cvs=document.getElementById('panel-cvs');
+    const W=Math.min(cvs.parentElement.offsetWidth,500);
+    cvs.width=W;cvs.height=Math.round(W*.5);
+    panTick=0;
+    panAnimId=requestAnimationFrame(panelLoop);
+  });
+}
+
+function closePanel(){
+  if(panAnimId){cancelAnimationFrame(panAnimId);panAnimId=null;}
+  curOrg=null;
+  show('s-explore');
+}
+
+/* ══════════════════════════════════════════════
+   QUIZ
+══════════════════════════════════════════════ */
+function startQuiz(){
+  if(panAnimId){cancelAnimationFrame(panAnimId);panAnimId=null;}
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  qIdx=0;qRes=[];
+  buildQProg();renderQ();
+  show('s-quiz');
+}
+
+function buildQProg(){
+  document.getElementById('qprog').innerHTML=QUIZ.map((_,i)=>`<div class="qp" id="qp${i}"></div>`).join('');
+}
+
+function renderQ(){
+  if(qIdx>=QUIZ.length){showDone();return;}
+  const q=QUIZ[qIdx];
+  document.getElementById('qarea').innerHTML=`
+    <div class="q-card">
+      <div class="q-num">Spørgsmål ${qIdx+1} af ${QUIZ.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-opts">${q.opts.map((o,i)=>`<button class="qo" onclick="ansQ(${i})">${o}</button>`).join('')}</div>
+      <div class="qfb" id="qfb"></div>
+      <button class="qnxt" id="qnxt" onclick="nextQ()">Næste →</button>
+    </div>`;
+}
+
+function ansQ(chosen){
+  const q=QUIZ[qIdx];
+  document.querySelectorAll('.qo').forEach((b,i)=>{b.disabled=true;if(i===q.c)b.classList.add('ok');else if(i===chosen&&chosen!==q.c)b.classList.add('no');});
+  const ok=chosen===q.c;qRes.push(ok);
+  const dot=document.getElementById('qp'+qIdx);if(dot)dot.classList.add(ok?'ok':'no');
+  const fb=document.getElementById('qfb');
+  fb.className='qfb '+(ok?'ok':'no');
+  fb.innerHTML=(ok?'✅ Rigtigt! ':'❌ ')+q.fb;
+  const nb=document.getElementById('qnxt');nb.className='qnxt on';
+  nb.textContent=qIdx<QUIZ.length-1?'Næste →':'Se resultat →';
+}
+
+function nextQ(){qIdx++;renderQ();}
+
+function showDone(){
+  const s=qRes.filter(Boolean).length;
+  const pct=Math.round(s/QUIZ.length*100);
+  document.getElementById('done-score').textContent=`${s}/${QUIZ.length} = ${pct}%`;
+  document.getElementById('done-sub').textContent=pct>=80?'Imponerende! Du kender cellen godt! 🧬':pct>=60?'Godt klaret! Gå tilbage og udforsk igen for at forbedre dig.':'Prøv at udforske cellen igen og læs forklaringerne grundigt.';
+  show('s-done');
+}
+
+window.addEventListener('resize',()=>{
+  const cvs=document.getElementById('cell-cvs');
+  if(cvs&&cvs.offsetParent){cvs.width=cvs.offsetWidth;cvs.height=cvs.offsetHeight;}
+});
+</script>
+</body>
+</html>
