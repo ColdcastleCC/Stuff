@@ -349,9 +349,9 @@ const ORG_QUIZ = {
     {q:'Hvad er protonmotivkraft i membransammenhæng?',opts:['En muskelkraft','Gradient af H⁺-ioner over membranen der driver ATP-produktion','En type ATP','DNA-kraft'],c:1,fb:'Protonmotivkraften er et H⁺-gradient over en membran — bruges af ATP-synthase i mitokondrier.'},
   ],
   nucleus: [
-    {q:'Hvad indeholder cellekærnen?',opts:['Ribosomer','DNA og kromosomer','Mitokondrier','Lysosomer'],c:1,fb:'Cellekærnen indeholder DNA pakket i 46 kromosomer — den komplette genetiske information.'},
-    {q:'Hvad er nukleoluset?',opts:['En del af cellemembranen','Struktur i kærnen der producerer ribosomalt RNA','Et enzym','Et kromosom'],c:1,fb:'Nukleoluset producerer rRNA og samler ribosomernes underenheder i cellekærnen.'},
-    {q:'Hvad er kerneporer?',opts:['Kanaler der styrer transport ind/ud af kærnen','Strukturer der producerer DNA','En type kromosom','Ribosomer'],c:0,fb:'Kerneporer er store proteinkomplekser der tillader udveksling af molekyler mellem kærnen og cytoplasmaet.'},
+    {q:'Hvad indeholder cellekernen?',opts:['Ribosomer','DNA og kromosomer','Mitokondrier','Lysosomer'],c:1,fb:'Cellekærnen indeholder DNA pakket i 46 kromosomer — den komplette genetiske information.'},
+    {q:'Hvad er nukleoluset?',opts:['En del af cellemembranen','Struktur i kernen der producerer ribosomalt RNA','Et enzym','Et kromosom'],c:1,fb:'Nukleoluset producerer rRNA og samler ribosomernes underenheder i cellekærnen.'},
+    {q:'Hvad er kerneporer?',opts:['Kanaler der styrer transport ind/ud af kernen','Strukturer der producerer DNA','En type kromosom','Ribosomer'],c:0,fb:'Kerneporer er store proteinkomplekser der tillader udveksling af molekyler mellem kærnen og cytoplasmaet.'},
     {q:'Hvad er DNA?',opts:['Et protein','Desoxribonukleinsyre — bærer genetisk information','Et fedt','En sukker'],c:1,fb:'DNA (desoxribonukleinsyre) bærer den genetiske information — opskriften på alle proteiner.'},
     {q:'Hvad er et kromosom?',opts:['Et protein','DNA pakket tæt med histonproteiner','En type ribosom','En lipid'],c:1,fb:'Kromosomer er tæt pakkede strukturer af DNA og histoner — menneskeceller har 46.'},
     {q:'Hvad er histoner?',opts:['Enzymer der klipper DNA','Proteiner som DNA pakkes om','RNA-molekyler','Membranproteiner'],c:1,fb:'Histoner er proteiner som DNA-tråden vikles tæt rundt om — danner nukleosomer.'},
@@ -830,14 +830,14 @@ function drawCell(){
 function drawHitLabel(ctx,W,H,cx,cy,rx,ry){
   // Small "tap" indicators on unvisited organelles
   const tips=[
-    {id:'nucleus',  x:cx+rx*.02, y:cy-ry*.08,  lbl:'🧬 Kærnen'},
-    {id:'mito',     x:cx-rx*.28, y:cy-ry*.22,  lbl:'⚡ Mito.'},
+    {id:'nucleus',  x:cx+rx*.02, y:cy-ry*.08,  lbl:'🧬 Kernen'},
+    {id:'mito',     x:cx-rx*.28, y:cy-ry*.22,  lbl:'⚡ Mitochondrier.'},
     {id:'golgi',    x:cx-rx*.18, y:cy+ry*.22,  lbl:'📦 Golgi'},
     {id:'er',       x:cx+rx*.15, y:cy-.03*ry,  lbl:'🌊 ER'},
-    {id:'lyso',     x:cx+rx*.1,  y:cy+ry*.2,   lbl:'🧹 Lyso.'},
-    {id:'ribosome', x:cx-rx*.08, y:cy-ry*.25,  lbl:'🔩 Ribo.'},
+    {id:'lyso',     x:cx+rx*.1,  y:cy+ry*.2,   lbl:'🧹 Lysomer.'},
+    {id:'ribosome', x:cx-rx*.08, y:cy-ry*.25,  lbl:'🔩 Ribosomer.'},
     {id:'membrane', x:cx+rx*.92, y:cy-ry*.1,   lbl:'🫧 Membran'},
-    {id:'cyto',     x:cx-rx*.5,  y:cy+ry*.05,  lbl:'🕸️ Cyto.'},
+    {id:'cyto',     x:cx-rx*.5,  y:cy+ry*.05,  lbl:'🕸️ Cytoplasma.'},
   ];
   tips.forEach(({id,x,y,lbl})=>{
     if(visited.has(id)) return;
