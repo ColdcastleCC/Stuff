@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Vands Hemmeligheder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#030f1a;
+  --water:#0a3a5a;
+  --deep:#041424;
+  --glow:#00d4ff;
+  --glow2:#00ff9d;
+  --warm:#ffcc44;
+  --red:#ff4466;
+  --purple:#aa44ff;
+  --white:#e8f8ff;
+  --muted:rgba(232,248,255,.45);
+  --fh:'Syne',sans-serif;
+  --fm:'Space Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px);
+  --sm:clamp(12px,2.8vw,14px);
+  --md:clamp(14px,3.3vw,17px);
+  --lg:clamp(18px,4.5vw,24px);
+  --xl:clamp(24px,6vw,34px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fh);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;}
+.scr.on{display:flex;}
+
+/* ══ HOME ══ */
+#s-home{background:radial-gradient(ellipse at 50% 80%,#051a2e 0%,#030f1a 70%);align-items:center;justify-content:center;overflow-y:auto;padding:20px 16px 40px;}
+.home-cvs-wrap{width:100%;max-width:340px;margin-bottom:-20px;position:relative;z-index:1;}
+#home-cvs{display:block;width:100%;}
+.home-content{position:relative;z-index:2;text-align:center;max-width:480px;}
+.home-h{font-family:var(--fh);font-weight:800;font-size:var(--xl);color:var(--white);letter-spacing:-.01em;margin-bottom:6px;text-shadow:0 0 40px rgba(0,212,255,.4);}
+.home-h .acc{color:var(--glow);}
+.home-sub{font-family:var(--fm);font-size:var(--xs);color:var(--muted);letter-spacing:.06em;margin-bottom:28px;line-height:1.7;}
+.lev-grid{display:flex;flex-direction:column;gap:9px;width:100%;max-width:480px;margin-bottom:20px;}
+.lev{display:flex;align-items:center;gap:12px;border-radius:14px;padding:13px 16px;cursor:pointer;transition:all .18s;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden;}
+.lev:hover{transform:translateX(4px);}
+.lev.locked{opacity:.3;cursor:default;}
+.lev .lem{font-size:clamp(22px,5.5vw,30px);flex-shrink:0;line-height:1;}
+.lev .lti{flex:1;}
+.lev .lt{font-family:var(--fh);font-weight:700;font-size:var(--sm);margin-bottom:2px;}
+.lev .ld{font-family:var(--fm);font-size:var(--xs);color:var(--muted);line-height:1.35;}
+.lev .lb{font-family:var(--fm);font-size:var(--xs);padding:4px 10px;border-radius:20px;background:rgba(0,0,0,.4);flex-shrink:0;}
+.lev.lc0{background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(0,80,180,.08));}
+.lev.lc1{background:linear-gradient(135deg,rgba(0,255,157,.12),rgba(0,120,80,.07));}
+.lev.lc2{background:linear-gradient(135deg,rgba(255,80,150,.12),rgba(180,0,80,.07));}
+.lev.lc3{background:linear-gradient(135deg,rgba(255,200,60,.12),rgba(180,100,0,.07));}
+
+/* ══ SHARED GAME CHROME ══ */
+.topbar{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.55);border-bottom:1px solid rgba(0,212,255,.12);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));backdrop-filter:blur(12px);}
+.bk{font-family:var(--fm);font-size:var(--xs);color:rgba(0,212,255,.6);background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);border-radius:7px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:var(--glow);}
+.lname{font-family:var(--fh);font-weight:700;font-size:var(--sm);color:var(--white);flex:1;text-align:center;letter-spacing:.02em;}
+.ibtn{font-family:var(--fm);font-size:var(--xs);color:rgba(0,255,157,.7);background:rgba(0,255,157,.07);border:1px solid rgba(0,255,157,.2);border-radius:7px;padding:6px 12px;cursor:pointer;}
+#main-cvs{display:block;width:100%;flex:1;}
+.hud{background:rgba(0,0,0,.7);border-top:1px solid rgba(0,212,255,.1);padding:9px 14px;flex-shrink:0;padding-bottom:max(9px,env(safe-area-inset-bottom,9px));}
+.formula-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.fcard{flex:1;min-width:100px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:9px;padding:7px 10px;}
+.fcard .fn{font-family:var(--fm);font-size:clamp(7px,1.5vw,9px);color:rgba(0,212,255,.55);letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px;}
+.fcard .feq{font-family:var(--fm);font-size:clamp(10px,2.4vw,13px);color:var(--white);line-height:1.4;}
+.fcard .feq .v{color:var(--glow);}
+.fcard .fval{font-family:var(--fm);font-size:clamp(9px,1.9vw,11px);color:rgba(255,255,255,.4);margin-top:2px;}
+.ctrl-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.cb{font-family:var(--fh);font-weight:700;font-size:var(--xs);letter-spacing:.04em;border:none;border-radius:9px;padding:9px 18px;cursor:pointer;text-transform:uppercase;min-height:36px;transition:all .14s;}
+.cb.go{background:var(--glow2);color:#001a10;}
+.cb.go.stop{background:var(--red);color:#fff;}
+.cb.rst{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.13);}
+.cb.nxt{background:var(--warm);color:#1a0a00;margin-left:auto;}
+.cb.nxt:disabled{opacity:.2;cursor:default;}
+.srow{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;}
+.slw{display:flex;align-items:center;gap:7px;flex:1;min-width:120px;}
+.slw label{font-family:var(--fm);font-size:var(--xs);color:rgba(255,255,255,.35);white-space:nowrap;}
+.slw input[type=range]{flex:1;accent-color:var(--glow);}
+.slw .sv{font-family:var(--fm);font-weight:700;font-size:var(--xs);color:var(--warm);min-width:38px;text-align:right;}
+
+/* ══ INFO MODAL ══ */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;padding:14px;}
+.modal.on{display:flex;}
+.mbox{background:rgba(3,18,32,.99);border:1px solid rgba(0,212,255,.22);border-radius:18px;padding:20px;max-width:440px;width:100%;max-height:88vh;overflow-y:auto;}
+.mbox h3{font-family:var(--fh);font-weight:800;font-size:var(--md);color:var(--glow);margin-bottom:12px;}
+.mbox p{font-size:var(--sm);color:rgba(255,255,255,.72);line-height:1.7;margin-bottom:10px;}
+.mbox .mf{font-family:var(--fm);background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.14);border-radius:9px;padding:10px;color:#fff;font-size:var(--sm);line-height:1.75;margin-bottom:10px;}
+.mbox .hl{color:var(--glow);}
+.mbox .close{font-family:var(--fh);font-weight:700;font-size:var(--sm);background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.13);border-radius:9px;padding:10px;cursor:pointer;width:100%;}
+
+/* ══ DONE ══ */
+#s-done{background:radial-gradient(ellipse at 50% 60%,#041a2e 0%,#030f1a 80%);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.di{font-size:clamp(52px,13vw,80px);margin-bottom:12px;animation:bob 2s ease-in-out infinite alternate;}
+@keyframes bob{from{transform:translateY(0) scale(1)}to{transform:translateY(-8px) scale(1.04)}}
+.dh{font-family:var(--fh);font-weight:800;font-size:var(--xl);color:var(--white);margin-bottom:8px;}
+.dsub{font-size:var(--md);color:var(--muted);max-width:360px;line-height:1.6;margin-bottom:26px;}
+.dbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);border:none;border-radius:14px;padding:13px 40px;cursor:pointer;display:block;margin:0 auto 10px;letter-spacing:.02em;}
+.dbtn.nxt{background:linear-gradient(135deg,var(--glow),var(--glow2));color:#001a10;}
+.dbtn.retry{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.13);}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="scr on" id="s-home">
+  <div class="home-cvs-wrap"><canvas id="home-cvs" height="180"></canvas></div>
+  <div class="home-content">
+    <h1 class="home-h">Vands<br><span class="acc">Hemmeligheder</span></h1>
+    <p class="home-sub">Polaritet · Overfladespænding · Sulfo · Elektrolyse</p>
+    <div class="lev-grid" id="lev-grid"></div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="scr" id="s-game">
+  <div class="topbar">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="lname" id="lname">–</div>
+    <button class="ibtn" onclick="openInfo()">💧 Info</button>
+  </div>
+  <canvas id="main-cvs"></canvas>
+  <div class="hud">
+    <div class="formula-row" id="frow"></div>
+    <div class="ctrl-row">
+      <button class="cb go" id="gobtn" onclick="toggleSim()">▶ Start</button>
+      <button class="cb rst" onclick="resetSim()">↺ Nulstil</button>
+      <button class="cb nxt" id="nxtbtn" onclick="goNext()" disabled>Næste →</button>
+    </div>
+    <div class="srow" id="srow"></div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="scr" id="s-done">
+  <div class="di" id="di">💧</div>
+  <h2 class="dh" id="dh">Klaret!</h2>
+  <p class="dsub" id="dsub">–</p>
+  <button class="dbtn nxt" id="dnxt" onclick="goNext()">Næste →</button>
+  <button class="dbtn retry" onclick="retryLevel()">Prøv igen ↺</button>
+</div>
+
+<!-- INFO MODAL -->
+<div class="modal" id="imodal">
+  <div class="mbox">
+    <h3 id="info-h">–</h3>
+    <div id="info-body"></div>
+    <button class="close" onclick="closeInfo()">Forstået ✓</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   LEVELS
+════════════════════════════════════════ */
+const LEVELS = [
+  {
+    id:0, em:'💧', name:'Polaritet', cls:'lc0',
+    tag:'H₂O-molekylet · δ+ og δ- · Hydrogenbindinger',
+    info:{h:'💧 Vandets Polaritet',b:`
+      <p>Vand er <b>polart</b> — det vil sige at molekylet har en positiv og en negativ ende, ligesom en magnet.</p>
+      <div class="mf">
+        <span class="hl">H–O–H vinkel: 104,5°</span><br>
+        Iltatom: <span class="hl">δ−</span> (trækker elektroner til sig)<br>
+        Hydrogenatomer: <span class="hl">δ+</span> (mangler elektroner)<br>
+        Resulterer i: <span class="hl">dipolmoment</span>
+      </div>
+      <p>Den skæve vinkel og iltens stærke "elektronsug" (høj elektronegativitet) giver vandmolekylet et permanent dipolmoment. δ+ tiltrækkes af naboers δ− og danner <b>hydrogenbindinger</b> — det er grunden til at vand er flydende ved stuetemperatur!</p>
+    `},
+    sliders:[]
+  },
+  {
+    id:1, em:'🪲', name:'Overfladespænding', cls:'lc1',
+    tag:'Spil: styr vandløberen · undgå sulfo-dråber!',
+    info:{h:'🪲 Overfladespænding & Vandløberen',b:`
+      <p>Vandets overflademolekyler trækkes <b>ned og til siden</b> af naboerne under — ikke op. Det skaber en <b>elastisk hinde</b> på overfladen.</p>
+      <div class="mf">
+        <span class="hl">γ_vand = 72 mN/m</span>  (ved 20°C)<br>
+        Sammenlignet med: ethanol = 22 mN/m<br>
+        Kviksølv = 487 mN/m
+      </div>
+      <p>Vandløberen (<i>Gerris lacustris</i>) vejer så lidt at overfladespændingen bærer den. Dens ben er dækket af vandskyende (hydrofobe) hår der fordeler trykket. <b>Sulfo</b> (rengøringsmiddel) ødelægger straks hydrogenbindingerne og bryder spændingen — vandløberen synker!</p>
+      <p><b>Spil:</b> Styr vandløberen med piletaster/tilt. Saml dråber, undgå sulfo (rød)!</p>
+    `},
+    sliders:[]
+  },
+  {
+    id:2, em:'🧼', name:'Sulfo & Sæbemolekylet', cls:'lc2',
+    tag:'Amfifile molekyler · Miceller · Overfladeaktive stoffer',
+    info:{h:'🧼 Sulfo & Sæbemolekylet',b:`
+      <p>Et sæbemolekyl er <b>amfifilt</b> — det har en vandelsket (hydrofil) ende og en vandskyende (hydrofob) ende.</p>
+      <div class="mf">
+        <span class="hl">Hydrofil hoved</span>: ionisk, tiltrækkes af vand<br>
+        <span class="hl">Hydrofob hale</span>: fed kulkæde, frastødes af vand<br>
+        → Samles i <span class="hl">miceller</span>: kugle med hale indad
+      </div>
+      <p>Ved vandoverfladen stikker halerne op i luften og <b>bryder hydrogenbindingerne</b> mellem vandmolekylerne. Det sænker overfladespændingen drastisk — fra 72 til ~35 mN/m. Det er derfor sæbevand renser bedre: det kan trænge ind i snavs og fedt som rent vand ikke kan.</p>
+    `},
+    sliders:[]
+  },
+  {
+    id:3, em:'⚡', name:'Elektrolyse', cls:'lc3',
+    tag:'2H₂O → 2H₂ + O₂ · Elektroder · Bobler',
+    info:{h:'⚡ Elektrolyse af Vand',b:`
+      <p>Med elektricitet kan man <b>spalte vand til hydrogen og oxygen</b>. Elektroner tvinges igennem vandet og bryder de kemiske bindinger.</p>
+      <div class="mf">
+        <span class="hl">Katode (−):</span>  2H₂O + 2e⁻ → H₂ + 2OH⁻<br>
+        <span class="hl">Anode (+):</span>   2H₂O → O₂ + 4H⁺ + 4e⁻<br>
+        <span class="hl">Samlet:</span>      2H₂O → 2H₂↑ + O₂↑
+      </div>
+      <p>Ved <b>katoden (minuspolen)</b> opstår dobbelt så mange bobler som ved <b>anoden (pluspolen)</b> — fordi der produceres to H₂-molekyler for hvert O₂. Det er det der hedder Faradays elektrolyseregler. Øg spændingen og se bobletakten stige!</p>
+    `},
+    sliders:[{id:'volt',lbl:'Volt (V)',min:1,max:24,val:6,step:1}]
+  },
+];
+
+/* ════════════════════════════════════════
+   SAVE
+════════════════════════════════════════ */
+const KEY='h2o_v1';
+function loadSD(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{};}}
+function saveSD(){localStorage.setItem(KEY,JSON.stringify(SD));}
+let SD=loadSD();
+if(!SD.unlocked)SD.unlocked=[true,false,false,false];
+if(!SD.done)SD.done=[false,false,false,false];
+
+/* ════════════════════════════════════════
+   HOME
+════════════════════════════════════════ */
+function buildHome(){
+  const g=document.getElementById('lev-grid');g.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const unl=SD.unlocked[i];
+    const d=document.createElement('div');
+    d.className=`lev ${lv.cls}${unl?'':' locked'}`;
+    d.innerHTML=`<div class="lem">${lv.em}</div><div class="lti"><div class="lt">${lv.name}</div><div class="ld">${lv.tag}</div></div><div class="lb" style="color:${SD.done[i]?'var(--glow2)':'rgba(255,255,255,.35)'}">${SD.done[i]?'✅':'○'}</div>`;
+    if(unl)d.onclick=()=>startLevel(i);
+    g.appendChild(d);
+  });
+}
+function goHome(){running=false;if(animId){cancelAnimationFrame(animId);animId=null;}show('s-home');buildHome();}
+
+/* ════════════════════════════════════════
+   HOME ANIMATION — rotating H2O molecule
+════════════════════════════════════════ */
+(function homeAnim(){
+  const cvs=document.getElementById('home-cvs');
+  if(!cvs)return;
+  const W=cvs.offsetWidth||320;cvs.width=W;cvs.height=180;
+  let t=0;
+  function frame(){
+    requestAnimationFrame(frame);
+    t+=0.018;
+    const ctx=cvs.getContext('2d');
+    ctx.clearRect(0,0,W,180);
+    drawH2OMolecule(ctx,W/2,90,t,1.4,true);
+  }
+  requestAnimationFrame(frame);
+})();
+
+function drawH2OMolecule(ctx,cx,cy,t,scale=1,showLabels=true){
+  const r=28*scale;
+  const bondLen=54*scale;
+  const halfAngle=52.25*(Math.PI/180); // 104.5°/2
+
+  const hx1=cx+Math.cos(Math.PI+halfAngle+t)*bondLen;
+  const hy1=cy+Math.sin(Math.PI+halfAngle+t)*bondLen;
+  const hx2=cx+Math.cos(Math.PI-halfAngle+t)*bondLen;
+  const hy2=cy+Math.sin(Math.PI-halfAngle+t)*bondLen;
+
+  // Bond glow
+  ctx.strokeStyle='rgba(0,212,255,.5)';ctx.lineWidth=3*scale;
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(hx1,hy1);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(hx2,hy2);ctx.stroke();
+
+  // O atom
+  const og=ctx.createRadialGradient(cx-r*.2,cy-r*.2,r*.1,cx,cy,r);
+  og.addColorStop(0,'rgba(80,200,255,.9)');og.addColorStop(1,'rgba(0,100,220,.7)');
+  ctx.shadowColor='rgba(0,212,255,.7)';ctx.shadowBlur=18*scale;
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=og;ctx.fill();ctx.shadowBlur=0;
+
+  // H atoms
+  [[hx1,hy1],[hx2,hy2]].forEach(([hx,hy])=>{
+    const rh=18*scale;
+    const hg=ctx.createRadialGradient(hx-rh*.2,hy-rh*.2,rh*.1,hx,hy,rh);
+    hg.addColorStop(0,'rgba(255,255,255,.95)');hg.addColorStop(1,'rgba(180,220,255,.7)');
+    ctx.shadowColor='rgba(255,255,255,.5)';ctx.shadowBlur=10*scale;
+    ctx.beginPath();ctx.arc(hx,hy,rh,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();ctx.shadowBlur=0;
+  });
+
+  if(showLabels){
+    ctx.font=`bold ${Math.max(11,14*scale)}px Syne,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(0,0,0,.8)';ctx.fillText('O',cx,cy+1);
+    [[hx1,hy1],[hx2,hy2]].forEach(([hx,hy])=>{ctx.fillStyle='rgba(40,40,60,.8)';ctx.fillText('H',hx,hy+1);});
+
+    // Delta labels
+    ctx.font=`${Math.max(9,10*scale)}px Space Mono,monospace`;
+    ctx.fillStyle='rgba(100,200,255,.9)';ctx.fillText('δ−',cx+22*scale,cy-24*scale);
+    [[hx1,hy1],[hx2,hy2]].forEach(([hx,hy])=>{
+      ctx.fillStyle='rgba(255,200,100,.9)';
+      const nx=(hx-cx)/bondLen,ny=(hy-cy)/bondLen;
+      ctx.fillText('δ+',hx+nx*18*scale,hy+ny*18*scale);
+    });
+  }
+}
+
+/* ════════════════════════════════════════
+   GAME STATE
+════════════════════════════════════════ */
+let curL=-1,running=false,animId=null,lastTS=0,simT=0;
+let P={},sim={};
+
+function cl(a,v,b){return Math.max(a,Math.min(b,v));}
+function r2(x){return Math.round(x*100)/100;}
+function rnd(a,b){return Math.random()*(b-a)+a;}
+
+function startLevel(i){
+  curL=i;running=false;simT=0;lastTS=0;
+  const lv=LEVELS[i];
+  P={};lv.sliders.forEach(s=>{P[s.id]=s.val;});
+  document.getElementById('lname').textContent=`${lv.em} ${lv.name}`;
+  const btn=document.getElementById('gobtn');btn.textContent='▶ Start';btn.classList.remove('stop');
+  document.getElementById('nxtbtn').disabled=!SD.done[i];
+  buildSliders(lv);buildFormulas(lv);
+  show('s-game');
+  requestAnimationFrame(()=>{
+    const cvs=document.getElementById('main-cvs');
+    cvs.width=cvs.offsetWidth;cvs.height=cvs.offsetHeight;
+    resetSim();
+    if(animId)cancelAnimationFrame(animId);
+    animId=requestAnimationFrame(loop);
+  });
+}
+
+function buildSliders(lv){
+  const row=document.getElementById('srow');row.innerHTML='';
+  lv.sliders.forEach(s=>{
+    const dp=s.step<1?1:0,d=document.createElement('div');d.className='slw';
+    d.innerHTML=`<label>${s.lbl}</label><input type="range" id="sl${s.id}" min="${s.min}" max="${s.max}" value="${s.val}" step="${s.step}"><div class="sv" id="sv${s.id}">${s.val.toFixed(dp)}</div>`;
+    d.querySelector('input').oninput=function(){P[s.id]=parseFloat(this.value);document.getElementById('sv'+s.id).textContent=parseFloat(this.value).toFixed(dp);};
+    row.appendChild(d);
+  });
+}
+
+function buildFormulas(lv){
+  const cards={
+    0:`<div class="fcard"><div class="fn">Vinkel</div><div class="feq">H-<span class="v">O</span>-H = 104,5°</div><div class="fval">Polær molekyle</div></div>
+       <div class="fcard"><div class="fn">Dipol</div><div class="feq"><span class="v">δ−</span> Ilt · <span class="v">δ+</span> Brint</div><div class="fval" id="fvH">Klik på molekyler</div></div>
+       <div class="fcard"><div class="fn">H-bindinger</div><div class="feq"><span class="v">δ+</span>→<span class="v">δ−</span></div><div class="fval" id="fvHB">~20 kJ/mol</div></div>`,
+    1:`<div class="fcard"><div class="fn">Spænding</div><div class="feq"><span class="v">γ</span> = 72 mN/m</div><div class="fval" id="fvT">Stabil</div></div>
+       <div class="fcard"><div class="fn">Score</div><div class="feq"><span class="v" id="fvScore">0</span> dråber</div><div class="fval" id="fvLv">Undgå sulfo!</div></div>
+       <div class="fcard"><div class="fn">Liv</div><div class="feq"><span class="v" id="fvLives">❤❤❤</span></div><div class="fval">Sulfo = synker</div></div>`,
+    2:`<div class="fcard"><div class="fn">Hoved</div><div class="feq"><span class="v">Hydrofil</span></div><div class="fval">Elsker vand</div></div>
+       <div class="fcard"><div class="fn">Hale</div><div class="feq"><span class="v">Hydrofob</span></div><div class="fval">Hader vand</div></div>
+       <div class="fcard"><div class="fn">Effekt</div><div class="feq"><span class="v">γ</span>: 72→35 mN/m</div><div class="fval" id="fvSurf">Bryder spænding</div></div>`,
+    3:`<div class="fcard"><div class="fn">Katode −</div><div class="feq">2H<sub>2</sub>O→<span class="v">H₂</span>+2OH⁻</div><div class="fval" id="fvH2">H₂ bobler</div></div>
+       <div class="fcard"><div class="fn">Anode +</div><div class="feq">2H<sub>2</sub>O→<span class="v">O₂</span>+4H⁺</div><div class="fval" id="fvO2">O₂ bobler</div></div>
+       <div class="fcard"><div class="fn">Ratio</div><div class="feq"><span class="v">H₂ : O₂ = 2:1</span></div><div class="fval" id="fvV">–</div></div>`,
+  };
+  document.getElementById('frow').innerHTML=cards[lv.id];
+}
+
+/* ════════════════════════════════════════
+   RESET & PHYSICS INIT
+════════════════════════════════════════ */
+function resetSim(){
+  simT=0;running=false;
+  const btn=document.getElementById('gobtn');btn.textContent='▶ Start';btn.classList.remove('stop');
+  const cvs=document.getElementById('main-cvs');
+  const W=cvs.width,H=cvs.height;
+
+  if(curL===0){
+    // Polaritet: multiple molecules that attract/repel
+    const mols=[];
+    for(let i=0;i<8;i++){
+      mols.push({
+        x:rnd(80,W-80),y:rnd(60,H-80),
+        vx:rnd(-30,30),vy:rnd(-30,30),
+        rot:rnd(0,Math.PI*2),vrot:rnd(-.5,.5),
+        bonded:false,bondTo:null,bondAge:0
+      });
+    }
+    sim={mols,bonds:[],clickedMol:null,hbCount:0,done:false};
+  } else if(curL===1){
+    // Water strider game
+    sim={
+      bug:{x:W/2,y:H*.55,vx:0,vy:0,alive:true,sinking:0},
+      drops:[],
+      sulfoDrops:[],
+      score:0,lives:3,
+      tension:1.0,
+      spawnTimer:0,
+      sulfoTimer:0,
+      gameOver:false,
+      won:false,
+    };
+  } else if(curL===2){
+    // Sulfo animation
+    sim={
+      molecules:[],  // soap mols
+      phase:0,       // 0=separated, 1=gathering at surface, 2=breaking tension, 3=micelle
+      phaseT:0,
+      waterMols:[],
+      done:false,
+    };
+    // Init water molecules grid at bottom
+    for(let r=0;r<4;r++) for(let c=0;c<8;c++){
+      sim.waterMols.push({x:c/8*W+W/16,y:H*.55+r*28,t:rnd(0,Math.PI*2),bonded:true});
+    }
+    // Soap molecules start scattered at top
+    for(let i=0;i<10;i++){
+      sim.molecules.push({
+        x:rnd(40,W-40),y:rnd(H*.05,H*.35),
+        vx:rnd(-20,20),vy:rnd(-10,10),
+        atSurface:false,rot:rnd(0,Math.PI*2),
+      });
+    }
+  } else if(curL===3){
+    // Electrolysis
+    sim={
+      bubbles:[],
+      cathBubbles:0,
+      anoBubbles:0,
+      running:false,
+      particles:[],
+      done:false,
+    };
+  }
+}
+
+function toggleSim(){
+  running=!running;
+  const btn=document.getElementById('gobtn');
+  btn.textContent=running?'⏸ Pause':'▶ Start';
+  btn.classList.toggle('stop',running);
+  if(running)lastTS=0;
+}
+
+/* ════════════════════════════════════════
+   PHYSICS STEP
+════════════════════════════════════════ */
+function step(dt){
+  if(!running)return;
+  simT+=dt;
+  if(curL===0)stepPolar(dt);
+  else if(curL===1)stepStrider(dt);
+  else if(curL===2)stepSulfo(dt);
+  else if(curL===3)stepElectrolysis(dt);
+}
+
+/* — Polaritet — */
+function stepPolar(dt){
+  const cvs=document.getElementById('main-cvs');
+  const W=cvs.width,H=cvs.height;
+  const mols=sim.mols;
+  // Simple physics: molecules attract head-to-tail (H-bond attraction)
+  mols.forEach((m,i)=>{
+    let fx=0,fy=0;
+    mols.forEach((n,j)=>{
+      if(i===j)return;
+      const dx=n.x-m.x,dy=n.y-m.y;
+      const dist=Math.sqrt(dx*dx+dy*dy)||1;
+      // Short-range attraction (H-bond) at ~80px
+      if(dist<160&&dist>30){
+        const f=0.4*(160-dist)/160;
+        fx+=dx/dist*f;fy+=dy/dist*f;
+      }
+      // Repulsion at close range
+      if(dist<35){const f=8/dist;fx-=dx/dist*f;fy-=dy/dist*f;}
+    });
+    m.vx=(m.vx+fx)*0.96;m.vy=(m.vy+fy)*0.96;
+    m.vx=cl(-80,m.vx,80);m.vy=cl(-80,m.vy,80);
+    m.x+=m.vx*dt;m.y+=m.vy*dt;
+    m.rot+=m.vrot*dt*0.8;
+    if(m.x<50){m.x=50;m.vx=Math.abs(m.vx);}
+    if(m.x>W-50){m.x=W-50;m.vx=-Math.abs(m.vx);}
+    if(m.y<50){m.y=50;m.vy=Math.abs(m.vy);}
+    if(m.y>H-70){m.y=H-70;m.vy=-Math.abs(m.vy);}
+  });
+  // Count hydrogen bonds
+  let hb=0;
+  mols.forEach((m,i)=>mols.forEach((n,j)=>{if(j<=i)return;const d=Math.hypot(m.x-n.x,m.y-n.y);if(d<110)hb++;}));
+  sim.hbCount=hb;
+  if(hb>=10&&!sim.done){sim.done=true;markDone();}
+}
+
+/* — Water Strider — */
+function stepStrider(dt){
+  const cvs=document.getElementById('main-cvs');
+  const W=cvs.width,H=cvs.height;
+  const bug=sim.bug;
+  if(sim.gameOver)return;
+
+  // Input
+  const spd=bug.alive?280:0;
+  const friction=0.84;
+  bug.vx=cl(-350,bug.vx*friction,350);
+  bug.vy=cl(-350,bug.vy*friction,350);
+  if(keys.ArrowLeft||keys.a)bug.vx-=spd*dt*6;
+  if(keys.ArrowRight||keys.d)bug.vx+=spd*dt*6;
+  if(keys.ArrowUp||keys.w)bug.vy-=spd*dt*6;
+  if(keys.ArrowDown||keys.s)bug.vy+=spd*dt*6;
+  // Tilt
+  if(tilt.x)bug.vx+=tilt.x*spd*dt*5;
+  if(tilt.y)bug.vy+=tilt.y*spd*dt*5;
+
+  bug.x=cl(20,bug.x+bug.vx*dt,W-20);
+  const waterY=H*.42;
+  if(bug.alive)bug.y=cl(waterY,bug.y+bug.vy*dt,waterY+10);
+
+  // Sinking
+  if(!bug.alive){bug.sinking+=dt*60;bug.y+=bug.sinking*dt;if(bug.y>H+40){endGame();return;}}
+
+  // Spawn water drops
+  sim.spawnTimer+=dt;
+  if(sim.spawnTimer>1.2){
+    sim.spawnTimer=0;
+    sim.drops.push({x:rnd(30,W-30),y:rnd(H*.15,H*.35),vy:rnd(80,140),r:8});
+  }
+  // Spawn sulfo drops
+  sim.sulfoTimer+=dt;
+  const sulfoRate=Math.max(0.8,4-sim.score*0.1);
+  if(sim.sulfoTimer>sulfoRate){
+    sim.sulfoTimer=0;
+    sim.sulfoDrops.push({x:rnd(30,W-30),y:rnd(H*.05,H*.2),vy:rnd(60,100),r:10,splash:0});
+  }
+
+  // Update drops
+  const wY=waterY;
+  sim.drops=sim.drops.filter(d=>{
+    d.y+=d.vy*dt;
+    if(d.y>wY){
+      // Collect if bug nearby
+      if(bug.alive&&Math.hypot(d.x-bug.x,d.y-bug.y)<40){sim.score++;updateScoreDisplay();}
+      return false;
+    }
+    return d.y<H;
+  });
+
+  // Update sulfo
+  sim.sulfoDrops.forEach(d=>{
+    if(d.splash>0){d.splash+=dt;return;}
+    d.y+=d.vy*dt;
+    if(d.y>=wY){
+      d.splash=0.01;d.y=wY;
+      // Check hit bug
+      if(bug.alive&&Math.hypot(d.x-bug.x,0)<60){
+        sim.lives--;bug.alive=false;
+        updateLivesDisplay();
+        if(sim.lives<=0)setTimeout(()=>endGame(),1200);
+        else setTimeout(()=>{bug.alive=true;bug.x=W/2;bug.y=wY;bug.vx=0;bug.vy=0;bug.sinking=0;},1800);
+      }
+    }
+  });
+  sim.sulfoDrops=sim.sulfoDrops.filter(d=>d.splash<1.5);
+
+  if(sim.score>=15&&!sim.won){sim.won=true;markDone();}
+  const fvT=document.getElementById('fvT');if(fvT)fvT.textContent=bug.alive?'Stabil 💚':'BRUDT 💥';
+}
+
+function endGame(){
+  sim.gameOver=true;running=false;
+  document.getElementById('gobtn').textContent='▶ Start';document.getElementById('gobtn').classList.remove('stop');
+}
+
+function updateScoreDisplay(){
+  const el=document.getElementById('fvScore');if(el)el.textContent=sim.score;
+}
+function updateLivesDisplay(){
+  const el=document.getElementById('fvLives');if(el)el.textContent='❤'.repeat(Math.max(0,sim.lives))+'🖤'.repeat(3-sim.lives);
+}
+
+/* — Sulfo — */
+function stepSulfo(dt){
+  if(!running)return;
+  const cvs=document.getElementById('main-cvs');
+  const W=cvs.width,H=cvs.height;
+  const surfY=H*.52;
+
+  sim.molecules.forEach(m=>{
+    if(m.atSurface){
+      m.vx*=0.85;m.vy*=0.85;
+      // spread out along surface
+      let pushX=0;
+      sim.molecules.forEach(n=>{
+        if(n===m||!n.atSurface)return;
+        const dx=m.x-n.x;
+        if(Math.abs(dx)<50)pushX+=dx<0?-3:3;
+      });
+      m.x=cl(20,m.x+pushX*dt,W-20);
+    } else {
+      // Strong pull toward surface
+      const dy=surfY-m.y;
+      m.vy+=dy*4*dt;   // much stronger force
+      m.vx*=0.92;m.vy*=0.92;
+      m.x+=m.vx*dt;m.y+=m.vy*dt;
+      m.x=cl(20,m.x,W-20);
+      if(m.y>=surfY-6){m.atSurface=true;m.y=surfY;}
+    }
+  });
+
+  const atCount=sim.molecules.filter(m=>m.atSurface).length;
+  const allAtSurface=atCount===sim.molecules.length;
+  if(allAtSurface&&!sim.done){
+    sim.phaseDone=(sim.phaseDone||0)+dt;
+    if(sim.phaseDone>1.5){sim.done=true;markDone();}
+  }
+
+  const fvS=document.getElementById('fvSurf');
+  if(fvS){
+    const pct=Math.round(atCount/sim.molecules.length*100);
+    fvS.textContent=`${pct}% ved overfladen`;
+  }
+}
+
+/* — Elektrolyse — */
+function stepElectrolysis(dt){
+  if(!running)return;
+  const cvs=document.getElementById('main-cvs');
+  const W=cvs.width,H=cvs.height;
+  const volt=P.volt||6;
+  // Bubble spawn rate proportional to voltage
+  const rate=volt*0.8;
+  sim.bubbleTimer=(sim.bubbleTimer||0)+dt;
+  if(sim.bubbleTimer>1/rate){
+    sim.bubbleTimer=0;
+    const cathX=W*.3,anoX=W*.7;
+    // Cathode: H2 (2x)
+    for(let i=0;i<2;i++) sim.bubbles.push({x:cathX+rnd(-10,10),y:H*.72,r:rnd(3,6),vy:rnd(-40,-20),type:'H2',alpha:1});
+    sim.cathBubbles++;
+    // Anode: O2 (1x)
+    sim.bubbles.push({x:anoX+rnd(-10,10),y:H*.72,r:rnd(4,7),vy:rnd(-35,-18),type:'O2',alpha:1});
+    sim.anoBubbles++;
+  }
+  // Electrons moving
+  sim.particles=sim.particles||[];
+  sim.particleTimer=(sim.particleTimer||0)+dt;
+  if(sim.particleTimer>0.08){
+    sim.particleTimer=0;
+    sim.particles.push({x:0.05*W,y:H*.8+rnd(-5,5),vx:volt*4,vy:0,alpha:1});
+  }
+  sim.particles=sim.particles.filter(p=>{
+    p.x+=p.vx*dt;p.alpha-=dt*.5;return p.alpha>0&&p.x<W*.95;
+  });
+  sim.bubbles=sim.bubbles.filter(b=>{
+    b.y+=b.vy*dt;b.alpha-=dt*.18;b.vy*=0.99;return b.alpha>0&&b.y>0;
+  });
+  const fvH2=document.getElementById('fvH2');const fvO2=document.getElementById('fvO2');const fvVv=document.getElementById('fvV');
+  if(fvH2)fvH2.textContent=`${sim.cathBubbles} H₂-bobler`;
+  if(fvO2)fvO2.textContent=`${sim.anoBubbles} O₂-bobler`;
+  const ratio=sim.anoBubbles>0?r2(sim.cathBubbles/sim.anoBubbles):0;
+  if(fvVv)fvVv.textContent=sim.anoBubbles>0?`H₂:O₂ = ${ratio}:1 ${Math.abs(ratio-2)<0.5?'✅':''}`:(`${volt}V`);
+  if(sim.cathBubbles>=20&&!sim.done){sim.done=true;markDone();}
+}
+
+/* ════════════════════════════════════════
+   DRAW LOOP
+════════════════════════════════════════ */
+function loop(ts){
+  animId=requestAnimationFrame(loop);
+  const dt=lastTS?Math.min((ts-lastTS)/1000,.05):0;lastTS=ts;
+  step(dt);
+  const cvs=document.getElementById('main-cvs');
+  const ctx=cvs.getContext('2d');
+  const W=cvs.width,H=cvs.height;
+  ctx.clearRect(0,0,W,H);
+  if(curL===0)drawPolar(ctx,W,H);
+  else if(curL===1)drawStrider(ctx,W,H);
+  else if(curL===2)drawSulfo(ctx,W,H);
+  else if(curL===3)drawElectrolysis(ctx,W,H);
+}
+
+/* ════════════════════════════════════════
+   DRAW FUNCTIONS
+════════════════════════════════════════ */
+function bgWater(ctx,W,H,t=0){
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#030f1a');bg.addColorStop(1,'#051828');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // Subtle particle field
+  for(let i=0;i<20;i++){
+    const px=(i*137.5+t*3)%W,py=(i*89+t*2)%H;
+    ctx.fillStyle=`rgba(0,212,255,${.04+((i*73)%10)/120})`;
+    ctx.beginPath();ctx.arc(px,py,1,0,Math.PI*2);ctx.fill();
+  }
+}
+
+/* ── Level 0: Polarity ── */
+function drawPolar(ctx,W,H){
+  bgWater(ctx,W,H,simT);
+  // Water surface hint
+  ctx.fillStyle='rgba(0,100,180,.2)';ctx.fillRect(0,H*.85,W,H*.15);
+
+  // Draw molecules
+  sim.mols.forEach((m,i)=>{
+    drawH2OMolecule(ctx,m.x,m.y,m.rot,0.85,true);
+  });
+
+  // Draw H-bonds (dashed lines between close molecules)
+  ctx.setLineDash([4,4]);
+  sim.mols.forEach((m,i)=>{
+    sim.mols.forEach((n,j)=>{
+      if(j<=i)return;
+      const d=Math.hypot(m.x-n.x,m.y-n.y);
+      if(d<110){
+        const a=cl(0,(110-d)/110*.8,.8);
+        ctx.strokeStyle=`rgba(0,212,255,${a})`;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(n.x,n.y);ctx.stroke();
+      }
+    });
+  });
+  ctx.setLineDash([]);
+
+  // HBond count
+  ctx.fillStyle='rgba(0,212,255,.7)';ctx.font=`bold ${cl(10,W*.025,14)}px Space Mono,monospace`;ctx.textAlign='center';
+  ctx.fillText(`Hydrogenbindinger: ${sim.hbCount}`,W/2,H-12);
+  if(!running){
+    ctx.fillStyle='rgba(255,255,255,.5)';ctx.font=`${cl(9,W*.022,12)}px Space Mono,monospace`;
+    ctx.fillText('▶ Start eller klik/tap på et molekyle for at trække det',W/2,H-28);
+  }
+  if(sim.done){
+    ctx.fillStyle='rgba(0,255,157,.9)';ctx.font=`bold ${cl(12,W*.03,18)}px Syne,sans-serif`;ctx.textAlign='center';
+    ctx.fillText('Hydrogenbindinger dannet! 💧',W/2,30);
+  }
+}
+
+/* ── Level 1: Water Strider ── */
+function drawStrider(ctx,W,H){
+  // Sky
+  const sky=ctx.createLinearGradient(0,0,0,H*.42);
+  sky.addColorStop(0,'#020c16');sky.addColorStop(1,'#083050');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*.42);
+
+  // Water body
+  const water=ctx.createLinearGradient(0,H*.42,0,H);
+  water.addColorStop(0,'#0a3a6a');water.addColorStop(1,'#041428');
+  ctx.fillStyle=water;ctx.fillRect(0,H*.42,W,H*.58);
+
+  // Surface tension line — elastic membrane
+  const wY=H*.42;
+  const tension=sim.tension||1;
+
+  // Draw water surface as glowing elastic membrane
+  ctx.shadowColor='rgba(0,212,255,.6)';ctx.shadowBlur=8;
+  ctx.strokeStyle=`rgba(0,212,255,${.5+tension*.3})`;ctx.lineWidth=3;
+  ctx.beginPath();
+  // Slight ripple/depression where bug stands
+  for(let x=0;x<=W;x+=4){
+    const bDist=Math.abs(x-sim.bug.x);
+    const depress=sim.bug.alive&&!sim.gameOver?Math.max(0,12-bDist*.15)*tension:0;
+    ctx.lineTo(x,wY+depress);
+  }
+  ctx.stroke();ctx.shadowBlur=0;
+
+  // Surface shimmer
+  ctx.strokeStyle='rgba(100,200,255,.15)';ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let x=0;x<=W;x+=3){
+    const bDist=Math.abs(x-sim.bug.x);
+    const dep=sim.bug.alive?Math.max(0,8-bDist*.1)*tension:0;
+    ctx.lineTo(x,wY+dep+2+Math.sin(x*.08+simT*2)*.8);
+  }
+  ctx.stroke();
+
+  // Deep water caustics
+  for(let i=0;i<15;i++){
+    const cx=(i*137.5+simT*20)%W,cy=H*.55+((i*89)%50);
+    ctx.fillStyle=`rgba(0,150,255,${.04+Math.abs(Math.sin(simT+i))*.04})`;
+    ctx.beginPath();ctx.ellipse(cx,cy,12,4,simT*.3+i,0,Math.PI*2);ctx.fill();
+  }
+
+  // Water drops (collectible, blue)
+  sim.drops.forEach(d=>{
+    const g=ctx.createRadialGradient(d.x-d.r*.3,d.y-d.r*.3,d.r*.1,d.x,d.y,d.r);
+    g.addColorStop(0,'rgba(120,220,255,.95)');g.addColorStop(1,'rgba(0,120,220,.6)');
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+    ctx.font=`${cl(7,d.r*1.2,10)}px sans-serif`;ctx.textAlign='center';ctx.fillStyle='rgba(0,60,120,.8)';
+    ctx.fillText('💧',d.x,d.y+d.r*.4);
+  });
+
+  // Sulfo drops (dangerous, red/pink)
+  sim.sulfoDrops.forEach(d=>{
+    if(d.splash>0){
+      // Splash effect
+      const sp=d.splash;
+      for(let a=0;a<8;a++){
+        const ang=a/8*Math.PI*2;const len=sp*40;
+        ctx.strokeStyle=`rgba(255,80,150,${Math.max(0,0.7-sp*.5)})`;ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x+Math.cos(ang)*len,d.y+Math.sin(ang)*len*.3);ctx.stroke();
+      }
+      return;
+    }
+    const g=ctx.createRadialGradient(d.x-d.r*.3,d.y-d.r*.3,d.r*.1,d.x,d.y,d.r);
+    g.addColorStop(0,'rgba(255,150,180,.95)');g.addColorStop(1,'rgba(200,0,80,.7)');
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+    ctx.font=`${cl(8,d.r*1.2,11)}px sans-serif`;ctx.textAlign='center';ctx.fillStyle='rgba(255,255,255,.9)';
+    ctx.fillText('🧼',d.x,d.y+d.r*.35);
+  });
+
+  // THE BUG — water strider (Gerris lacustris)
+  if(!sim.gameOver||sim.bug.y<H+20){
+    const bx=sim.bug.x,by=sim.bug.y+(sim.bug.alive?0:sim.bug.sinking*.1);
+    const sinking=!sim.bug.alive;
+    const bugAlpha=sinking?Math.max(0,1-sim.bug.sinking/80):1;
+
+    ctx.save();ctx.globalAlpha=bugAlpha;
+
+    // Legs (3 pairs, spread on surface)
+    ctx.strokeStyle=sinking?'rgba(100,100,100,.8)':'rgba(80,60,20,.9)';ctx.lineWidth=1.5;
+    const legPairs=[[-20,0],[-2,0],[16,0]];
+    legPairs.forEach(([dx,dy])=>{
+      // Left leg
+      ctx.beginPath();ctx.moveTo(bx+dx,by+dy);
+      ctx.lineTo(bx+dx-18,by+(sinking?10:6));ctx.lineTo(bx+dx-28,by+(sinking?20:8));ctx.stroke();
+      // Right leg
+      ctx.beginPath();ctx.moveTo(bx+dx,by+dy);
+      ctx.lineTo(bx+dx+18,by+(sinking?10:6));ctx.lineTo(bx+dx+28,by+(sinking?20:8));ctx.stroke();
+      // Foot dimples on surface (only when alive)
+      if(!sinking){
+        [bx+dx-28,bx+dx+28].forEach(fx=>{
+          ctx.fillStyle='rgba(0,180,255,.4)';ctx.beginPath();ctx.ellipse(fx,by+8,5,2,0,0,Math.PI*2);ctx.fill();
+        });
+      }
+    });
+
+    // Body
+    ctx.fillStyle=sinking?'rgba(60,50,30,.7)':'rgba(50,35,15,.9)';
+    ctx.beginPath();ctx.ellipse(bx,by-2,20,7,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=sinking?'rgba(80,70,40,.7)':'rgba(80,60,20,.9)';
+    ctx.beginPath();ctx.ellipse(bx-2,by-2,14,5,.2,0,Math.PI*2);ctx.fill();
+
+    // Eyes
+    ctx.fillStyle='rgba(255,255,100,.9)';
+    ctx.beginPath();ctx.arc(bx+12,by-3,2.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(bx+12,by-3,1,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,.8)';ctx.fill();
+
+    // Antennae
+    ctx.strokeStyle=sinking?'rgba(60,50,30,.7)':'rgba(50,35,15,.8)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(bx+18,by-3);ctx.lineTo(bx+32,by-12);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(bx+18,by-3);ctx.lineTo(bx+30,by-8);ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // Game over / won overlays
+  if(sim.gameOver&&sim.score<15){
+    ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(255,80,100,.9)';ctx.font=`bold ${cl(18,W*.06,32)}px Syne,sans-serif`;ctx.textAlign='center';
+    ctx.fillText('Sulfo ødelagde spændingen!',W/2,H/2-20);
+    ctx.fillStyle='rgba(255,255,255,.7)';ctx.font=`${cl(12,W*.03,16)}px Space Mono,monospace`;
+    ctx.fillText(`Score: ${sim.score} dråber`,W/2,H/2+20);
+    ctx.fillText('Tryk ↺ Nulstil for at prøve igen',W/2,H/2+44);
+  }
+  if(sim.won){
+    ctx.fillStyle='rgba(0,255,157,.9)';ctx.font=`bold ${cl(14,W*.035,20)}px Syne,sans-serif`;ctx.textAlign='center';
+    ctx.fillText(`🪲 Klaret! ${sim.score} dråber samlet!`,W/2,H-18);
+  }
+
+  // Touch controls hint
+  if(!sim.won&&!sim.gameOver){
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font=`${cl(8,W*.019,10)}px Space Mono,monospace`;ctx.textAlign='center';
+    ctx.fillText('Piletaster / WASD / vip telefon  ·  Saml 💧 undgå 🧼',W/2,H-8);
+  }
+}
+
+/* ── Level 2: Sulfo ── */
+function drawSulfo(ctx,W,H){
+  bgWater(ctx,W,H,simT);
+  const surfY=H*.52;
+
+  // Water bulk
+  const wg=ctx.createLinearGradient(0,surfY,0,H);
+  wg.addColorStop(0,'rgba(10,60,110,.8)');wg.addColorStop(1,'rgba(4,20,40,.9)');
+  ctx.fillStyle=wg;ctx.fillRect(0,surfY,W,H-surfY);
+
+  // Water molecules below surface
+  sim.waterMols.forEach(m=>{
+    m.t+=0.02;
+    const disrupted=sim.molecules.some(s=>s.atSurface&&Math.hypot(m.x-s.x,0)<60);
+    const col=disrupted?'rgba(255,100,180,.6)':'rgba(0,180,255,.5)';
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(m.x,m.y,6,0,Math.PI*2);ctx.fill();
+    // H-bond lines
+    if(!disrupted){
+      ctx.strokeStyle='rgba(0,150,200,.2)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+      ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(m.x+20,m.y+2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  });
+
+  // Surface tension line
+  const tenBroken=sim.molecules.filter(m=>m.atSurface).length;
+  const tenPct=tenBroken/sim.molecules.length;
+  ctx.shadowColor=`rgba(0,212,255,${.8-tenPct*.6})`;ctx.shadowBlur=8;
+  for(let x=0;x<=W;x+=4){
+    const nearSoap=sim.molecules.filter(m=>m.atSurface&&Math.abs(m.x-x)<30).length;
+    const disruption=nearSoap*4*tenPct;
+    const col=nearSoap>0?`rgba(255,100,150,${.5+tenPct*.4})`:`rgba(0,212,255,.7)`;
+    ctx.strokeStyle=col;ctx.lineWidth=2.5;
+    if(x===0)ctx.beginPath();
+    ctx.lineTo(x,surfY+disruption+Math.sin(x*.04+simT)*.5);
+  }
+  ctx.stroke();ctx.shadowBlur=0;
+
+  // Soap molecules
+  sim.molecules.forEach(m=>{
+    ctx.save();ctx.translate(m.x,m.y);
+    if(m.atSurface)ctx.rotate(-Math.PI/2);
+    else ctx.rotate(m.rot+simT*.3);
+
+    // Hydrophobic tail (zigzag carbon chain, pointing up at surface)
+    ctx.strokeStyle='rgba(255,200,80,.7)';ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let i=0;i<=6;i++){
+      const tx=i%2===0?-3:3,ty=-i*4-8;
+      i===0?ctx.moveTo(tx,ty):ctx.lineTo(tx,ty);
+    }
+    ctx.stroke();
+    // Tail label
+    if(m.atSurface){
+      ctx.fillStyle='rgba(255,200,80,.8)';ctx.font=`${cl(6,7,8)}px Space Mono`;ctx.textAlign='center';
+      ctx.fillText('hydrofob',0,-36);
+    }
+
+    // Hydrophilic head (circle, in water)
+    ctx.shadowColor='rgba(255,80,150,.6)';ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(0,0,7,0,Math.PI*2);
+    const hg=ctx.createRadialGradient(-2,-2,1,0,0,7);
+    hg.addColorStop(0,'rgba(255,150,200,.95)');hg.addColorStop(1,'rgba(200,0,80,.7)');
+    ctx.fillStyle=hg;ctx.fill();ctx.shadowBlur=0;
+    if(m.atSurface){
+      ctx.fillStyle='rgba(255,150,200,.8)';ctx.font=`${cl(6,7,8)}px Space Mono`;ctx.textAlign='center';
+      ctx.fillText('hydrofil',0,14);
+    }
+    ctx.restore();
+  });
+
+  // Phase label
+  const pct=Math.round(tenBroken/sim.molecules.length*100);
+  ctx.fillStyle='rgba(255,200,80,.8)';ctx.font=`bold ${cl(10,W*.024,13)}px Space Mono,monospace`;ctx.textAlign='center';
+  ctx.fillText(`${pct}% sæbemolekyler ved overfladen`,W/2,H-24);
+  ctx.fillStyle='rgba(255,255,255,.4)';ctx.font=`${cl(8,W*.019,10)}px Space Mono,monospace`;
+  ctx.fillText(pct<100?'Tryk ▶ Start for at se sæben samle sig ved overfladen':'Overfladespændingen er brudt! Hydrogenbindingerne afbrydes.',W/2,H-10);
+
+  if(!running&&pct===0){
+    ctx.fillStyle='rgba(255,255,255,.55)';ctx.font=`${cl(9,W*.022,12)}px Space Mono,monospace`;ctx.textAlign='center';
+    ctx.fillText('▶ Start — eller tap direkte på lærredet for at tilføje sæbemolekyler',W/2,surfY-20);
+  }
+}
+
+/* ── Level 3: Electrolysis ── */
+function drawElectrolysis(ctx,W,H){
+  const volt=P.volt||6;
+
+  // Background
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#030e18');bg.addColorStop(1,'#05182a');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // Glass container
+  const gx=W*.15,gy=H*.15,gw=W*.7,gh=H*.65;
+  ctx.fillStyle='rgba(0,60,120,.25)';
+  ctx.strokeStyle='rgba(0,200,255,.3)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect(gx,gy,gw,gh,8);ctx.fill();ctx.stroke();
+
+  // Water fill
+  const wg=ctx.createLinearGradient(0,gy+gh*.25,0,gy+gh);
+  wg.addColorStop(0,'rgba(10,80,160,.7)');wg.addColorStop(1,'rgba(5,40,90,.85)');
+  ctx.fillStyle=wg;
+  ctx.beginPath();ctx.roundRect(gx+2,gy+gh*.25,gw-4,gh*.74,{bottomLeft:8,bottomRight:8});ctx.fill();
+
+  // Water surface shimmer
+  ctx.strokeStyle='rgba(0,200,255,.3)';ctx.lineWidth=1.5;
+  ctx.beginPath();
+  for(let x=gx+2;x<=gx+gw-2;x+=3){ctx.lineTo(x,gy+gh*.25+Math.sin(x*.1+simT*2)*.8);}
+  ctx.stroke();
+
+  // Water formula label
+  ctx.fillStyle='rgba(0,180,255,.5)';ctx.font=`${cl(9,W*.022,12)}px Space Mono,monospace`;ctx.textAlign='center';
+  ctx.fillText('H₂O (med elektrolyt)',W/2,gy+gh*.12);
+
+  // Electrodes
+  const cathX=W*.3,anoX=W*.7,elecTop=gy+gh*.05,elecBot=gy+gh*.8;
+
+  // Wires
+  ctx.strokeStyle='rgba(100,100,100,.7)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(cathX,elecTop-10);ctx.lineTo(cathX,gy-H*.08);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(anoX,elecTop-10);ctx.lineTo(anoX,gy-H*.08);ctx.stroke();
+  // Battery
+  const batCx=W/2,batY=gy-H*.06;
+  ctx.fillStyle='rgba(40,40,40,.9)';ctx.strokeStyle='rgba(180,180,180,.5)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(batCx-32,batY-16,64,28,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle='rgba(0,212,255,.8)';ctx.font=`bold ${cl(9,W*.022,12)}px Syne,sans-serif`;ctx.textAlign='center';
+  ctx.fillText(`${volt}V`,batCx,batY);
+  // Connect wires to battery
+  ctx.strokeStyle='rgba(100,100,100,.7)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(cathX,gy-H*.08);ctx.lineTo(batCx-32,batY-2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(anoX,gy-H*.08);ctx.lineTo(batCx+32,batY-2);ctx.stroke();
+  // +/- labels on battery
+  ctx.fillStyle='rgba(255,80,80,.8)';ctx.font=`bold ${cl(9,W*.023,13)}px Syne`;
+  ctx.fillText('+',batCx+22,batY+2);
+  ctx.fillStyle='rgba(100,160,255,.8)';ctx.fillText('−',batCx-22,batY+2);
+
+  // Electron arrows on wire (animated)
+  if(running){
+    (sim.particles||[]).forEach(p=>{
+      ctx.fillStyle=`rgba(100,180,255,${p.alpha*.8})`;
+      ctx.beginPath();ctx.arc(gx+p.x/W*(gw)+gx-gx,batY-2,3.5,0,Math.PI*2);ctx.fill();
+    });
+  }
+
+  // Cathode electrode (−, left, blue)
+  ctx.fillStyle='rgba(60,100,200,.85)';ctx.strokeStyle='rgba(100,160,255,.7)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect(cathX-6,elecTop,12,elecBot-elecTop,3);ctx.fill();ctx.stroke();
+  ctx.fillStyle='rgba(100,160,255,.9)';ctx.font=`bold ${cl(10,W*.025,14)}px Syne,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('−',cathX,elecTop-15);ctx.fillText('Katode',cathX,elecTop-26);
+
+  // Anode electrode (+, right, red)
+  ctx.fillStyle='rgba(200,60,80,.85)';ctx.strokeStyle='rgba(255,120,120,.7)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect(anoX-6,elecTop,12,elecBot-elecTop,3);ctx.fill();ctx.stroke();
+  ctx.fillStyle='rgba(255,120,120,.9)';ctx.font=`bold ${cl(10,W*.025,14)}px Syne,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('+',anoX,elecTop-15);ctx.fillText('Anode',anoX,elecTop-26);
+
+  // Bubbles
+  (sim.bubbles||[]).forEach(b=>{
+    ctx.save();ctx.globalAlpha=b.alpha;
+    const col=b.type==='H2'?'rgba(150,200,255,.8)':'rgba(200,255,150,.8)';
+    ctx.strokeStyle=col;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.stroke();
+    const inner=b.type==='H2'?'rgba(100,160,255,.3)':'rgba(150,220,100,.3)';
+    ctx.fillStyle=inner;ctx.fill();
+    ctx.restore();
+  });
+
+  // Bubble labels
+  ctx.fillStyle='rgba(150,200,255,.8)';ctx.font=`bold ${cl(10,W*.025,13)}px Space Mono,monospace`;ctx.textAlign='center';
+  ctx.fillText('H₂',cathX,elecBot+22);ctx.fillText('(2×)',cathX,elecBot+36);
+  ctx.fillStyle='rgba(200,255,150,.8)';ctx.fillText('O₂',anoX,elecBot+22);ctx.fillText('(1×)',anoX,elecBot+36);
+
+  // Reaction equation
+  ctx.fillStyle='rgba(255,220,80,.8)';ctx.font=`bold ${cl(11,W*.027,15)}px Space Mono,monospace`;ctx.textAlign='center';
+  ctx.fillText('2H₂O → 2H₂ + O₂',W/2,H-24);
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.font=`${cl(8,W*.019,10)}px Space Mono,monospace`;
+  ctx.fillText(`Katode (−): 2× mere bobler end anode (+)  ·  ${volt}V`,W/2,H-10);
+
+  if(!running&&!sim.done){
+    ctx.fillStyle='rgba(255,255,255,.5)';ctx.font=`${cl(9,W*.022,12)}px Space Mono,monospace`;ctx.textAlign='center';
+    ctx.fillText('▶ Start elektrolysen — justér voltage med slideren',W/2,gy+gh*.6);
+  }
+  if(sim.done){
+    ctx.fillStyle='rgba(0,255,157,.9)';ctx.font=`bold ${cl(12,W*.03,17)}px Syne,sans-serif`;ctx.textAlign='center';
+    ctx.fillText(`⚡ Vand spaltet! ${sim.cathBubbles} H₂ · ${sim.anoBubbles} O₂`,W/2,H-42);
+  }
+}
+
+/* ════════════════════════════════════════
+   INPUT
+════════════════════════════════════════ */
+const keys={};
+const tilt={x:0,y:0};
+addEventListener('keydown',e=>{keys[e.key]=true;});
+addEventListener('keyup',e=>{keys[e.key]=false;});
+addEventListener('deviceorientation',e=>{
+  if(e.gamma!==null){tilt.x=e.gamma/45;tilt.y=e.beta?e.beta/45:0;}
+});
+
+// Touch/click interaction — level 0: pull molecules; level 2: add soap molecule
+const cvs2=document.getElementById('main-cvs');
+let touchStart=null, lastClick={x:-1,y:-1,t:0};
+
+function handleInteract(mx,my){
+  if(curL===0){
+    // Pull nearest molecule toward click point
+    if(!running){running=true;const btn=document.getElementById('gobtn');btn.textContent='⏸ Pause';btn.classList.add('stop');}
+    let nearest=null,minD=120;
+    sim.mols.forEach(m=>{const d=Math.hypot(m.x-mx,m.y-my);if(d<minD){minD=d;nearest=m;}});
+    if(nearest){nearest.vx+=(mx-nearest.x)*2;nearest.vy+=(my-nearest.y)*2;}
+  } else if(curL===2){
+    // Add new soap molecule where tapped
+    if(sim.molecules.length<16)
+      sim.molecules.push({x:mx,y:my,vx:rnd(-20,20),vy:rnd(-10,10),atSurface:false,rot:rnd(0,Math.PI*2)});
+    if(!running){running=true;const btn=document.getElementById('gobtn');btn.textContent='⏸ Pause';btn.classList.add('stop');}
+    sim.phaseDone=0;sim.done=false;
+  } else if(curL===3&&running){
+    // Click on cathode/anode to see formula popup — handled by drawing
+  }
+}
+
+cvs2.addEventListener('click',e=>{
+  const r=cvs2.getBoundingClientRect();
+  handleInteract((e.clientX-r.left)*(cvs2.width/r.width),(e.clientY-r.top)*(cvs2.height/r.height));
+});
+cvs2.addEventListener('touchstart',e=>{
+  touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  // Also fire interact on touch
+  if(curL===0||curL===2){
+    const r=cvs2.getBoundingClientRect();
+    handleInteract((e.touches[0].clientX-r.left)*(cvs2.width/r.width),(e.touches[0].clientY-r.top)*(cvs2.height/r.height));
+  }
+},{passive:true});
+cvs2.addEventListener('touchmove',e=>{
+  if(curL!==1||!touchStart)return;
+  e.preventDefault();
+  const dx=e.touches[0].clientX-touchStart.x;
+  const dy=e.touches[0].clientY-touchStart.y;
+  tilt.x=cl(-2,dx/40,2);tilt.y=cl(-2,dy/40,2);
+},{passive:false});
+cvs2.addEventListener('touchend',e=>{tilt.x=0;tilt.y=0;touchStart=null;},{passive:true});
+
+/* ════════════════════════════════════════
+   MARK DONE / NAV
+════════════════════════════════════════ */
+function markDone(){
+  if(SD.done[curL])return;
+  SD.done[curL]=true;if(curL<3)SD.unlocked[curL+1]=true;
+  saveSD();document.getElementById('nxtbtn').disabled=false;
+}
+
+function goNext(){
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  const lv=LEVELS[curL];
+  document.getElementById('di').textContent=curL<3?LEVELS[curL+1].em:'🌊';
+  document.getElementById('dh').textContent=curL<3?`${lv.name} klaret!`:'Alle niveauer klaret!';
+  document.getElementById('dsub').textContent=curL<3
+    ?`Level ${curL+2} — "${LEVELS[curL+1].name}" er låst op!`
+    :'Du har udforsket vandets polaritet, overfladespænding, sulfo-effekten og elektrolyse. Fremragende! 💧';
+  const nb=document.getElementById('dnxt');
+  nb.textContent=curL<3?`Næste: ${LEVELS[curL+1].name} →`:'Tilbage til menu';
+  nb.onclick=()=>{if(curL<3)startLevel(curL+1);else goHome();};
+  show('s-done');
+}
+
+function retryLevel(){startLevel(curL);}
+function resetSim(){
+  // re-init
+  const cvs=document.getElementById('main-cvs');
+  if(cvs.width===0){cvs.width=cvs.offsetWidth;cvs.height=cvs.offsetHeight;}
+  const W=cvs.width,H=cvs.height;
+  simT=0;running=false;
+  const btn=document.getElementById('gobtn');btn.textContent='▶ Start';btn.classList.remove('stop');
+  if(curL===0){
+    const mols=[];
+    for(let i=0;i<8;i++) mols.push({x:rnd(80,W-80),y:rnd(60,H-80),vx:rnd(-30,30),vy:rnd(-30,30),rot:rnd(0,Math.PI*2),vrot:rnd(-.5,.5)});
+    sim={mols,hbCount:0,done:SD.done[0]||false};
+  } else if(curL===1){
+    sim={bug:{x:W/2,y:H*.42,vx:0,vy:0,alive:true,sinking:0},drops:[],sulfoDrops:[],score:0,lives:3,tension:1.0,spawnTimer:0,sulfoTimer:0,gameOver:false,won:SD.done[1]||false};
+    updateScoreDisplay();updateLivesDisplay();
+  } else if(curL===2){
+    sim={molecules:[],waterMols:[],done:SD.done[2]||false};
+    for(let r=0;r<4;r++) for(let c=0;c<8;c++) sim.waterMols.push({x:c/8*W+W/16,y:H*.58+r*26,t:rnd(0,Math.PI*2)});
+    for(let i=0;i<10;i++) sim.molecules.push({x:rnd(40,W-40),y:rnd(H*.08,H*.38),vx:rnd(-20,20),vy:rnd(-10,10),atSurface:false,rot:rnd(0,Math.PI*2)});
+  } else if(curL===3){
+    sim={bubbles:[],cathBubbles:0,anoBubbles:0,particles:[],bubbleTimer:0,particleTimer:0,done:SD.done[3]||false};
+  }
+}
+
+function openInfo(){if(curL<0)return;const lv=LEVELS[curL];document.getElementById('info-h').textContent=lv.info.h;document.getElementById('info-body').innerHTML=lv.info.b;document.getElementById('imodal').classList.add('on');}
+function closeInfo(){document.getElementById('imodal').classList.remove('on');}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+addEventListener('resize',()=>{
+  const cvs=document.getElementById('main-cvs');
+  if(cvs&&cvs.offsetParent){cvs.width=cvs.offsetWidth;cvs.height=cvs.offsetHeight;}
+});
+
+buildHome();
+</script>
+</body>
+</html>
