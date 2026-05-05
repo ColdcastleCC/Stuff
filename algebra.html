@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Algebra — Matematikspil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0e0a;
+  --panel:#111811;
+  --green:#00ff41;
+  --green2:#00c832;
+  --yellow:#ffe600;
+  --orange:#ff8c00;
+  --red:#ff2244;
+  --blue:#00d4ff;
+  --white:#e8ffe8;
+  --muted:rgba(0,255,65,.35);
+  --fh:'Bebas Neue',sans-serif;
+  --fb:'Space Grotesk',sans-serif;
+  --fm:'Space Mono',monospace;
+  --xs:clamp(11px,2.4vw,13px);
+  --sm:clamp(13px,3vw,15px);
+  --md:clamp(14px,3.4vw,17px);
+  --lg:clamp(18px,4.5vw,24px);
+  --xl:clamp(26px,7vw,42px);
+  --xxl:clamp(36px,10vw,68px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+/* CRT scanline overlay */
+body::after{content:'';position:fixed;inset:0;z-index:999;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0px,rgba(0,0,0,.08) 1px,transparent 1px,transparent 2px);}
+
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scr.on{display:flex;}
+
+/* ══ HOME ══ */
+#s-home{background:var(--bg);align-items:center;justify-content:flex-start;padding:clamp(16px,4vw,28px) 14px 50px;}
+.home-header{width:100%;max-width:500px;margin-bottom:18px;position:relative;}
+.game-title{font-family:var(--fh);font-size:var(--xxl);color:var(--green);letter-spacing:.08em;line-height:.9;text-shadow:0 0 30px rgba(0,255,65,.5),0 0 60px rgba(0,255,65,.2);margin-bottom:4px;}
+.game-subtitle{font-family:var(--fm);font-size:var(--xs);color:var(--muted);letter-spacing:.15em;text-transform:uppercase;}
+.screen-rule{width:100%;max-width:500px;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);margin:14px 0;box-shadow:0 0 12px rgba(0,255,65,.4);}
+.lev-grid{display:flex;flex-direction:column;gap:12px;width:100%;max-width:500px;}
+.lev-card{border:1px solid rgba(0,255,65,.25);border-radius:4px;padding:16px 18px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;background:var(--panel);}
+.lev-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,65,.06),transparent);opacity:0;transition:opacity .15s;}
+.lev-card:hover:not(.locked)::before{opacity:1;}
+.lev-card:hover:not(.locked){border-color:rgba(0,255,65,.6);box-shadow:0 0 20px rgba(0,255,65,.15);}
+.lev-card.locked{opacity:.3;cursor:default;}
+.lev-card.done{border-color:rgba(0,200,50,.5);}
+.lev-top{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;}
+.lev-num{font-family:var(--fh);font-size:var(--xl);color:var(--green);letter-spacing:.05em;line-height:1;}
+.lev-name{font-family:var(--fh);font-size:var(--lg);color:var(--white);letter-spacing:.04em;}
+.lev-desc{font-family:var(--fm);font-size:var(--xs);color:var(--muted);line-height:1.55;margin-bottom:10px;}
+.lev-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.meta-chip{font-family:var(--fm);font-size:var(--xs);padding:4px 10px;border-radius:3px;border:1px solid;}
+.mc-green{border-color:rgba(0,255,65,.35);color:var(--green);}
+.mc-yellow{border-color:rgba(255,230,0,.35);color:var(--yellow);}
+.mc-orange{border-color:rgba(255,140,0,.35);color:var(--orange);}
+.mc-done{border-color:rgba(0,200,50,.5);color:#00c832;background:rgba(0,200,50,.08);}
+.lev-prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,255,65,.1);}
+.lev-prog-fill{height:100%;background:var(--green);transition:width .4s;box-shadow:0 0 8px rgba(0,255,65,.5);}
+.lev-lock{position:absolute;top:14px;right:16px;font-size:20px;opacity:.5;}
+
+/* ══ GAME ══ */
+#s-game{background:var(--bg);}
+.gbar{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.6);border-bottom:1px solid rgba(0,255,65,.15);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(0,255,65,.05);border:1px solid rgba(0,255,65,.2);border-radius:3px;padding:6px 12px;cursor:pointer;letter-spacing:.05em;}
+.bk:hover{color:var(--green);border-color:var(--green);}
+.gbar-lev{font-family:var(--fh);font-size:var(--md);color:var(--green);flex:1;text-align:center;letter-spacing:.1em;}
+.gbar-score{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+
+/* Progress strip */
+.qstrip{display:flex;gap:3px;padding:8px 14px;flex-shrink:0;background:rgba(0,0,0,.4);flex-wrap:wrap;}
+.qdot{width:clamp(7px,2vw,10px);height:clamp(7px,2vw,10px);border-radius:2px;background:rgba(0,255,65,.12);border:1px solid rgba(0,255,65,.2);transition:all .2s;flex-shrink:0;}
+.qdot.ok{background:var(--green);border-color:var(--green);box-shadow:0 0 4px rgba(0,255,65,.5);}
+.qdot.cur{background:var(--yellow);border-color:var(--yellow);box-shadow:0 0 6px rgba(255,230,0,.6);animation:pulse-dot .6s ease-in-out infinite alternate;}
+@keyframes pulse-dot{from{opacity:.7}to{opacity:1}}
+.qdot.hard{border-color:rgba(255,140,0,.5);}
+.qdot.hard.ok{background:var(--orange);border-color:var(--orange);}
+.qdot.hard.cur{background:var(--orange);box-shadow:0 0 8px rgba(255,140,0,.6);}
+
+/* Question area */
+.q-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;padding:18px 14px 30px;gap:14px;}
+.q-badge{font-family:var(--fm);font-size:var(--xs);letter-spacing:.1em;text-transform:uppercase;border-radius:3px;padding:4px 12px;align-self:flex-start;}
+.qb-norm{background:rgba(0,255,65,.08);color:var(--green);border:1px solid rgba(0,255,65,.25);}
+.qb-hard{background:rgba(255,140,0,.08);color:var(--orange);border:1px solid rgba(255,140,0,.3);}
+.q-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);align-self:flex-start;letter-spacing:.06em;}
+.q-card{background:var(--panel);border:1px solid rgba(0,255,65,.2);border-radius:4px;padding:22px 20px;width:100%;max-width:520px;}
+.q-text{font-family:var(--fb);font-size:var(--md);color:var(--white);line-height:1.55;margin-bottom:6px;}
+.q-text .eq{font-family:var(--fm);font-size:var(--lg);color:var(--green);display:block;margin:10px 0;text-align:center;letter-spacing:.04em;text-shadow:0 0 20px rgba(0,255,65,.3);}
+.q-text .hint{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-top:8px;display:block;}
+.ans-wrap{width:100%;max-width:520px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.ans-row{display:flex;align-items:center;gap:10px;}
+.ans-label{font-family:var(--fm);font-size:var(--sm);color:var(--muted);}
+.ainp{font-family:var(--fm);font-weight:700;font-size:var(--xl);width:clamp(110px,28vw,160px);background:rgba(0,255,65,.05);border:2px solid rgba(0,255,65,.3);border-radius:4px;color:var(--green);text-align:center;padding:10px 8px;outline:none;-webkit-appearance:none;transition:all .2s;}
+.ainp:focus{border-color:var(--green);background:rgba(0,255,65,.08);box-shadow:0 0 16px rgba(0,255,65,.2);}
+.ainp.ok{border-color:var(--green2);background:rgba(0,200,50,.12);color:var(--green2);}
+.ainp.err{border-color:var(--red);background:rgba(255,20,60,.08);color:var(--red);animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.chkbtn{font-family:var(--fh);font-size:var(--lg);letter-spacing:.08em;background:var(--green);color:#000;border:none;border-radius:4px;padding:12px 40px;cursor:pointer;transition:all .12s;min-width:160px;box-shadow:0 0 16px rgba(0,255,65,.3);}
+.chkbtn:hover{background:var(--green2);transform:scale(1.02);}
+.chkbtn:active{transform:scale(.98);}
+.chkbtn:disabled{opacity:.25;cursor:default;transform:none;}
+.fb-box{width:100%;max-width:520px;border-radius:4px;padding:13px 16px;display:none;font-size:var(--sm);line-height:1.65;}
+.fb-box.ok{background:rgba(0,200,50,.1);border:1px solid rgba(0,200,50,.35);color:#a0ffb8;display:block;}
+.fb-box.err{background:rgba(255,20,60,.08);border:1px solid rgba(255,20,60,.3);color:#ffb0bc;display:block;}
+.fb-box b{color:#fff;}
+.fb-box .steps{font-family:var(--fm);font-size:var(--xs);margin-top:6px;color:rgba(255,255,255,.65);line-height:1.8;}
+
+/* Wrong = restart notice */
+.restart-notice{background:rgba(255,20,60,.12);border:1px solid rgba(255,20,60,.4);border-radius:4px;padding:14px 18px;width:100%;max-width:520px;display:none;}
+.restart-notice.on{display:block;}
+.restart-notice .rn-h{font-family:var(--fh);font-size:var(--lg);color:var(--red);letter-spacing:.05em;margin-bottom:6px;}
+.restart-notice .rn-b{font-family:var(--fm);font-size:var(--xs);color:rgba(255,100,120,.8);line-height:1.65;}
+.restart-btn{font-family:var(--fh);font-size:var(--md);letter-spacing:.08em;background:var(--red);color:#fff;border:none;border-radius:4px;padding:11px 32px;cursor:pointer;margin-top:12px;box-shadow:0 0 12px rgba(255,20,60,.25);}
+.nxtbtn{font-family:var(--fh);font-size:var(--md);letter-spacing:.08em;background:rgba(0,255,65,.1);color:var(--green);border:1px solid rgba(0,255,65,.3);border-radius:4px;padding:12px 32px;cursor:pointer;display:none;box-shadow:0 0 10px rgba(0,255,65,.1);}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(0,255,65,.18);}
+
+/* ══ WIN SCREEN ══ */
+#s-win{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px;position:relative;overflow:hidden;}
+.win-bg-flash{position:absolute;inset:0;animation:flash 0.4s ease 0.1s 3;z-index:0;}
+@keyframes flash{0%,100%{background:transparent}50%{background:rgba(0,255,65,.08)}}
+.win-content{position:relative;z-index:1;max-width:480px;}
+.win-can{font-size:clamp(80px,22vw,140px);margin-bottom:10px;animation:can-bounce 0.5s cubic-bezier(.36,.07,.19,.97) 0.5s both,can-float 3s ease-in-out 1.2s infinite;}
+@keyframes can-bounce{0%{transform:scale(.2) rotate(-20deg);opacity:0}60%{transform:scale(1.2) rotate(5deg)}80%{transform:scale(.95) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes can-float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+.win-h{font-family:var(--fh);font-size:var(--xxl);color:var(--green);letter-spacing:.06em;line-height:.95;margin-bottom:10px;text-shadow:0 0 40px rgba(0,255,65,.5);animation:glow-pulse 2s ease-in-out infinite;}
+@keyframes glow-pulse{0%,100%{text-shadow:0 0 30px rgba(0,255,65,.4)}50%{text-shadow:0 0 60px rgba(0,255,65,.8)}}
+.win-sub{font-family:var(--fh);font-size:var(--xl);color:var(--yellow);letter-spacing:.05em;margin-bottom:8px;text-shadow:0 0 20px rgba(255,230,0,.4);}
+.win-detail{font-family:var(--fm);font-size:var(--sm);color:var(--muted);line-height:1.7;margin-bottom:28px;max-width:380px;}
+.win-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.wbtn{font-family:var(--fh);font-size:var(--md);letter-spacing:.07em;border:none;border-radius:4px;padding:13px 36px;cursor:pointer;}
+.wbtn.nxt{background:var(--green);color:#000;box-shadow:0 0 20px rgba(0,255,65,.35);}
+.wbtn.home{background:rgba(255,255,255,.08);color:var(--white);border:1px solid rgba(255,255,255,.15);}
+/* Particles */
+.particle{position:absolute;pointer-events:none;font-size:18px;animation:fall 3s ease-in forwards;}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(90vh) rotate(720deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="scr on" id="s-home">
+  <div class="home-header">
+    <div class="game-title">ALGEBRA</div>
+    <div class="game-subtitle">Matematikspil · 6. – 8. klasse</div>
+  </div>
+  <div class="screen-rule"></div>
+  <div class="lev-grid" id="lev-grid"></div>
+  <div class="screen-rule" style="margin-top:18px;"></div>
+  <p style="font-family:var(--fm);font-size:var(--xs);color:var(--muted);max-width:500px;line-height:1.7;margin-top:8px;">
+    ⚠ Du skal svare <b style="color:var(--yellow)">100% rigtigt</b> for at gennemføre et trin. Ét forkert svar sender dig tilbage til start. Din fremgang gemmes automatisk i browseren.
+  </p>
+</div>
+
+<!-- GAME -->
+<div class="scr" id="s-game">
+  <div class="gbar">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="gbar-lev" id="gbar-lev">–</div>
+    <div class="gbar-score" id="gbar-score">0/0</div>
+  </div>
+  <div class="qstrip" id="qstrip"></div>
+  <div class="q-area">
+    <div class="q-badge" id="qbadge"></div>
+    <div class="q-num" id="qnum"></div>
+    <div class="q-card">
+      <div class="q-text" id="qtext"></div>
+    </div>
+    <div class="ans-wrap">
+      <div class="ans-row">
+        <span class="ans-label" id="ans-label"></span>
+        <input class="ainp" id="ainp" type="text" inputmode="decimal" autocomplete="off" placeholder="?" autocorrect="off" spellcheck="false">
+      </div>
+    </div>
+    <button class="chkbtn" id="chkbtn" onclick="checkAnswer()">TJEK ✓</button>
+    <div class="fb-box" id="fbbox"></div>
+    <div class="restart-notice" id="restart-notice">
+      <div class="rn-h">❌ FORKERT SVAR</div>
+      <div class="rn-b" id="restart-msg">Du skal starte forfra fra spørgsmål 1. Din fremgang på dette trin nulstilles.</div>
+      <button class="restart-btn" onclick="restartLevel()">↺ START FORFRA</button>
+    </div>
+    <button class="nxtbtn" id="nxtbtn" onclick="nextQ()">NÆSTE →</button>
+  </div>
+</div>
+
+<!-- WIN -->
+<div class="scr" id="s-win">
+  <div class="win-bg-flash"></div>
+  <div class="win-content">
+    <div class="win-can">🥤</div>
+    <div class="win-h" id="win-h">TILLYKKE!</div>
+    <div class="win-sub" id="win-sub">–</div>
+    <p class="win-detail" id="win-detail">–</p>
+    <div class="win-btns">
+      <button class="wbtn nxt" id="win-nxt" onclick="winNext()">NÆSTE TRIN →</button>
+      <button class="wbtn home" onclick="goHome()">← HJEM</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   QUESTION GENERATORS
+══════════════════════════════════════════════ */
+
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rndNZ(a,b){let v=0;while(v===0)v=rnd(a,b);return v;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+
+/* ─── LEVEL 0: 6. KLASSE ─────────────────────── */
+/* Topics: x+a=b, x-a=b, a·x=b, x/a=b, find x in expressions,
+   simple word problems, basic negative numbers.
+   Last 10 (indices 30-39): two-step, 7th grade flavour */
+
+function gen6(i) {
+  const diff = i < 15 ? 1 : i < 30 ? 2 : 3; // trin 1=nem, 2=mellem, 3=svær (7.kl)
+  let text, eq, answer, tol=0, steps, label='x =';
+
+  if (diff === 1) {
+    const type = i % 5;
+    if (type === 0) {
+      // x + a = b
+      const a=rnd(2,20), x=rnd(1,30), b=x+a;
+      eq=`x + ${a} = ${b}`;
+      text=`Løs ligningen:`;
+      answer=x; steps=`x = ${b} − ${a} = ${x}`;
+    } else if (type === 1) {
+      // x - a = b
+      const a=rnd(2,15), x=rnd(3,25), b=x-a;
+      eq=`x − ${a} = ${b}`;
+      text=`Løs ligningen:`;
+      answer=x; steps=`x = ${b} + ${a} = ${x}`;
+    } else if (type === 2) {
+      // a·x = b
+      const a=rnd(2,9), x=rnd(2,12), b=a*x;
+      eq=`${a} · x = ${b}`;
+      text=`Løs ligningen:`;
+      answer=x; steps=`x = ${b} ÷ ${a} = ${x}`;
+    } else if (type === 3) {
+      // x / a = b
+      const a=rnd(2,8), x=rnd(2,9)*a;
+      eq=`x ÷ ${a} = ${x/a}`;
+      text=`Løs ligningen:`;
+      answer=x; steps=`x = ${x/a} × ${a} = ${x}`;
+    } else {
+      // Udtryk: indsæt x og beregn
+      const a=rnd(2,8), x=rnd(1,10);
+      eq=`3·x + ${a} når x = ${x}`;
+      text=`Beregn udtrykket:`;
+      label='svar =';
+      answer=3*x+a; steps=`3 × ${x} + ${a} = ${3*x} + ${a} = ${answer}`;
+    }
+  } else if (diff === 2) {
+    const type = (i-15) % 6;
+    if (type === 0) {
+      // a·x + b = c
+      const a=rnd(2,6), b=rnd(1,15), x=rnd(1,10), c=a*x+b;
+      eq=`${a}x + ${b} = ${c}`;
+      text=`Løs ligningen:`;
+      answer=x; steps=`${a}x = ${c} − ${b} = ${c-b}  →  x = ${c-b} ÷ ${a} = ${x}`;
+    } else if (type === 1) {
+      // a·x - b = c
+      const a=rnd(2,6), b=rnd(1,12), x=rnd(2,10), c=a*x-b;
+      eq=`${a}x − ${b} = ${c}`;
+      text=`Løs ligningen:`;
+      answer=x; steps=`${a}x = ${c} + ${b} = ${c+b}  →  x = ${c+b} ÷ ${a} = ${x}`;
+    } else if (type === 2) {
+      // negative result
+      const a=rnd(2,6), x=-rnd(1,8), c=a*x+rnd(5,20);
+      const b=c-a*x;
+      eq=`${a}x + ${b} = ${c}`;
+      text=`Løs ligningen (x kan være negativ):`;
+      answer=x; steps=`${a}x = ${c} − ${b} = ${a*x}  →  x = ${a*x} ÷ ${a} = ${x}`;
+    } else if (type === 3) {
+      // substitution
+      const a=rnd(2,7), b=rnd(1,10), x=rnd(1,8);
+      eq=`f(x) = ${a}x − ${b}`;
+      text=`Beregn <em>f(${x})</em>:`; label='f(x) =';
+      answer=a*x-b; steps=`${a} × ${x} − ${b} = ${a*x} − ${b} = ${answer}`;
+    } else if (type === 4) {
+      // word problem simple
+      const pris=rnd(5,15), antal=rnd(3,8), total=pris*antal;
+      text=`Et æble koster ${pris} kr. Du køber x æbler og betaler ${total} kr i alt.`;
+      eq=`${pris} · x = ${total}`;
+      answer=antal; steps=`x = ${total} ÷ ${pris} = ${antal}`;
+    } else {
+      // x + y = s, find x given y
+      const y=rnd(5,20), s=rnd(y+5,y+25);
+      text=`Når x + ${y} = ${s}, hvad er x?`;
+      eq=`x + ${y} = ${s}`;
+      answer=s-y; steps=`x = ${s} − ${y} = ${s-y}`;
+    }
+  } else {
+    // HARD — 7th grade style (indices 30-39)
+    const type = (i-30) % 5;
+    if (type === 0) {
+      // parentheses: a(x+b)=c
+      const a=rnd(2,5), b=rnd(1,8), x=rnd(1,8), c=a*(x+b);
+      eq=`${a}(x + ${b}) = ${c}`;
+      text=`Løs ligningen (svær):`;
+      answer=x; steps=`x + ${b} = ${c} ÷ ${a} = ${c/a}  →  x = ${c/a} − ${b} = ${x}`;
+    } else if (type === 1) {
+      // x both sides: ax+b = cx+d
+      const a=rnd(3,7), b=rnd(5,20), c=rnd(1,a-1), x=rnd(1,10), d=a*x+b-c*x;
+      eq=`${a}x + ${b} = ${c}x + ${d}`;
+      text=`Løs ligningen (svær):`;
+      answer=x; steps=`${a}x − ${c}x = ${d} − ${b}  →  ${a-c}x = ${d-b}  →  x = ${(d-b)/(a-c)}`;
+    } else if (type === 2) {
+      // fractions: x/a + b = c
+      const a=rnd(2,5), b=rnd(1,8), x=rnd(2,8)*a, c=x/a+b;
+      eq=`x/${a} + ${b} = ${c}`;
+      text=`Løs ligningen (svær):`;
+      answer=x; steps=`x/${a} = ${c} − ${b} = ${x/a}  →  x = ${x/a} × ${a} = ${x}`;
+    } else if (type === 3) {
+      // word problem with 2 unknowns, find x
+      const speed=rnd(10,30), time=rnd(2,5), dist=speed*time;
+      text=`Et tog kører ${speed} km/t. Hvor mange timer tager det at køre ${dist} km?`;
+      eq=`${speed} · t = ${dist}`;
+      label='t ='; answer=time; steps=`t = ${dist} ÷ ${speed} = ${time}`;
+    } else {
+      // negative + fractions
+      const a=rnd(2,4), b=rnd(-8,-2), x=rnd(1,6), c=a*x+b;
+      eq=`${a}x + (${b}) = ${c}`;
+      text=`Løs ligningen (svær, x ≥ 0):`;
+      answer=x; steps=`${a}x = ${c} − (${b}) = ${c-b}  →  x = ${c-b} ÷ ${a} = ${x}`;
+    }
+  }
+
+  return { text, eq, answer, tol, steps, label: label||'x =',
+    hard: diff===3, fb: steps };
+}
+
+/* ─── LEVEL 1: 7. KLASSE ─────────────────────── */
+/* Topics: two-step equations, negative numbers, parentheses,
+   like-terms, substitution into formulas, simple inequalities.
+   Last 10: 8th grade flavor (systems, simple quadratics) */
+
+function gen7(i) {
+  const diff = i < 15 ? 1 : i < 30 ? 2 : 3;
+  let text, eq, answer, tol=0, steps, label='x =';
+
+  if (diff === 1) {
+    const type = i % 6;
+    if (type === 0) {
+      // 2-step negative
+      const a=rnd(2,6), b=rnd(-15,-2), x=rnd(-8,8), c=a*x+b;
+      eq=`${a}x + (${b}) = ${c}`;
+      text=`Løs ligningen:`; answer=x;
+      steps=`${a}x = ${c} − (${b}) = ${c-b}  →  x = ${(c-b)/a}`;
+    } else if (type === 1) {
+      // parentheses
+      const a=rnd(2,5), b=rnd(-8,8), x=rnd(-6,6), c=a*(x+b);
+      eq=`${a}(x ${b>=0?'+':''} ${b}) = ${c}`;
+      text=`Løs ligningen:`; answer=x;
+      steps=`x ${b>=0?'+':''} ${b} = ${c/a}  →  x = ${c/a-b}`;
+    } else if (type === 2) {
+      // like-terms on both sides
+      const a=rnd(3,8), b=rnd(5,20), c=rnd(1,a-1), x=rnd(1,10);
+      const d=a*x+b-c*x;
+      eq=`${a}x + ${b} = ${c}x + ${d}`;
+      text=`Løs ligningen:`; answer=x;
+      steps=`${a-c}x = ${d-b}  →  x = ${(d-b)/(a-c)}`;
+    } else if (type === 3) {
+      // substitution formula: A=l×b, find l
+      const b=rnd(3,10), l=rnd(4,12), A=l*b;
+      text=`Arealet A = l × ${b}. Hvad er l når A = ${A}?`;
+      eq=`l × ${b} = ${A}`; label='l ='; answer=l;
+      steps=`l = ${A} ÷ ${b} = ${l}`;
+    } else if (type === 4) {
+      // percent as equation
+      const pct=pick([10,20,25,50]), total=rnd(4,20)*20, del=total*pct/100;
+      text=`${pct}% af et tal er ${del}. Hvad er tallet?`;
+      eq=`${pct}/100 · x = ${del}`; answer=total;
+      steps=`x = ${del} × 100/${pct} = ${total}`;
+    } else {
+      // negative result, 2-step
+      const a=rnd(2,5), b=rnd(2,10), x=-rnd(2,8), c=a*x-b;
+      eq=`${a}x − ${b} = ${c}`;
+      text=`Løs ligningen (x er negativ):`; answer=x;
+      steps=`${a}x = ${c} + ${b} = ${c+b}  →  x = ${(c+b)/a}`;
+    }
+  } else if (diff === 2) {
+    const type = (i-15) % 6;
+    if (type === 0) {
+      // double parentheses
+      const a=rnd(2,4), b=rnd(1,6), c=rnd(2,4), d=rnd(1,6), x=rnd(-5,8);
+      const rhs=a*(x+b)+c*(x+d);
+      eq=`${a}(x+${b}) + ${c}(x+${d}) = ${rhs}`;
+      text=`Løs ligningen (udvid parenteser):`; answer=x;
+      const lcoeff=a+c, lconst=a*b+c*d;
+      steps=`${a}x+${a*b}+${c}x+${c*d} = ${rhs}  →  ${lcoeff}x+${lconst} = ${rhs}  →  x = ${(rhs-lconst)/lcoeff}`;
+    } else if (type === 1) {
+      // fraction equation: (x+a)/b = c
+      const b=rnd(2,5), c=rnd(2,8), a=rnd(-5,5), x=b*c-a;
+      eq=`(x ${a>=0?'+':''} ${a}) / ${b} = ${c}`;
+      text=`Løs ligningen:`; answer=x;
+      steps=`x ${a>=0?'+':''} ${a} = ${c} × ${b} = ${b*c}  →  x = ${b*c} − (${a}) = ${x}`;
+    } else if (type === 2) {
+      // word problem with age
+      const now=rnd(10,30), diff2=rnd(3,12);
+      const future=now+diff2;
+      text=`Lars er ${now} år gammel. Om ${diff2} år er han x år gammel. Hvad er x?`;
+      eq=`x = ${now} + ${diff2}`; label='x ='; answer=future;
+      steps=`x = ${now} + ${diff2} = ${future}`;
+    } else if (type === 3) {
+      // inequality: ax+b > c, find smallest integer x
+      const a=rnd(2,5), b=rnd(1,10), c=rnd(10,30);
+      const xExact=(c-b)/a;
+      const xInt=Math.ceil(xExact+0.001);
+      text=`Find det mindste heltal x der gør ${a}x + ${b} > ${c}:`;
+      eq=`${a}x + ${b} > ${c}`; label='x ='; answer=xInt;
+      steps=`${a}x > ${c-b}  →  x > ${xExact.toFixed(2)}  →  mindste heltal: ${xInt}`;
+    } else if (type === 4) {
+      // substitution into quadratic (no solving, just evaluate)
+      const a=rnd(1,4), b=rnd(-6,6), x=rnd(-4,6);
+      const val=a*x*x+b*x;
+      eq=`f(x) = ${a}x² ${b>=0?'+':''} ${b}x ved x = ${x}`;
+      text=`Beregn f(${x}):`; label='f(x) ='; answer=val;
+      steps=`${a}×${x}² ${b>=0?'+':''} ${b}×${x} = ${a*x*x} ${b*x>=0?'+':''} ${b*x} = ${val}`;
+    } else {
+      // combined: word + algebra
+      const speed=rnd(50,120), extra=rnd(10,40), total=rnd(200,500);
+      // speed*t + extra = total → t = (total-extra)/speed
+      const t=(total-extra)/speed;
+      if(!Number.isInteger(t)||t<=0){return gen7(i);} // retry if bad
+      text=`Et tog starter og kører ${speed} km/t. Det har allerede kørt ${extra} km. Hvornår har det kørt ${total} km i alt?`;
+      eq=`${speed}t + ${extra} = ${total}`; label='t ='; answer=t;
+      steps=`${speed}t = ${total-extra}  →  t = ${total-extra} ÷ ${speed} = ${t}`;
+    }
+  } else {
+    // HARD — 8th grade (indices 30-39)
+    const type = (i-30) % 5;
+    if (type === 0) {
+      // Simple quadratic x²=a
+      const x=rnd(2,10), a=x*x;
+      eq=`x² = ${a}`;
+      text=`Løs ligningen (x > 0):`; answer=x;
+      steps=`x = √${a} = ${x}`;
+    } else if (type === 1) {
+      // System: x+y=a, x-y=b → find x
+      const x=rnd(2,15), y=rnd(1,12), a=x+y, b=x-y;
+      text=`Løs ligningssystemet. Find x.`;
+      eq=`x + y = ${a}  og  x − y = ${b}`; label='x ='; answer=x;
+      steps=`Læg ligningerne: 2x = ${a+b}  →  x = ${(a+b)/2}`;
+    } else if (type === 2) {
+      // x²+bx = 0 → factor
+      const b=rndNZ(-8,8), x=0; // one solution is 0
+      eq=`x² ${b>=0?'+':''} ${b}x = 0`;
+      text=`Løs ligningen. Den ene løsning er x = 0. Find den anden:`; label='x ='; answer=-b;
+      steps=`x(x ${b>=0?'+':''} ${b}) = 0  →  x = 0 eller x = ${-b}`;
+    } else if (type === 3) {
+      // (x+a)(x+b) = expand and evaluate coefficient
+      const a=rnd(-6,6), b=rnd(-6,6);
+      const linCoeff=a+b;
+      text=`Udvid parenteserne: (x ${a>=0?'+':''} ${a})(x ${b>=0?'+':''} ${b}). Hvad er koefficienten foran x?`;
+      eq=`(x ${a>=0?'+':''} ${a})(x ${b>=0?'+':''} ${b})`; label='koeff. ='; answer=linCoeff;
+      steps=`x²+${b}x+${a}x+${a*b} = x²+${linCoeff}x+${a*b}  →  koeff. = ${linCoeff}`;
+    } else {
+      // system: ax+by=c, simple substitution already given
+      const x=rnd(2,8), y=rnd(2,8), a=rnd(2,4), b=rnd(1,3);
+      const c=a*x+b*y, d=x+y;
+      text=`Givet x + y = ${d}. Find x når ${a}x + ${b}y = ${c}.`; label='x ='; answer=x;
+      steps=`y = ${d} − x  →  ${a}x + ${b}(${d}−x) = ${c}  →  ${a-b}x = ${c-b*d}  →  x = ${x}`;
+    }
+  }
+
+  return { text, eq, answer, tol, steps, label, hard: diff===3 };
+}
+
+/* ─── LEVEL 2: 8. KLASSE ─────────────────────── */
+/* Topics: quadratics (complete the square, formula), systems of 2 eqs,
+   polynomial expressions, rational equations, word problems.
+   Last 10: challenge problems bridging high school */
+
+function gen8(i) {
+  const diff = i < 15 ? 1 : i < 30 ? 2 : 3;
+  let text, eq, answer, tol=0.05, steps, label='x =';
+
+  if (diff === 1) {
+    const type = i % 6;
+    if (type === 0) {
+      // quadratic formula discriminant > 0, nice roots
+      const p=rndNZ(-8,8), q=rnd(-15,0);
+      // x²+px+q=0 with two integer roots r1,r2: p=-(r1+r2), q=r1*r2
+      const r1=rnd(-6,6), r2=rnd(-6,6);
+      const P=-(r1+r2), Q=r1*r2;
+      const roots=[r1,r2].sort((a,b)=>a-b);
+      text=`Løs ligningen (angiv den største løsning):`; label='x =';
+      eq=`x² ${P>=0?'+':''} ${P}x ${Q>=0?'+':''} ${Q} = 0`;
+      answer=roots[1];
+      steps=`(x − ${r1})(x − ${r2}) = 0  →  x = ${r1} eller x = ${r2}. Største: ${roots[1]}`;
+    } else if (type === 1) {
+      // system: add/subtract method
+      const x=rnd(1,10), y=rnd(1,8), a1=rnd(2,4), b1=rnd(1,3), a2=rnd(1,3), b2=rnd(2,4);
+      const c1=a1*x+b1*y, c2=a2*x+b2*y;
+      text=`Løs ligningssystemet. Find x.`;
+      eq=`${a1}x + ${b1}y = ${c1}  og  ${a2}x + ${b2}y = ${c2}`; label='x ='; answer=x; tol=0;
+      steps=`Eliminer y: gang L1 med ${b2}, L2 med ${b1}: ${a1*b2}x + ${b1*b2}y = ${c1*b2}  og  ${a2*b1}x + ${b2*b1}y = ${c2*b1}. Træk fra: ${a1*b2-a2*b1}x = ${c1*b2-c2*b1}  →  x = ${x}`;
+    } else if (type === 2) {
+      // x² = k
+      const k=pick([4,9,16,25,36,49,64,100,121,144]);
+      const r=Math.sqrt(k);
+      eq=`x² = ${k}`; text=`Løs (x > 0):`; answer=r; tol=0;
+      steps=`x = √${k} = ${r}`;
+    } else if (type === 3) {
+      // rational: a/x = b → x = a/b
+      const a=rnd(10,48), b=rnd(2,8);
+      if(a%b!==0){return gen8(i);}
+      eq=`${a} / x = ${b}`; text=`Løs:`; answer=a/b; tol=0;
+      steps=`x = ${a} ÷ ${b} = ${a/b}`;
+    } else if (type === 4) {
+      // complete the square: x²+bx = (x+b/2)²-(b/2)²
+      const b=pick([-8,-6,-4,-2,2,4,6,8,10]);
+      const half=b/2, complete=half*half;
+      text=`Fuldfør kvadratet: x² ${b>=0?'+':''} ${b}x + __ giver et perfekt kvadrat. Hvad er __?`;
+      eq=`x² ${b>=0?'+':''} ${b}x + __`; label='__ ='; answer=complete; tol=0;
+      steps=`(b/2)² = (${b}/2)² = ${half}² = ${complete}`;
+    } else {
+      // substitution system
+      const x=rnd(1,8), y=rnd(-6,6), k=rnd(2,4);
+      const eq2val=k*x+y;
+      text=`Givet y = ${k}x ${y>=0?'+':''} ${y}. Find y når x = ${x}.`; label='y ='; answer=eq2val; tol=0;
+      eq=`y = ${k}x ${y>=0?'+':''} ${y}, x = ${x}`;
+      steps=`y = ${k}×${x} ${y>=0?'+':''} ${y} = ${k*x} ${y>=0?'+':''} ${y} = ${eq2val}`;
+    }
+  } else if (diff === 2) {
+    const type = (i-15) % 5;
+    if (type === 0) {
+      // quadratic: find both roots, ask for sum
+      const r1=rnd(-8,8), r2=rnd(-8,8);
+      const P=-(r1+r2), Q=r1*r2;
+      text=`Løs x² ${P>=0?'+':''} ${P}x ${Q>=0?'+':''} ${Q} = 0. Hvad er SUMMEN af løsningerne?`;
+      eq=`x² ${P>=0?'+':''} ${P}x ${Q>=0?'+':''} ${Q} = 0`; label='sum =';
+      answer=r1+r2; tol=0;
+      steps=`x = ${r1} og x = ${r2}. Sum = ${r1}+${r2} = ${r1+r2}`;
+    } else if (type === 1) {
+      // system substitution method
+      const x=rnd(2,9), y=rnd(1,7), a=rnd(2,4);
+      const c1=x+a*y, c2=x-y;
+      text=`Løs systemet: x + ${a}y = ${c1}  og  x − y = ${c2}. Find y.`;
+      eq=`x + ${a}y = ${c1}  og  x − y = ${c2}`; label='y ='; answer=y; tol=0;
+      steps=`Træk L2 fra L1: ${a+1}y = ${c1-c2}  →  y = ${y}`;
+    } else if (type === 2) {
+      // word problem quadratic: area
+      const w=rnd(3,10), l=w+rnd(2,6), A=w*l;
+      text=`Et rektangel er ${rnd(2,6)} meter længere end det er bredt. Bredden er b. Arealet er ${A} m². Hvad er bredden?`;
+      const diff3=l-w;
+      eq=`b · (b + ${diff3}) = ${A}`; label='b ='; answer=w; tol=0;
+      steps=`b²+${diff3}b−${A}=0  →  (b−${w})(b+${l})=0  →  b=${w}`;
+    } else if (type === 3) {
+      // rational equation: a/(x+b) = c
+      const c=rnd(2,6), b=rnd(1,5), x=rnd(1,8);
+      const a=c*(x+b);
+      eq=`${a} / (x + ${b}) = ${c}`; text=`Løs:`; answer=x; tol=0;
+      steps=`x + ${b} = ${a}/${c} = ${a/c}  →  x = ${a/c-b}`;
+    } else {
+      // inequality with quadratic thinking: x²>k, find smallest integer
+      const k=pick([3,5,8,10,15,17,20,24]);
+      const r=Math.sqrt(k);
+      const xMin=Math.ceil(r+0.001);
+      text=`Find det mindste positive heltal x så x² > ${k}:`; label='x ='; answer=xMin; tol=0;
+      eq=`x² > ${k}`;
+      steps=`√${k} ≈ ${r.toFixed(2)}  →  mindste heltal over √${k} er ${xMin}`;
+    }
+  } else {
+    // HARD — bridging to high school (indices 30-39)
+    const type = (i-30) % 5;
+    if (type === 0) {
+      // abc formula
+      const r1=rnd(-5,5), r2=rnd(-5,5), a=rnd(1,3);
+      const b_=a*(-(r1+r2)), c_=a*r1*r2;
+      text=`Brug diskriminantformlen: ${a}x² ${b_>=0?'+':''} ${b_}x ${c_>=0?'+':''} ${c_} = 0. Find diskriminanten D.`;
+      eq=`${a}x² ${b_>=0?'+':''} ${b_}x ${c_>=0?'+':''} ${c_} = 0`; label='D =';
+      const D=b_*b_-4*a*c_; answer=D; tol=0;
+      steps=`D = b²−4ac = ${b_}²−4·${a}·${c_} = ${b_*b_}−${4*a*c_} = ${D}`;
+    } else if (type === 1) {
+      // 3-unknown partial: given x+y+z=s and 2 eqs, find z
+      const x=rnd(2,8), y=rnd(2,6), z=rnd(1,5);
+      const s=x+y+z, xy=x+y;
+      text=`x + y + z = ${s} og x + y = ${xy}. Hvad er z?`; label='z ='; answer=z; tol=0;
+      eq=`x+y+z = ${s},  x+y = ${xy}`;
+      steps=`z = ${s} − (${xy}) = ${z}`;
+    } else if (type === 2) {
+      // graph: find x-intercept of line ax+b
+      const a=rndNZ(-4,4), b=rndNZ(-12,12);
+      // ax+b=0 → x=-b/a
+      if(b%a!==0){return gen8(i);}
+      const xi=-b/a;
+      text=`Linjen f(x) = ${a}x ${b>=0?'+':''} ${b} skærer x-aksen. Find x-værdien:`; label='x ='; answer=xi; tol=0;
+      eq=`${a}x ${b>=0?'+':''} ${b} = 0`;
+      steps=`${a}x = ${-b}  →  x = ${xi}`;
+    } else if (type === 3) {
+      // product of roots
+      const r1=rnd(-6,6), r2=rnd(-6,6), P=-(r1+r2), Q=r1*r2;
+      text=`For ligningen x² ${P>=0?'+':''} ${P}x ${Q>=0?'+':''} ${Q} = 0, hvad er PRODUKTET af de to rødder?`;
+      eq=`x² ${P>=0?'+':''} ${P}x ${Q>=0?'+':''} ${Q} = 0`; label='produkt =';
+      answer=Q; tol=0;
+      steps=`Vietas formler: r₁·r₂ = c/a = ${Q}/1 = ${Q}`;
+    } else {
+      // exponential disguised as algebra: 2^x = k
+      const x=rnd(1,6), k=Math.pow(2,x);
+      text=`2^x = ${k}. Hvad er x?`; label='x ='; answer=x; tol=0;
+      eq=`2^x = ${k}`;
+      steps=`2^${x} = ${k}  →  x = ${x}`;
+    }
+  }
+
+  return { text, eq, answer, tol, steps, label, hard: diff===3 };
+}
+
+/* ══════════════════════════════════════════════
+   LEVEL DEFINITIONS
+══════════════════════════════════════════════ */
+const LEVELS = [
+  {
+    id:0, name:'6. Klasse', short:'6.kl',
+    desc:'Enkle ligninger, x+a=b, a·x=b, udtryk og ordproblemer.\nDe sidste 10 spørgsmål er på 7.-klasses niveau.',
+    topics:['x + a = b', 'a·x = b', 'x / a = b', 'Udtryk', 'Ordproblemer'],
+    total:40, gen:gen6,
+    color:'var(--green)', mc:'mc-green',
+  },
+  {
+    id:1, name:'7. Klasse', short:'7.kl',
+    desc:'Parenteser, negative tal, ligninger med x på begge sider, substitution.\nDe sidste 10 spørgsmål er på 8.-klasses niveau.',
+    topics:['2-trins ligninger', 'Parenteser', 'Negative tal', 'Uligheder', 'Substitution'],
+    total:40, gen:gen7,
+    color:'var(--yellow)', mc:'mc-yellow',
+  },
+  {
+    id:2, name:'8. Klasse', short:'8.kl',
+    desc:'Andengradsligninger, ligningssystemer, rationelle ligninger, diskriminant.\nDe sidste 10 er af gymnasieniveau.',
+    topics:['Andengradsligning', 'Ligningssystemer', 'Diskriminant', 'Rationelle ligninger', 'Kvadratsætninger'],
+    total:40, gen:gen8,
+    color:'var(--orange)', mc:'mc-orange',
+  },
+];
+
+/* ══════════════════════════════════════════════
+   SAVE / LOAD
+══════════════════════════════════════════════ */
+const SKEY = 'algebra_v2';
+function loadSD(){try{return JSON.parse(localStorage.getItem(SKEY)||'{}')}catch{return{};}}
+function saveSD(){localStorage.setItem(SKEY,JSON.stringify(SD));}
+let SD = loadSD();
+if(!SD.unlocked) SD.unlocked = [true, false, false];
+if(!SD.done)     SD.done     = [false, false, false];
+if(!SD.best)     SD.best     = [0, 0, 0]; // highest q reached per level
+
+/* ══════════════════════════════════════════════
+   HOME
+══════════════════════════════════════════════ */
+function buildHome(){
+  const g = document.getElementById('lev-grid'); g.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const unl = SD.unlocked[i], done = SD.done[i];
+    const best = SD.best[i]||0;
+    const d = document.createElement('div');
+    d.className = `lev-card${unl?'':' locked'}${done?' done':''}`;
+    const progPct = Math.min(100, Math.round(best/lv.total*100));
+    d.innerHTML = `
+      ${!unl?'<div class="lev-lock">🔒</div>':''}
+      <div class="lev-top">
+        <div class="lev-num">${['Ⅰ','Ⅱ','Ⅲ'][i]}</div>
+        <div class="lev-name">${lv.name}</div>
+      </div>
+      <div class="lev-desc">${lv.desc.replace(/\n/g,'<br>')}</div>
+      <div class="lev-meta">
+        ${lv.topics.map(t=>`<span class="meta-chip ${lv.mc}">${t}</span>`).join('')}
+        ${done?'<span class="meta-chip mc-done">✅ GENNEMFØRT</span>':''}
+        ${best>0&&!done?`<span class="meta-chip" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.5)">Bedste: sp. ${best}</span>`:''}
+      </div>
+      <div class="lev-prog"><div class="lev-prog-fill" style="width:${progPct}%"></div></div>`;
+    if(unl) d.onclick = ()=>startLevel(i);
+    g.appendChild(d);
+  });
+}
+
+function goHome(){
+  clearGeneratedQuestions();
+  show('s-home'); buildHome();
+}
+
+/* ══════════════════════════════════════════════
+   GAME STATE
+══════════════════════════════════════════════ */
+let curL=-1, qIdx=0, questions=[], answered=false;
+
+function clearGeneratedQuestions(){ questions=[]; }
+
+function startLevel(i){
+  curL=i; qIdx=0; answered=false;
+  // Generate all questions for this level
+  generateAllQuestions(i);
+  show('s-game');
+  const lv=LEVELS[i];
+  document.getElementById('gbar-lev').textContent=`${lv.short} — Algebra`;
+  buildStrip();
+  renderQ();
+}
+
+function generateAllQuestions(lvIdx){
+  const lv = LEVELS[lvIdx];
+  questions = [];
+  for(let i=0;i<lv.total;i++){
+    let q;
+    let attempts=0;
+    do { q=lv.gen(i); attempts++; } while(q===undefined&&attempts<10);
+    if(!q) q={text:'Løs:',eq:`${i+2}x = ${(i+2)*3}`,answer:3,tol:0,steps:`x=3`,label:'x =',hard:i>=30};
+    questions.push(q);
+  }
+}
+
+function buildStrip(){
+  const strip = document.getElementById('qstrip');
+  strip.innerHTML = '';
+  const lv = LEVELS[curL];
+  questions.forEach((q,i)=>{
+    const d = document.createElement('div');
+    d.className = `qdot${q.hard?' hard':''}${i===qIdx?' cur':''}`;
+    d.id = `dot-${i}`;
+    strip.appendChild(d);
+  });
+}
+
+function updateStrip(){
+  questions.forEach((q,i)=>{
+    const d = document.getElementById(`dot-${i}`);
+    if(!d) return;
+    d.className = `qdot${q.hard?' hard':''}`;
+    if(i<qIdx) d.classList.add('ok');
+    if(i===qIdx) d.classList.add('cur');
+  });
+}
+
+function renderQ(){
+  answered=false;
+  const q = questions[qIdx];
+  const lv = LEVELS[curL];
+
+  // Badge
+  const badge = document.getElementById('qbadge');
+  badge.className = `q-badge ${q.hard?'qb-hard':'qb-norm'}`;
+  badge.textContent = q.hard ? `🔥 SVÆR — ${['7.','8.','Gymnasium'][curL]}kl. niveau` : `${lv.short} — Spørgsmål ${qIdx+1}`;
+
+  document.getElementById('qnum').textContent=`Spørgsmål ${qIdx+1} af ${lv.total}`;
+  document.getElementById('gbar-score').textContent=`${qIdx}/${lv.total}`;
+
+  // Question text
+  const qtEl = document.getElementById('qtext');
+  qtEl.innerHTML = `${q.text}${q.eq?`<span class="eq">${q.eq}</span>`:''}`+(q.hint||'');
+
+  // Answer label
+  document.getElementById('ans-label').textContent = q.label||'x =';
+
+  // Input
+  const inp = document.getElementById('ainp');
+  inp.value=''; inp.className='ainp'; inp.disabled=false;
+  inp.type = (q.tol>0)?'number':'text';
+  inp.inputMode = 'decimal';
+
+  // Buttons
+  document.getElementById('chkbtn').disabled=false;
+  document.getElementById('chkbtn').textContent='TJEK ✓';
+  document.getElementById('fbbox').className='fb-box';
+  document.getElementById('restart-notice').className='restart-notice';
+  document.getElementById('nxtbtn').className='nxtbtn';
+
+  updateStrip();
+
+  setTimeout(()=>inp.focus(), 80);
+}
+
+function checkAnswer(){
+  if(answered) return;
+  const inp = document.getElementById('ainp');
+  const raw = inp.value.trim().replace(',','.');
+  const val = parseFloat(raw);
+  const q = questions[qIdx];
+
+  if(raw===''||isNaN(val)){
+    inp.classList.add('err');
+    setTimeout(()=>inp.classList.remove('err'),400);
+    return;
+  }
+
+  answered = true;
+  const correct = Math.abs(val - q.answer) <= Math.max(q.tol||0, 0.005);
+
+  document.getElementById('chkbtn').disabled=true;
+  const fb = document.getElementById('fbbox');
+
+  if(correct){
+    inp.classList.add('ok');
+    fb.className='fb-box ok';
+    fb.innerHTML=`✅ <b>Rigtigt!</b><div class="steps">${q.steps}</div>`;
+
+    // Update best
+    if(qIdx+1 > (SD.best[curL]||0)){ SD.best[curL]=qIdx+1; saveSD(); }
+
+    const nxt = document.getElementById('nxtbtn');
+    nxt.className='nxtbtn on';
+    nxt.textContent = qIdx<questions.length-1 ? 'NÆSTE →' : 'SE RESULTAT →';
+
+  } else {
+    inp.classList.add('err');
+    fb.className='fb-box err';
+    fb.innerHTML=`❌ <b>Forkert.</b> Svaret er <b>${q.answer}</b><div class="steps">${q.steps}</div>`;
+
+    // Show restart notice
+    const rn = document.getElementById('restart-notice');
+    rn.className='restart-notice on';
+    document.getElementById('restart-msg').textContent =
+      `Du svarede ${raw} — det rigtige svar er ${q.answer}. Du skal starte forfra fra spørgsmål 1. Fremgang på dette trin nulstilles.`;
+  }
+}
+
+function nextQ(){
+  qIdx++;
+  if(qIdx >= questions.length){
+    finishLevel();
+  } else {
+    renderQ();
+    // Scroll to top of q-area
+    const qa = document.querySelector('.q-area');
+    if(qa) qa.scrollTop=0;
+  }
+}
+
+function restartLevel(){
+  startLevel(curL);
+}
+
+function finishLevel(){
+  // Mark done
+  SD.done[curL]=true;
+  SD.best[curL]=LEVELS[curL].total;
+  if(curL<2) SD.unlocked[curL+1]=true;
+  saveSD();
+  showWin();
+}
+
+/* ══════════════════════════════════════════════
+   WIN SCREEN
+══════════════════════════════════════════════ */
+const KONDI_MSGS = [
+  'Du har vundet en Faxe Kondi fra køleskabet! 🥤',
+  'Hop hen til køleskabet — din Faxe Kondi venter! 🧃',
+  'En iskold Faxe Kondi er din fortjeneste! 🥤',
+  'Faxe Kondi-tid! Du har gjort dig fortjent til den! 🎉',
+];
+
+function showWin(){
+  const lv = LEVELS[curL];
+  show('s-win');
+  document.getElementById('win-h').textContent='TILLYKKE!';
+  document.getElementById('win-sub').textContent = pick(KONDI_MSGS);
+  document.getElementById('win-detail').innerHTML =
+    `Du gennemførte <b style="color:var(--green)">${lv.name}</b> med 100% rigtige svar!<br>
+     Alle ${lv.total} spørgsmål korrekte — inkl. ${['7.','8.','gymnasie'][curL]}-klasses sværhedsgrad.
+     ${curL<2?`<br><br>Næste trin er nu låst op: <b style="color:var(--yellow)">${LEVELS[curL+1].name}</b>`:'<br><br>Du har gennemført alle tre trin! Algebra-mester! 🏆'}`;
+
+  const nxt = document.getElementById('win-nxt');
+  if(curL<2){ nxt.textContent=`NÆSTE TRIN: ${LEVELS[curL+1].name} →`; nxt.style.display=''; }
+  else { nxt.textContent='← HJEM'; nxt.onclick=goHome; }
+
+  spawnParticles();
+}
+
+function winNext(){
+  if(curL<2) startLevel(curL+1);
+  else goHome();
+}
+
+function spawnParticles(){
+  const win = document.getElementById('s-win');
+  const emojis=['🎉','⭐','✨','🥤','🏆','💚','🎊','🌟'];
+  for(let i=0;i<22;i++){
+    setTimeout(()=>{
+      const p = document.createElement('div');
+      p.className='particle';
+      p.textContent = pick(emojis);
+      p.style.left=`${rnd(5,95)}%`;
+      p.style.top=`${rnd(-10,0)}%`;
+      p.style.animationDuration=`${rnd(2,4)}s`;
+      p.style.animationDelay=`${rnd(0,0.5)}s`;
+      win.appendChild(p);
+      setTimeout(()=>p.remove(),4500);
+    },i*80);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   INPUT HANDLING
+══════════════════════════════════════════════ */
+document.getElementById('ainp').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    if(!answered) checkAnswer();
+    else { const nb=document.getElementById('nxtbtn'); if(nb.classList.contains('on')) nextQ(); }
+  }
+});
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+function show(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+buildHome();
+</script>
+</body>
+</html>
