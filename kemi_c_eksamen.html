@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kemi C — Eksamenstræning</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d1117; --panel:#161b22; --border:#21262d; --border2:#30363d;
+  --amber:#f0a500; --amber2:#ffc947; --green:#3fb950; --red:#f85149;
+  --blue:#58a6ff; --purple:#bc8cff; --white:#e6edf3; --muted:#8b949e;
+  --muted2:#6e7681;
+  --fh:'Playfair Display',serif; --fb:'IBM Plex Sans',sans-serif; --fm:'IBM Plex Mono',monospace;
+  --xs:clamp(11px,2.3vw,13px); --sm:clamp(12px,2.8vw,14px); --md:clamp(14px,3.2vw,16px);
+  --lg:clamp(17px,4.2vw,21px); --xl:clamp(22px,5.5vw,30px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;}
+.scr.on{display:flex;}
+
+/* ══ SHARED HEADER ══ */
+.top{background:rgba(13,17,23,.95);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px));position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);}
+.top .logo{font-family:var(--fm);font-size:var(--xs);color:var(--amber);letter-spacing:.1em;border:1px solid rgba(240,165,0,.3);border-radius:4px;padding:4px 10px;white-space:nowrap;}
+.top .title{font-family:var(--fb);font-weight:700;font-size:var(--sm);color:var(--white);flex:1;text-align:center;}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;white-space:nowrap;}
+.bk:hover{color:var(--white);border-color:var(--border2);}
+
+/* ══ HOME ══ */
+#s-home{background:var(--bg);}
+.home-inner{max-width:680px;margin:0 auto;padding:24px 16px 60px;}
+.home-hero{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:20px 22px;margin-bottom:20px;}
+.hero-tag{font-family:var(--fm);font-size:var(--xs);color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.hero-h{font-family:var(--fh);font-style:italic;font-size:var(--xl);color:var(--white);margin-bottom:8px;line-height:1.2;}
+.hero-h span{color:var(--amber);}
+.hero-sub{font-size:var(--sm);color:var(--muted);line-height:1.7;}
+.hero-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.hm{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);border:1px solid var(--border);border-radius:4px;padding:3px 9px;}
+
+.mode-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.mode-btn{flex:1;min-width:140px;border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:14px 16px;cursor:pointer;text-align:left;transition:all .15s;}
+.mode-btn:hover{border-color:var(--amber);background:rgba(240,165,0,.05);}
+.mode-btn .mb-icon{font-size:clamp(22px,5.5vw,30px);margin-bottom:6px;}
+.mode-btn .mb-t{font-family:var(--fb);font-weight:700;font-size:var(--sm);color:var(--white);margin-bottom:3px;}
+.mode-btn .mb-d{font-size:var(--xs);color:var(--muted);line-height:1.4;}
+
+.section-head{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+.topic-grid{display:flex;flex-direction:column;gap:7px;}
+.tcard{border:1px solid var(--border);border-radius:7px;background:var(--panel);padding:13px 15px;cursor:pointer;transition:all .14s;display:flex;align-items:center;gap:12px;}
+.tcard:hover{border-color:var(--amber);background:rgba(240,165,0,.04);}
+.tcard.done{border-color:rgba(63,185,80,.3);background:rgba(63,185,80,.04);}
+.tc-num{font-family:var(--fm);font-size:var(--xs);color:var(--amber);min-width:28px;text-align:right;}
+.tc-body{flex:1;}
+.tc-name{font-weight:700;font-size:var(--sm);color:var(--white);margin-bottom:2px;}
+.tc-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.tag{font-family:var(--fm);font-size:clamp(8px,1.8vw,10px);color:var(--muted2);border:1px solid var(--border);border-radius:3px;padding:2px 7px;}
+.tc-status{font-size:14px;}
+
+/* ══ QUIZ ══ */
+#s-quiz{background:var(--bg);}
+.q-wrap{max-width:660px;margin:0 auto;padding:16px 14px 40px;}
+.q-prog{display:flex;gap:5px;margin-bottom:18px;flex-wrap:wrap;}
+.qp{width:clamp(8px,2.2vw,12px);height:clamp(8px,2.2vw,12px);border-radius:2px;border:1px solid var(--border);}
+.qp.mc{background:rgba(240,165,0,.12);}
+.qp.open{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.25);}
+.qp.ok{background:var(--green)!important;border-color:var(--green)!important;}
+.qp.part{background:var(--amber)!important;border-color:var(--amber)!important;}
+.qp.cur{outline:2px solid var(--amber);outline-offset:2px;}
+
+.q-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:var(--xs);border-radius:4px;padding:4px 11px;margin-bottom:10px;}
+.qb-mc{background:rgba(240,165,0,.1);color:var(--amber);border:1px solid rgba(240,165,0,.25);}
+.qb-open{background:rgba(88,166,255,.08);color:var(--blue);border:1px solid rgba(88,166,255,.22);}
+.q-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:8px;}
+.q-card{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:20px 18px;margin-bottom:14px;}
+.q-card .stem{font-size:var(--md);color:var(--white);line-height:1.6;margin-bottom:6px;}
+.q-card .stem .chem{font-family:var(--fm);color:var(--amber2);}
+.q-card .hint-text{font-size:var(--xs);color:var(--muted);font-style:italic;margin-top:8px;line-height:1.5;}
+
+/* MC options */
+.mc-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.mco{border:1px solid var(--border);border-radius:6px;background:rgba(255,255,255,.03);padding:12px 15px;cursor:pointer;font-size:var(--sm);color:rgba(255,255,255,.85);text-align:left;transition:all .14s;display:flex;align-items:flex-start;gap:10px;line-height:1.45;}
+.mco:hover:not(:disabled){border-color:var(--amber);background:rgba(240,165,0,.06);}
+.mco.ok{border-color:rgba(63,185,80,.55);background:rgba(63,185,80,.1);color:#b8ffc8;}
+.mco.no{border-color:rgba(248,81,73,.45);background:rgba(248,81,73,.07);color:#ffb8b4;}
+.mco.show-ok{border-color:rgba(63,185,80,.4);background:rgba(63,185,80,.06);}
+.mco:disabled{cursor:default;}
+.mco-key{font-family:var(--fm);font-size:var(--xs);color:var(--muted);flex-shrink:0;padding-top:1px;width:18px;}
+.mc-fb{border-radius:6px;padding:12px 15px;font-size:var(--sm);line-height:1.65;display:none;margin-bottom:12px;}
+.mc-fb.ok{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.25);color:#b8ffc8;display:block;}
+.mc-fb.no{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.22);color:#ffb8b4;display:block;}
+.mc-fb b{color:#fff;}
+
+/* Open answer */
+.open-area{margin-bottom:12px;}
+.open-label{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase;}
+.open-ta{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--fb);font-size:var(--sm);padding:12px 14px;resize:vertical;min-height:100px;outline:none;transition:border-color .15s;line-height:1.6;}
+.open-ta:focus{border-color:var(--blue);background:rgba(88,166,255,.04);}
+.open-ta:disabled{opacity:.6;cursor:default;}
+.open-chars{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);text-align:right;margin-top:4px;}
+
+/* AI feedback panel */
+.ai-panel{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;display:none;}
+.ai-panel.on{display:block;}
+.ai-panel-head{background:rgba(88,166,255,.08);border-bottom:1px solid var(--border);padding:10px 15px;display:flex;align-items:center;gap:8px;}
+.ai-panel-head .ai-icon{font-size:16px;}
+.ai-panel-head .ai-label{font-family:var(--fm);font-size:var(--xs);color:var(--blue);letter-spacing:.06em;text-transform:uppercase;}
+.ai-panel-head .ai-score{margin-left:auto;font-family:var(--fm);font-size:var(--xs);border-radius:20px;padding:3px 10px;}
+.score-good{background:rgba(63,185,80,.18);color:var(--green);}
+.score-mid{background:rgba(240,165,0,.15);color:var(--amber);}
+.score-low{background:rgba(248,81,73,.12);color:var(--red);}
+.ai-panel-body{padding:14px 16px;}
+.ai-section{margin-bottom:12px;}
+.ai-section:last-child{margin-bottom:0;}
+.ai-section-t{font-family:var(--fm);font-size:var(--xs);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.ai-section-b{font-size:var(--sm);color:rgba(255,255,255,.8);line-height:1.7;}
+.ai-section-b b{color:var(--white);}
+.model-answer{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.2);border-radius:6px;padding:12px 14px;font-size:var(--sm);color:rgba(255,255,255,.85);line-height:1.7;margin-top:4px;}
+.ai-loading{padding:20px;text-align:center;}
+.ai-loading .spin{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:8px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-loading p{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+
+/* Buttons */
+.submit-btn{font-family:var(--fb);font-weight:700;font-size:var(--md);background:var(--amber);color:#000;border:none;border-radius:7px;padding:12px 36px;cursor:pointer;transition:all .13s;}
+.submit-btn:hover{background:var(--amber2);}
+.submit-btn:disabled{opacity:.3;cursor:default;}
+.nxt-btn{font-family:var(--fb);font-weight:700;font-size:var(--md);background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);border-radius:7px;padding:12px 32px;cursor:pointer;display:none;transition:all .13s;}
+.nxt-btn.on{display:inline-block;}
+.nxt-btn:hover{background:rgba(255,255,255,.14);}
+.btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+/* ══ TOPIC DONE ══ */
+#s-done{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.done-wrap{max-width:480px;}
+.done-icon{font-size:clamp(52px,13vw,80px);margin-bottom:14px;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.done-h{font-family:var(--fh);font-style:italic;font-size:var(--xl);color:var(--white);margin-bottom:8px;line-height:1.2;}
+.done-score{font-size:var(--lg);color:var(--amber);font-family:var(--fm);margin-bottom:14px;}
+.done-tip{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:22px;text-align:left;}
+.done-tip h4{font-family:var(--fm);font-size:var(--xs);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.done-tip ul{padding-left:16px;font-size:var(--sm);color:rgba(255,255,255,.7);line-height:1.8;}
+.done-tip li{margin-bottom:3px;}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.dbtn{font-family:var(--fb);font-weight:700;font-size:var(--sm);border:none;border-radius:7px;padding:12px 30px;cursor:pointer;}
+.dbtn.primary{background:var(--amber);color:#000;}
+.dbtn.sec{background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="scr on" id="s-home">
+  <div class="top">
+    <div class="logo">Kemi C</div>
+    <div class="title">Eksamenstræning — HF</div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="home-inner">
+    <div class="home-hero">
+      <div class="hero-tag">🧪 Mundtlig eksamen</div>
+      <h1 class="hero-h">HF Kemi C — <span>Eksamenstræning</span></h1>
+      <p class="hero-sub">Træn alle 18 eksamensemner fra eksamensopgaverne. Svar på multiple-choice og åbne spørgsmål — sammenlign derefter med et fagligt modelsvar skrevet til HF Kemi C-niveau.</p>
+      <div class="hero-meta">
+        <span class="hm">15 emner</span>
+        <span class="hm">MC + åbne svar</span>
+        <span class="hm">Modelsvar</span>
+        <span class="hm">Virker offline</span>
+      </div>
+    </div>
+
+    <div class="mode-row">
+      <button class="mode-btn" onclick="startRandom()">
+        <div class="mb-icon">🎲</div>
+        <div class="mb-t">Prøv et tilfældigt emne</div>
+        <div class="mb-d">Simuler eksamensvilkår — træk et tilfældigt spørgsmål</div>
+      </button>
+      <button class="mode-btn" onclick="document.getElementById('topic-list').scrollIntoView({behavior:'smooth'})">
+        <div class="mb-icon">📋</div>
+        <div class="mb-t">Vælg emne</div>
+        <div class="mb-d">Arbejd systematisk med de emner du har svært ved</div>
+      </button>
+    </div>
+
+    <div class="section-head" id="topic-list">Alle 18 eksamensemner</div>
+    <div class="topic-grid" id="topic-grid"></div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="scr" id="s-quiz">
+  <div class="top">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="title" id="quiz-title">–</div>
+    <div style="font-family:var(--fm);font-size:var(--xs);color:var(--muted);white-space:nowrap;" id="quiz-counter">0/0</div>
+  </div>
+  <div class="q-wrap">
+    <div class="q-prog" id="q-prog"></div>
+    <div class="q-badge" id="q-badge"></div>
+    <div class="q-num" id="q-num"></div>
+    <div class="q-card">
+      <div class="stem" id="q-stem"></div>
+      <div class="hint-text" id="q-hint"></div>
+    </div>
+    <!-- MC options (hidden for open Qs) -->
+    <div class="mc-opts" id="mc-opts"></div>
+    <div class="mc-fb" id="mc-fb"></div>
+    <!-- Open answer -->
+    <div class="open-area" id="open-area" style="display:none">
+      <div class="open-label">Dit svar (skriv som til en mundtlig fremlæggelse):</div>
+      <textarea class="open-ta" id="open-ta" placeholder="Skriv dit svar her — forestil dig at du forklarer det for eksaminator og censor..."></textarea>
+      <div class="open-chars" id="open-chars">0 tegn</div>
+    </div>
+    <!-- AI panel -->
+    <div class="ai-panel" id="ai-panel">
+      <div class="ai-panel-head">
+        <span class="ai-icon">📋</span>
+        <span class="ai-label">Modelsvar · Sammenlign med dit svar</span>
+        <span class="ai-score" id="ai-score"></span>
+      </div>
+      <div class="ai-panel-body" id="ai-body">
+        <div class="ai-loading"><div class="spin"></div><p>Analyserer dit svar...</p></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">Tjek svar →</button>
+      <button class="nxt-btn" id="nxt-btn" onclick="nextQuestion()">Næste spørgsmål →</button>
+    </div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="scr" id="s-done">
+  <div class="done-wrap">
+    <div class="done-icon">🎓</div>
+    <h2 class="done-h" id="done-h">Emne gennemført!</h2>
+    <div class="done-score" id="done-score">–</div>
+    <div class="done-tip" id="done-tip"></div>
+    <div class="done-btns">
+      <button class="dbtn primary" onclick="startRandom()">🎲 Nyt emne</button>
+      <button class="dbtn sec" onclick="retryTopic()">↺ Prøv igen</button>
+      <button class="dbtn sec" onclick="goHome()">← Hjem</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   TOPICS & QUESTIONS
+══════════════════════════════════════════════ */
+const TOPICS = [
+{
+  id:0, num:'1', name:'Ioner',
+  tags:['Ionbinding','Oktetregel','Iongitter'],
+  øvelse:'Fremstilling af tungtopløselige salte',
+  qs:[
+    {type:'mc',stem:'Hvad er en ion?',
+     opts:['Et atom med samme antal protoner og elektroner','Et atom eller gruppe af atomer med en elektrisk ladning','Et molekyle med kovalent binding','Et neutront grundstof'],
+     correct:1,
+     fb:'En ion er et atom (eller gruppe af atomer), der har <b>afgivet eller optaget elektroner</b> og derved fået en elektrisk ladning. Metaller afgiver elektroner og danner positive ioner (kationer), ikke-metaller optager elektroner og danner negative ioner (anioner).'},
+    {type:'mc',stem:'Hvad siger oktetreglen?',
+     opts:['Atomer danner altid 8 bindinger','Atomer stræber efter at have 8 elektroner i yderste skal','Ioner har altid ladning 8','Molekyler har altid 8 atomer'],
+     correct:1,
+     fb:'Oktetreglen siger at atomer stræber mod at have <b>8 elektroner i yderste skal</b> (som ædelgasserne). Det driver dannelsen af ioner: natrium afgiver 1 elektron → Na⁺, klor optager 1 elektron → Cl⁻.'},
+    {type:'mc',stem:'Natriumchlorid (NaCl) er opbygget som:',
+     opts:['Enkeltmolekyler med kovalent binding','Et iongitter hvor Na⁺ og Cl⁻ tiltrækker hinanden elektrostatisk','Et kovalet netværk','Frie ioner i fast form'],
+     correct:1,
+     fb:'NaCl er et <b>iongitter</b> — en regelmæssig tredimensional struktur hvor Na⁺ og Cl⁻ holdes sammen af elektrostatisk tiltrækning (ionbinding). Der er ingen "enkeltmolekyler" i fast NaCl.'},
+    {type:'open',stem:'Forklar med egne ord, hvad en ionbinding er, og giv et eksempel. Inddrag begreberne oktetregel og elektrostatisk tiltrækning.',
+     modelans:'En ionbinding er en binding, der opstår ved <b>elektronoverførelse</b> fra et metal til et ikke-metal. Natrium (Na) har én elektron i yderste skal og afgiver den til klor (Cl), der mangler én elektron for at opnå oktet. Na danner Na⁺ og Cl danner Cl⁻. De to modsat ladede ioner tiltrækker hinanden elektrostatisk — dette er ionbindingen. I det faste stof danner de et regelmæssigt iongitter (fx NaCl). Bindingen er stærk, hvilket forklarer saltes høje smeltepunkter.'},
+    {type:'open',stem:'Hvad er sammensatte ioner? Giv mindst to eksempler med formler.',
+     modelans:'Sammensatte ioner er ioner, der består af <b>flere atomer bundet kovalent til hinanden</b>, men som samlet set har en elektrisk ladning. Eksempler: <b>OH⁻</b> (hydroxidion) — ét oxygen og ét hydrogen med ladning -1. <b>SO₄²⁻</b> (sulfation) — ét svovlatom bundet til fire oxygenatomer med ladning -2. <b>NO₃⁻</b> (nitrition) — ét kvælstofatom med tre oxygenatomer, ladning -1. <b>NH₄⁺</b> (ammoniumion) — et kvælstofatom med fire hydrogenatomer, ladning +1. De indgår i salte præcis som simple ioner.'},
+  ]
+},
+{
+  id:1, num:'2/18', name:'Salte / Ionforbindelser',
+  tags:['Iongitter','Koordinationstal','Krystalvand','Opløselighed'],
+  øvelse:'Fremstilling af tungtopløselige salte',
+  qs:[
+    {type:'mc',stem:'Hvad fortæller koordinationstallet i et iongitter?',
+     opts:['Antallet af elektroner i ionet','Antallet af nærmeste naboioner af modsat ladning','Antallet af formler i enhedscellen','Saltets ladning'],
+     correct:1,
+     fb:'Koordinationstallet angiver <b>antallet af nærmeste naboioner af modsat ladning</b>. I NaCl-gitteret er koordinationstallet 6 — hver Na⁺ omgives af 6 Cl⁻ og omvendt. Det afhænger af ionernes relative størrelser.'},
+    {type:'mc',stem:'Hvad er krystalvand?',
+     opts:['Vand der bruges til at opløse et salt','Vandmolekyler der er bundet inde i krystalstrukturen af visse salte','Vand der fordamper fra et salt','Ioniseret vand'],
+     correct:1,
+     fb:'Krystalvand er <b>vandmolekyler der er fast indlejret i krystalstrukturen</b> af visse salte. Eksempel: Kobbersulfat-pentahydrat CuSO₄·5H₂O (blåt). Opvarmes det, afgives krystalvandet og saltet bliver hvidt (vandfrit CuSO₄).'},
+    {type:'mc',stem:'Hvad kendetegner et tungtopløseligt salt?',
+     opts:['Det har høj molarmasse','Dets opløselighedsprodukt (Ksp) er meget lille — meget lidt salt går i opløsning','Det smelter ved høj temperatur','Det er opbygget af sammensatte ioner'],
+     correct:1,
+     fb:'Tungtopløselige salte har et <b>meget lille opløselighedsprodukt (Ksp)</b>, hvilket betyder at kun en forsvindende lille mængde kan opløses i vand. Eksempel: AgCl, BaSO₄, PbI₂. De fældes ud som bundfald ved fældningsreaktioner.'},
+    {type:'open',stem:'Beskriv iongitterets opbygning og egenskaber. Forklar hvorfor salte generelt har høje smeltepunkter og er sprøde.',
+     modelans:'Et iongitter er en <b>regelmæssig, tredimensional struktur</b> af positive og negative ioner. Ionerne holdes på plads af stærke elektrostatiske kræfter i alle retninger. Høje smeltepunkter skyldes at disse kræfter er stærke og kræver meget energi at bryde. Sprødhed skyldes at hvis gitteret forskydes en smule, kommer ens ladede ioner til at ligge ved siden af hinanden — den elektrostatiske frastødning splitter krystallen. Salte leder ikke strøm i fast form (ionerne sidder fast), men leder strøm når smeltet eller opløst i vand (ionerne er frie).'},
+    {type:'open',stem:'Hvad sker der når et salt som NaCl opløses i vand? Brug begreberne dissociation, hydratisering og polære vandmolekyler.',
+     modelans:'Når NaCl opløses i vand, <b>dissocierer</b> saltet: NaCl → Na⁺(aq) + Cl⁻(aq). Vandmolekylerne er polære (δ- ved oxygen, δ+ ved hydrogen). Det positive Na⁺ tiltrækkes af vandets δ--ende, og det negative Cl⁻ tiltrækkes af vandets δ+-ende. Ionerne omgives derved af vandmolekyler — de <b>hydratiseres</b>. Hydratiseringsenergien er tilstrækkelig til at trække ionerne ud af gitteret. Tungtopløselige salte modstår dette fordi gitteret er for stærkt eller hydratiseringsenergien for lille.'},
+  ]
+},
+{
+  id:2, num:'3', name:'Molbegrebet',
+  tags:['Stofmængde','Molarmasse','Avogadro','Mængdeberegning'],
+  øvelse:'Molar masse for lightergas',
+  qs:[
+    {type:'mc',stem:'Hvad er 1 mol?',
+     opts:['1 gram af et grundstof','6,022 × 10²³ partikler (atomer, molekyler eller ioner)','1 liter gas ved standardbetingelser','Atomvægten i gram'],
+     correct:1,
+     fb:'1 mol er <b>6,022 × 10²³ partikler</b> (Avogadros tal). Dette er mængden der svarer til grundstoffets atommasse i gram. 1 mol kulstof (C) = 12,01 gram og indeholder 6,022 × 10²³ C-atomer.'},
+    {type:'mc',stem:'Hvad er molarmassen for vand (H₂O)?',
+     opts:['16 g/mol','18 g/mol','20 g/mol','2 g/mol'],
+     correct:1,
+     fb:'Molarmassen for H₂O = 2 × M(H) + M(O) = 2 × 1 + 16 = <b>18 g/mol</b>. Det betyder at 18 gram vand svarer til 1 mol, indeholdende 6,022 × 10²³ vandmolekyler.'},
+    {type:'mc',stem:'Formlen for stofmængde (n) er:',
+     opts:['n = M / m','n = m / M','n = m × M','n = V × M'],
+     correct:1,
+     fb:'n = m / M, hvor <b>n er stofmængde (mol)</b>, m er masse (gram) og M er molarmasse (g/mol). Eksempel: 36 gram vand: n = 36 / 18 = 2 mol vand.'},
+    {type:'open',stem:'Forklar hvad et mol er, og hvorfor molbegrebet er nyttigt i kemi. Giv et konkret regneksempel med massens formel.',
+     modelans:'Et mol er en <b>tælleenhed for kemiske partikler</b> — som et "dusin" men for atomer. 1 mol = 6,022 × 10²³ partikler (Avogadros tal). Molbegrebet er nyttigt fordi vi kan veje stoffer, men reaktioner foregår partikel for partikel. Formlen forbinder masse og mængde: n = m/M. Eksempel (butangas C₄H₁₀): M(C₄H₁₀) = 4×12 + 10×1 = 58 g/mol. Har vi 29 gram butan: n = 29/58 = 0,5 mol = 3,011 × 10²³ butanmolekyler. Molarmassen aflæses fra det periodiske system som summen af atommasserne.'},
+    {type:'open',stem:'Beregn molarmassen for: (a) CO₂, (b) H₂SO₄, (c) CaCO₃. Vis beregningerne.',
+     modelans:'(a) CO₂: M = 12,01 + 2 × 16,00 = <b>44,01 g/mol</b>. (b) H₂SO₄: M = 2 × 1,01 + 32,07 + 4 × 16,00 = 2,02 + 32,07 + 64,00 = <b>98,09 g/mol</b>. (c) CaCO₃: M = 40,08 + 12,01 + 3 × 16,00 = 40,08 + 12,01 + 48,00 = <b>100,09 g/mol</b>. Princip: sum alle atommasser fra det periodiske system.'},
+  ]
+},
+{
+  id:3, num:'4', name:'Stofmængdeberegninger',
+  tags:['Reaktionsskema','Ækvivalente mængder','Mol','Afstemning'],
+  øvelse:'Natron',
+  qs:[
+    {type:'mc',stem:'Hvad betyder afstemning af et reaktionsskema?',
+     opts:['At reaktionen foregår hurtigt','At antallet af atomer af hvert grundstof er det samme på begge sider af pilen','At alle reaktanter bruges op','At temperaturen er rigtig'],
+     correct:1,
+     fb:'Afstemning sikrer at <b>massebevarelse overholdes</b>: samme antal atomer af hvert element på begge sider. Eksempel: H₂ + O₂ → H₂O er ikke afstemt. Afstemt: 2H₂ + O₂ → 2H₂O.'},
+    {type:'mc',stem:'Reaktionen: 2HCl + Na₂CO₃ → 2NaCl + H₂O + CO₂. Hvad er forholdet mellem mol HCl og mol Na₂CO₃?',
+     opts:['1:1','2:1','1:2','3:1'],
+     correct:1,
+     fb:'Stokiometrikoefficienterne viser molarforholdet direkte: 2 mol HCl reagerer med <b>1 mol Na₂CO₃</b> — forholdet er 2:1. Det er det ækvivalente forhold.'},
+    {type:'mc',stem:'Natron er NaHCO₃ (molarmasse 84 g/mol). Hvor mange mol er 42 gram natron?',
+     opts:['0,25 mol','0,5 mol','1 mol','2 mol'],
+     correct:1,
+     fb:'n = m/M = 42/84 = <b>0,5 mol</b> NaHCO₃. En simpel stofmængdeberegning.'},
+    {type:'open',stem:'Beskriv hvad ækvivalente mængder betyder i et afstemt reaktionsskema. Brug reaktionen NaOH + HCl → NaCl + H₂O som eksempel.',
+     modelans:'Ækvivalente mængder er de <b>molvise forhold</b> som koefficienterne i det afstemte reaktionsskema angiver. For NaOH + HCl → NaCl + H₂O er koefficienterne alle 1: 1 mol NaOH reagerer fuldstændigt med 1 mol HCl og producerer 1 mol NaCl og 1 mol H₂O. Har vi 2 mol NaOH, kræver det præcis 2 mol HCl. Beregning: m(HCl) = n × M = 2 mol × 36,5 g/mol = 73 gram HCl. Ækvivalentpunktet i en titrering er det punkt, hvor de ækvivalente mængder syre og base er mødt.'},
+    {type:'open',stem:'Vis en stofmængdeberegning trin for trin: Hvor mange gram CO₂ dannes, når 5,0 gram natron (NaHCO₃) reagerer med overskud af syre? Reaktion: NaHCO₃ + HCl → NaCl + H₂O + CO₂',
+     modelans:'Trin 1 — Molarmasse: M(NaHCO₃) = 23+1+12+3×16 = 84 g/mol. M(CO₂) = 12+2×16 = 44 g/mol. Trin 2 — Stofmængde NaHCO₃: n = 5,0/84 = 0,0595 mol. Trin 3 — Stokiometri: 1 mol NaHCO₃ → 1 mol CO₂. Altså: n(CO₂) = 0,0595 mol. Trin 4 — Masse CO₂: m = n × M = 0,0595 × 44 = <b>2,6 gram CO₂</b>.'},
+  ]
+},
+{
+  id:4, num:'5/14', name:'Kovalent binding',
+  tags:['Elektronegativitet','Enkelt/Dobbelt/Trippel','Elektronprikformel','Oktetregel'],
+  øvelse:'Hvilken type stof',
+  qs:[
+    {type:'mc',stem:'Hvad er en kovalent binding?',
+     opts:['Elektronoverførelse mellem metal og ikke-metal','Fælles deling af et elektronpar mellem to atomer','Tiltrækning mellem ioner','En binding i iongitteret'],
+     correct:1,
+     fb:'En kovalent binding opstår ved at to atomer <b>deler et eller flere elektronpar</b>. Begge atomer "tæller" de delte elektroner med i deres ytterste skal og opnår oktet (eller duet for H). Eksempel: H₂ — to hydrogenatomer deler ét elektronpar.'},
+    {type:'mc',stem:'CO₂ indeholder:',
+     opts:['To enkeltbindinger','To dobbeltbindinger','En trippelbinding og en enkeltbinding','Ionbindinger'],
+     correct:1,
+     fb:'CO₂ har strukturformlen O=C=O — <b>to dobbeltbindinger</b>. Carbon har 4 valenselektroner og danner to dobbeltbindinger til hvert oxygenatom for at opnå oktet.'},
+    {type:'mc',stem:'Hvad angiver elektronegativitet?',
+     opts:['Antallet af elektroner i atomet','Et atoms evne til at tiltrække elektroner i en binding','Antallet af valenselektroner','Et atoms ioniseringsenergi'],
+     correct:1,
+     fb:'Elektronegativitet angiver <b>et atoms evne til at tiltrække bindingselektroner</b>. Høj elektronegativitet: fluor (F), oxygen (O), nitrogen (N). Jo større forskel i elektronegativitet, jo mere polær er bindingen.'},
+    {type:'open',stem:'Tegn og forklar elektronprikformlen for NH₃ og forklar hvordan oktetreglen overholdes.',
+     modelans:'NH₃ (ammoniak): Nitrogen har 5 valenselektroner, hydrogen har 1 hver. N danner 3 kovalente bindinger til 3 H-atomer ved at dele ét elektronpar med hvert H. N har derudover ét frit elektronpar (lone pair). Elektronprikformel: N omgivet af tre N-H bindingspar og ét frit par. N opnår oktet (2+2+2+2=8 elektroner), H opnår duet (2 elektroner). Det fri elektronpar giver NH₃ dens pyramideform (VSEPR) og gør den til en base (afgiver/modtager H⁺).'},
+    {type:'open',stem:'Forklar forskellen på en enkeltbinding, en dobbeltbinding og en trippelbinding. Giv et eksempel på hvert. Hvad sker der med bindingsenergien og bindingslængden?',
+     modelans:'Enkeltbinding: ét delt elektronpar. Eksempel: H-H i H₂, C-C i ethane. Dobbeltbinding: to delte elektronpar. Eksempel: C=C i ethen (H₂C=CH₂), O=C i CO₂. Trippelbinding: tre delte elektronpar. Eksempel: N≡N i kvælstofgas (N₂), C≡C i ethin (acetylen). Med stigende bindingsorden: <b>bindingsenergi stiger</b> (trippel stærkest), <b>bindingslængde falder</b> (trippel kortest). N₂ er meget stabilt pga. den stærke trippelbinding.'},
+  ]
+},
+{
+  id:5, num:'6', name:'Organiske forbindelser',
+  tags:['Carbonhydrider','Isomeri','Navngivning','Strukturformel'],
+  øvelse:'Substitution i alkan',
+  qs:[
+    {type:'mc',stem:'Hvad er den generelle formel for alkaner?',
+     opts:['CₙH₂ₙ','CₙH₂ₙ₊₂','CₙH₂ₙ₋₂','CₙHₙ'],
+     correct:1,
+     fb:'Alkaner har formlen <b>CₙH₂ₙ₊₂</b>. Eksempel: metan CH₄ (n=1), ethan C₂H₆ (n=2), propan C₃H₈ (n=3). De har udelukkende enkeltbindinger (mættet).'},
+    {type:'mc',stem:'Hvad er strukturisomeri?',
+     opts:['Forbindelser med samme strukturformel','Forbindelser med samme molekyleformel men forskellig struktur (rækkefølge af bindinger)','Forbindelser med forskellige molekyleformler','Forbindelser med samme kogepunkt'],
+     correct:1,
+     fb:'Strukturisomerer har <b>samme molekyleformel men forskellig opbygning</b>. Eksempel: butan og isobutan (methylpropan) er begge C₄H₁₀ men med forskellig strukturformel — og dermed forskellig kogepunkt, densitet mv.'},
+    {type:'mc',stem:'Hvad hedder C₅H₁₂?',
+     opts:['Butan','Pentan','Hexan','Propan'],
+     correct:1,
+     fb:'CₙH₂ₙ₊₂: n=5 → <b>pentan</b>. Navngivning: 1=metan, 2=ethan, 3=propan, 4=butan, 5=pentan, 6=hexan, 7=heptan, 8=oktan, 9=nonan, 10=dekan.'},
+    {type:'open',stem:'Forklar carbon-atomets bindingsforhold og hvorfor det danner så mange forbindelser. Forklar begreberne mættet og umættet.',
+     modelans:'Carbonatomer har <b>4 valenselektroner</b> og kan danne 4 kovalente bindinger. Carbon binder til hydrogen, oxygen, kvælstof, svovl — og til andre carbonatomer. Dette giver mulighed for enorme kæder, ringe og netværk. Mættet: alle C-C bindinger er enkeltbindinger (alkaner, CₙH₂ₙ₊₂). Kan ikke optage mere hydrogen. Umættet: indeholder mindst én dobbelt- (alken) eller trippelbinding (alkyn). Kan addere hydrogen (hydrogenering) eller brom (additionsreaktion). Eksempel: ethen C₂H₄ (umættet) vs ethan C₂H₆ (mættet).'},
+    {type:'open',stem:'Navngiv og tegn strukturformler for de tre strukturisomerer af C₅H₁₂. Forklar isomeribegrebet.',
+     modelans:'C₅H₁₂ (pentan) har tre strukturisomerer: 1) <b>Pentan</b> (n-pentan): lineær kæde CH₃-CH₂-CH₂-CH₂-CH₃. 2) <b>2-methylbutan</b> (isopetan): CH₃-CH(CH₃)-CH₂-CH₃ — en forgrening på carbon 2. 3) <b>2,2-dimethylpropan</b> (neopentan): centralt C med fire methylgrupper C(CH₃)₄. Alle tre har formlen C₅H₁₂ men <b>forskellig struktur</b> → strukturisomeri. De har forskellig kogepunkt: pentan 36°C, 2-methylbutan 28°C, 2,2-dimethylpropan 9,5°C. Forgrening sænker kogepunktet (svagere van der Waals-kræfter).'},
+  ]
+},
+{
+  id:6, num:'7', name:'Organiske reaktioner',
+  tags:['Substitution','Addition','Elimination','Forbrænding'],
+  øvelse:'Substitution i alkan',
+  qs:[
+    {type:'mc',stem:'Hvad sker ved en substitutionsreaktion i en alkan?',
+     opts:['Et H-atom erstattes af et andet atom, fx Cl, under lyspåvirkning','To alkaner bindes sammen','Et carbon-carbon dobbeltbinding dannes','Et H-atom afgives til en syre'],
+     correct:0,
+     fb:'Ved <b>fri-radikal substitution</b> erstattes ét H-atom i alkanen med fx et Cl-atom. Eksempel: CH₄ + Cl₂ → CH₃Cl + HCl (under UV-lys). Reaktionen foregår i tre trin: initiering, propagation og terminering.'},
+    {type:'mc',stem:'Hvad kendetegner en additionsreaktion?',
+     opts:['Et atom fjernes fra molekylet','To molekyler samles og et lille molekyle (H₂O) afgives','Atomer adderes over en dobbeltbinding','Et atom byttes ud med et andet'],
+     correct:2,
+     fb:'En additionsreaktion foregår over en <b>dobbeltbinding eller trippelbinding</b>. Dobbeltbindingen åbnes og to atomer adderes. Eksempel: ethen + brom → 1,2-dibromethan (CH₂=CH₂ + Br₂ → CH₂Br-CH₂Br). Brom-testen: rødbrunt brom-vand affarves ved kontakt med umættet stof.'},
+    {type:'mc',stem:'Den komplette forbrænding af propan (C₃H₈) giver:',
+     opts:['CO + H₂O','CO₂ + H₂O','C + H₂','CO₂ + H₂'],
+     correct:1,
+     fb:'Komplet forbrænding: C₃H₈ + 5O₂ → <b>3CO₂ + 4H₂O</b>. Ved ufuldstændig forbrænding (iltmangel) dannes CO (kulilte) og sod (C). Alkaner er vigtige brændsler pga. høj energiudvikling ved forbrænding.'},
+    {type:'open',stem:'Beskriv de fire typer organiske reaktioner: substitution, addition, elimination og forbrænding. Giv ét eksempel på hver med reaktionsskema.',
+     modelans:'<b>Substitution</b> (i alkaner): Et H erstattes. CH₄ + Cl₂ → CH₃Cl + HCl (UV-lys). <b>Addition</b> (i alkener): Atomer adderes over dobbeltbinding. CH₂=CH₂ + H₂ → CH₃-CH₃ (hydrogenering). Eller: CH₂=CH₂ + Br₂ → CH₂Br-CH₂Br. <b>Elimination</b>: Det modsatte af addition — H og en substituent fjernes og der dannes dobbeltbinding. CH₃-CH₂Br + KOH → CH₂=CH₂ + KBr + H₂O. <b>Forbrænding</b>: Reaktion med O₂. C₃H₈ + 5O₂ → 3CO₂ + 4H₂O. Komplet: CO₂ + H₂O. Ukomplet: CO + H₂O (sod).'},
+    {type:'open',stem:'Forklar hvad der sker i chloreringen af metan trin for trin (fri-radikal mekanisme). Hvorfor er reaktionen problematisk at styre?',
+     modelans:'Fri-radikal substitution i 3 trin: 1) <b>Initiering</b>: UV-lys spalter Cl₂ → 2 Cl• (chlorradicaler, meget reaktive). 2) <b>Propagation</b>: Cl• + CH₄ → CH₃• + HCl. CH₃• + Cl₂ → CH₃Cl + Cl•. Kædereaktion fortsætter. 3) <b>Terminering</b>: To radikaler mødes og annihilerer: Cl• + Cl• → Cl₂. Problemet: reaktionen er svær at styre — man får blanding af mono-, di-, tri-chlormetan (CH₃Cl, CH₂Cl₂, CHCl₃, CCl₄) fordi CH₃Cl kan reagere videre med Cl•.'},
+  ]
+},
+{
+  id:7, num:'8/17', name:'Syrer og baser',
+  tags:['Brønsted-Lowry','Oxoniumion','Neutralisation','pH'],
+  øvelse:'Eddikesyre-titrering',
+  qs:[
+    {type:'mc',stem:'Hvad er en syre ifølge Brønsted-Lowry?',
+     opts:['Et stof der danner OH⁻ i vand','Et stof der afgiver et hydron (H⁺) til en base','Et stof med lav pH','Et metal der reagerer med vand'],
+     correct:1,
+     fb:'Ifølge Brønsted-Lowry er en syre et stof der <b>afgiver et hydron (H⁺)</b> til en base. En base er et stof der <b>modtager</b> et hydron. I vand dannes H₃O⁺ (oxoniumion) og OH⁻.'},
+    {type:'mc',stem:'Saltsyre (HCl) er en stærk syre. Reaktionen med vand skrives med:',
+     opts:['En dobbeltpil (⇌) fordi ligevægt','En enkelt pil (→) fordi fuldstændig dissociation','Ingen pil','En stiplet pil'],
+     correct:1,
+     fb:'Stærke syrer dissocierer <b>fuldstændigt</b> i vand: HCl + H₂O → H₃O⁺ + Cl⁻. Enkeltpil angiver at reaktionen er irreversibel (går til ende). Svage syrer som eddikesyre (CH₃COOH) dissocierer kun delvist → dobbeltpil (⇌).'},
+    {type:'mc',stem:'Hvad dannes ved neutralisation af HCl og NaOH?',
+     opts:['H₂ og O₂','NaCl og H₂O','NaH og Cl₂','NaCl₂ og H'],
+     correct:1,
+     fb:'Neutralisation: syre + base → salt + vand. HCl + NaOH → <b>NaCl + H₂O</b>. Ionreaktionen er: H₃O⁺ + OH⁻ → 2H₂O. Nettoionreaktionen er den samme for alle stærk syre + stærk base neutralisationer.'},
+    {type:'open',stem:'Forklar forskellen på en stærk og en svag syre med eksempler. Inddrag begreberne dissociation, ligevægt og oxoniumion.',
+     modelans:'En <b>stærk syre</b> dissocierer fuldstændigt i vand: HCl + H₂O → H₃O⁺ + Cl⁻ (enkelpil). Eksempler: HCl, HNO₃, H₂SO₄. Alle molekyler er dissocierede — ingen HCl-molekyler tilbage. En <b>svag syre</b> dissocierer kun delvist: CH₃COOH + H₂O ⇌ H₃O⁺ + CH₃COO⁻ (dobbeltpil, ligevægt). Kun en lille fraktion er dissocieret. Ka beskriver ligevægtskonstanten. Eddikesyre er en svag syre — det betyder at pH er højere end for en stærk syre i samme koncentration. Oxoniumion H₃O⁺ er den form H⁺ optræder i vandig opløsning.'},
+    {type:'open',stem:'Giv reaktionsskema for eddikesyres reaktion med vand og med NaOH. Hvad er konjugerede syre-base par?',
+     modelans:'Med vand (svag syre, ligevægt): CH₃COOH + H₂O ⇌ H₃O⁺ + CH₃COO⁻. CH₃COOH er syren (afgiver H⁺), CH₃COO⁻ (acetat) er dens konjugerede base. H₂O er basen, H₃O⁺ er dens konjugerede syre. Med NaOH (neutralisation): CH₃COOH + NaOH → CH₃COONa + H₂O. Dette er en syre-base reaktion til sidst. Konjugerede par: CH₃COOH/CH₃COO⁻ og H₃O⁺/H₂O — de adskiller sig med ét H⁺.'},
+  ]
+},
+{
+  id:8, num:'9', name:'pH',
+  tags:['pH-beregning','Oxoniumion','Stærke/svage syrer','Autohydronolyse'],
+  øvelse:'Eddikesyre-titrering',
+  qs:[
+    {type:'mc',stem:'pH-formlen er:',
+     opts:['pH = [H₃O⁺]','pH = −log[H₃O⁺]','pH = log[H₃O⁺]','pH = 1/[H₃O⁺]'],
+     correct:1,
+     fb:'pH = <b>−log[H₃O⁺]</b>. Ved 25°C: neutralt vand har [H₃O⁺] = 10⁻⁷ M → pH = 7. Sur: pH < 7, basisk: pH > 7. En pH-ændring på 1 svarer til en 10-gange ændring i H₃O⁺-koncentration.'},
+    {type:'mc',stem:'Hvad er pH i 0,1 M HCl (stærk syre)?',
+     opts:['7','1','0,1','10'],
+     correct:1,
+     fb:'HCl dissocierer fuldstændigt: [H₃O⁺] = 0,1 M = 10⁻¹ M. pH = −log(10⁻¹) = <b>1</b>. Kun for stærke syrer kan vi bruge c(syre) direkte som [H₃O⁺].'},
+    {type:'mc',stem:'Hvad er autohydronolyse (autoprotolyse) af vand?',
+     opts:['Vandets reaktion med en syre','Vandets reaktion med sig selv: H₂O + H₂O ⇌ H₃O⁺ + OH⁻','Vandets fordampning','Vandets reaktion med en base'],
+     correct:1,
+     fb:'Vand reagerer med sig selv: H₂O + H₂O ⇌ H₃O⁺ + OH⁻. Ligevægtskonstanten er Kw = [H₃O⁺][OH⁻] = 10⁻¹⁴ ved 25°C. I rent vand: [H₃O⁺] = [OH⁻] = 10⁻⁷ M → pH = 7.'},
+    {type:'open',stem:'Beregn pH i: (a) 0,01 M HCl, (b) 1,0 M HCl, (c) en opløsning med [H₃O⁺] = 5 × 10⁻⁴ M. Vis beregning for hvert.',
+     modelans:'(a) HCl stærk syre → [H₃O⁺] = 0,01 = 10⁻² M. pH = −log(10⁻²) = <b>2</b>. (b) [H₃O⁺] = 1,0 M = 10⁰ M. pH = −log(10⁰) = <b>0</b>. (c) pH = −log(5 × 10⁻⁴) = −(log5 + log10⁻⁴) = −(0,699 − 4) = −(−3,301) = <b>3,3</b>. Husk: for svage syrer kan vi IKKE blot sætte c = [H₃O⁺] — vi skal bruge Ka og ligevægtsberegning.'},
+    {type:'open',stem:'Forklar hvordan pH måles i laboratoriet (to metoder) og hvad pH-skalaen fortæller os om en opløsning.',
+     modelans:'Metode 1 — <b>pH-meter</b>: En elektrode (glaselektrode) dyppes i opløsningen. Elektroden måler spændingsforskellen som er proportional med [H₃O⁺]. Giver nøjagtig numerisk pH (1-2 decimaler). Skal kalibreres med bufferstandarder. Metode 2 — <b>Indikatorer</b>: Kemiske stoffer der skifter farve ved bestemte pH-værdier. Lakmuspapir (rød: sur, blå: basisk), universalindikator (regenbuestrimmel). Mindre præcis. pH-skalaen: pH < 7 surt (flere H₃O⁺ end OH⁻), pH = 7 neutralt, pH > 7 basisk (flere OH⁻ end H₃O⁺). Skalaen er logaritmisk: pH 3 er 100 gange surere end pH 5.'},
+  ]
+},
+{
+  id:9, num:'10/12', name:'Oxidation og Reduktion',
+  tags:['Redoxreaktion','Elektronoverførelse','Spændingsrækken','Oxidationstrin'],
+  øvelse:'Spændingsrækken / Magnesiumoxidation',
+  qs:[
+    {type:'mc',stem:'Hvad er oxidation?',
+     opts:['Optagelse af elektroner','Afgivelse af elektroner','Reaktion med oxygen','Optagelse af ilt'],
+     correct:1,
+     fb:'Oxidation er <b>afgivelse af elektroner</b>. Huskeregel: OIL RIG — Oxidation Is Loss, Reduction Is Gain. Eksempel: Mg → Mg²⁺ + 2e⁻ (magnesium oxideres). En redox-reaktion har altid en oxidation og en reduktion.'},
+    {type:'mc',stem:'Hvad sker der med zink (Zn) når det reagerer med CuSO₄-opløsning?',
+     opts:['Zn reduceres og Cu oxideres','Zn oxideres og Cu²⁺ reduceres','Ingen reaktion — Zn er ædlere end Cu','Begge oxideres'],
+     correct:1,
+     fb:'Zn er uædlere end Cu i spændingsrækken. Zn → Zn²⁺ + 2e⁻ (oxidation), Cu²⁺ + 2e⁻ → Cu (reduktion). Nettoreaktion: Zn + Cu²⁺ → Zn²⁺ + Cu. Kobber fældes ud og zinken opløses.'},
+    {type:'mc',stem:'Magnesium (Mg) forbrændes i luft. Hvad dannes?',
+     opts:['MgO (magnesiumoxid) — Mg oxideres af O₂','MgH₂ — Mg reagerer med H₂','Mg₂O — dobbelt ladning','MgCl₂'],
+     correct:0,
+     fb:'2Mg + O₂ → 2MgO. Mg afgiver 2 elektroner (oxideres til Mg²⁺), O₂ optager elektroner (reduceres til O²⁻). Reaktionen er stærkt exoterm — lyser hvidt (brugt i blitz og signalraketter).'},
+    {type:'open',stem:'Forklar begreberne oxidation og reduktion med eksempler. Brug betegnelsen redoxreaktion og inddrag elektronoverførelse.',
+     modelans:'En <b>redoxreaktion</b> er en reaktion med elektronoverførelse. Oxidation: afgivelse af elektroner (OIL). Reduktion: optagelse af elektroner (RIG). De sker altid samtidig — ingen kan afgive elektroner uden at nogen optager dem. Eksempel 1: Jernoxidation (rust): 4Fe + 3O₂ → 2Fe₂O₃. Fe går fra 0 til +3 (oxideres). O₂ går fra 0 til -2 (reduceres). Eksempel 2: Mg + 2HCl → MgCl₂ + H₂↑. Mg 0 → +2 (oxideres), H⁺ +1 → 0 (reduceres til H₂). Oxidationstrin bruges til at holde styr på elektronerne.'},
+    {type:'open',stem:'Forklar hvad spændingsrækken er og hvad ædle og uædle metaller er. Forudsig om jern vil reagere med CuSO₄-opløsning.',
+     modelans:'<b>Spændingsrækken</b> rangordner metaller efter deres evne til at afgive elektroner (reducerende evne). Uædle metaller (K, Na, Ca, Mg, Al, Zn, Fe, Ni, Sn, Pb...) afgiver nemt elektroner — de oxideres. Ædle metaller (Cu, Ag, Au, Pt) afgiver ikke nemt elektroner — de reduceres. Reglen: et metal fortræger ionerne af et metal der er <b>lavere (ædlere)</b> i rækken. Fe er uædlere end Cu: Fe + Cu²⁺ → Fe²⁺ + Cu. Ja — jern vil reagere med CuSO₄. Kobber fældes ud på jernets overflade (ses som rødlig belægning). Jern opløses som Fe²⁺.'},
+  ]
+},
+{
+  id:10, num:'11', name:'Titrering & Koncentration',
+  tags:['Stofmængdekoncentration','Volumen','Ækvivalenspunkt','Byrette'],
+  øvelse:'Bestemmelse af chloridindhold',
+  qs:[
+    {type:'mc',stem:'Formlen for stofmængdekoncentration er:',
+     opts:['c = n × V','c = n / V','c = m / V','c = V / n'],
+     correct:1,
+     fb:'c = n/V, hvor c er koncentration (mol/L), n er stofmængde (mol) og V er volumen (L). Eksempel: 0,5 mol NaOH i 2 L: c = 0,5/2 = 0,25 mol/L.'},
+    {type:'mc',stem:'Hvad er ækvivalenspunktet i en titrering?',
+     opts:['Punktet hvor indikatoren skifter farve','Punktet hvor præcis ækvivalente molvise mængder syre og base har reageret','Punktet hvor pH = 7','Punktet hvor byretten er tom'],
+     correct:1,
+     fb:'Ækvivalenspunktet er punktet hvor <b>præcis ækvivalente molvise mængder</b> af syre og base har reageret (ifølge reaktionsskemaet). For stærk syre + stærk base er pH = 7 ved ækvivalenspunktet, men for svage syrer/baser gælder dette IKKE.'},
+    {type:'mc',stem:'En byrette bruges til at:',
+     opts:['Måle pH','Afmåle præcis volumen af en opløsning der tilsættes','Varme en opløsning','Centrifugere en opløsning'],
+     correct:1,
+     fb:'En byrette er et langt, gradueret glasrør med en hane. Den bruges til at tilsætte præcis kendte volumener af en titrand (fx NaOH) dråbe for dråbe til en analyt (fx HCl). Aflæses til 0,05 mL nøjagtighed.'},
+    {type:'open',stem:'Beskriv en titrering trin for trin. Hvad bestemmer vi, og hvordan beregner vi det fra resultaterne?',
+     modelans:'En titrering bruges til at bestemme koncentrationen af en ukendt opløsning. Trin: 1) Fyld byretten med standard-opløsning (kendt koncentration, fx 0,100 M NaOH). Nulstil. 2) Afpipetter nøjagtig volumen af ukendt opløsning (fx 25,00 mL HCl) i en konisk kolbe. Tilsæt et par dråber indikator (fx phenolphthalein). 3) Tilsæt NaOH langsomt fra byretten, ryst kolben. Nær ækvivalenspunktet tilsættes én dråbe ad gangen. 4) Stop ved farveomslag (pink). Aflæs forbrugt volumen NaOH. Beregning: n(NaOH) = c × V = 0,100 × 0,02315 L = 2,315 × 10⁻³ mol. For HCl + NaOH (1:1): n(HCl) = n(NaOH). c(HCl) = n/V(HCl) = 2,315×10⁻³ / 0,025 = 0,0926 mol/L.'},
+    {type:'open',stem:'Forklar forskel på aktuel og formel stofmængdekoncentration. Hvornår er de ens, og hvornår er de forskellige?',
+     modelans:'<b>Formel koncentration</b> (c°) er den molvise mængde stof per liter, som var tilsat ved fremstillingen — uanset om stoffet har reageret, dissocieret eller ej. Eksempel: 0,1 M HCl er lavet ved at opløse 0,1 mol HCl/L. <b>Aktuel koncentration</b> (c) er den faktiske koncentration af specifikke ioner/molekyler i opløsningen. For stærke syrer: c(H₃O⁺) aktuel = c° (fuldstændig dissociation, de er ens). For svage syrer (eddikesyre): c(H₃O⁺) aktuel ≪ c° fordi kun en lille brøkdel er dissocieret. Eksempel: 0,1 M CH₃COOH → c(H₃O⁺) ≈ 0,0013 M (kun 1,3% dissocieret). Forskel er kun vigtig for svage elektrolytter.'},
+  ]
+},
+{
+  id:11, num:'13', name:'Alkanernes egenskaber',
+  tags:['Kogepunkter','Blandbarhed','Substitution','Navngivning'],
+  øvelse:'Substitution i alkan',
+  qs:[
+    {type:'mc',stem:'Hvorfor er alkaner uopløselige i vand?',
+     opts:['De er for tunge','De er upolære og vand er polært — "like dissolves like"','De har for høj molarmasse','De reagerer med vand'],
+     correct:1,
+     fb:'Alkaner er <b>upolære</b> (ingen permanente dipoler — kun svage London-dispersionskræfter). Vand er polært. Upolære og polære stoffer blandes ikke: "like dissolves like". Alkaner opløses i upolære opløsningsmidler som benzin og hexan.'},
+    {type:'mc',stem:'Hvad sker der med kogepunktet i alkan-serien når kædelængden øges?',
+     opts:['Kogepunktet falder','Kogepunktet stiger','Kogepunktet er konstant','Kogepunktet varierer tilfældigt'],
+     correct:1,
+     fb:'Kogepunktet stiger med kædelængden fordi <b>London-dispersionskræfterne øges</b> med molekylstørrelsen. Metan (CH₄): −162°C, ethan: −89°C, propan: −42°C, butan: −1°C, pentan: 36°C, dekan: 174°C. Forgreninger sænker kogepunktet (kompaktere form, svagere kontaktflade).'},
+    {type:'mc',stem:'Hvad er produktet ved komplet forbrænding af oktan (C₈H₁₈)?',
+     opts:['CO og H₂','CO₂ og H₂O','CO₂ og H₂','C og H₂O'],
+     correct:1,
+     fb:'Komplet forbrænding: 2C₈H₁₈ + 25O₂ → 16CO₂ + 18H₂O. Produkter er altid <b>CO₂ og H₂O</b> ved komplet forbrænding. Oktan (benzin) frigiver stor energi — det er grunden til det bruges som brændstof.'},
+    {type:'open',stem:'Forklar alkanernes vigtigste fysiske egenskaber. Inddrag begreber som van der Waals-kræfter, kogepunkt og blandbarhed.',
+     modelans:'Alkaner har udelukkende <b>London-dispersionskræfter</b> (svage van der Waals-kræfter) da de er helt upolære. Kogepunkter: stiger med molarmasse (flere elektroner → stærkere dispersion). Forgreninger sænker kogepunkt (kompakt form, lille overfladeareal). Lave alkaner (C1-C4): gasser ved stuetemperatur. Mellemstore (C5-C16): væsker. Store: faste stoffer (voks, parafin). Blandbarhed: opløses i upolære opløsningsmidler, ikke i vand. Dermed bruges de som benzin, smøreolier, opløsningsmidler. Densitet: alle alkaner er lettere end vand (flyder oven på).'},
+    {type:'open',stem:'Forklar navngivning af alkaner. Navngiv og tegn: (a) 3-methylhexan, (b) 2,3-dimethylbutan.',
+     modelans:'Navngivning: Find den longest kæde (stammolekyle, giv den et tal-navn). Numerer fra den ende der giver laveste lokalanter til forgrenin. Tilsæt forgreningernes navne som præfiks med nummer. (a) <b>3-methylhexan</b>: stamkæde 6C (hexan), methylgruppe på C3. Struktur: CH₃-CH₂-CH(CH₃)-CH₂-CH₂-CH₃. Molekyleformel: C₇H₁₆. (b) <b>2,3-dimethylbutan</b>: stamkæde 4C (butan), methylgrupper på C2 og C3. Struktur: CH₃-CH(CH₃)-CH(CH₃)-CH₃. Faktisk: 6 carbon i alt, kompakt forgrenet. Molekyleformel: C₆H₁₄.'},
+  ]
+},
+{
+  id:12, num:'15', name:'Atomer & Periodisk System',
+  tags:['Elektronfordeling','Hovedgrupper','Atommasse','Oktetregel'],
+  øvelse:'Dannelse af ioner ved oxidation af magnesium',
+  qs:[
+    {type:'mc',stem:'Hvad bestemmer et atoms kemiske egenskaber?',
+     opts:['Antallet af neutroner','Antallet af valenselektroner (elektroner i yderste skal)','Atomets masse','Antallet af protoner plus neutroner'],
+     correct:1,
+     fb:'De kemiske egenskaber bestemmes af <b>valenselektronerne</b> — elektroner i yderste (valens)skal. Atomer i samme gruppe i det periodiske system har samme antal valenselektroner og dermed lignende kemiske egenskaber.'},
+    {type:'mc',stem:'Magnesium (Mg, Z=12) har elektronkonfiguration:',
+     opts:['2,8,2 (3 skaller)','2,10 (2 skaller)','8,4 (2 skaller)','2,8,1,1 (4 skaller)'],
+     correct:0,
+     fb:'Mg har Z=12 protoner og 12 elektroner: 2 i K-skallen, 8 i L-skallen, 2 i M-skallen → <b>2,8,2</b>. Mg er i gruppe 2 (2 valenselektroner) og afgiver begge for at danne Mg²⁺ med oktet (8 elektroner i yderste skal).'},
+    {type:'mc',stem:'Hvad er isotoper?',
+     opts:['Atomer af samme grundstof med forskelligt antal valenselektroner','Atomer af samme grundstof med forskelligt antal neutroner','Ioner af samme grundstof','Atomer i samme gruppe med samme masse'],
+     correct:1,
+     fb:'Isotoper er atomer af <b>samme grundstof</b> (samme antal protoner) med <b>forskelligt antal neutroner</b>. Eksempel: Carbon-12 (⁶¹²C) og Carbon-14 (⁶¹⁴C) — begge har 6 protoner men henholdsvis 6 og 8 neutroner. Atommassen i det periodiske system er et gennemsnit af isotopernes masser.'},
+    {type:'open',stem:'Beskriv atomets opbygning og forklar det periodiske systems opbygning (perioder og grupper). Inddrag oktetreglen.',
+     modelans:'Atomet består af: <b>Kerne</b> (protoner med positiv ladning, neutroner uden ladning) og <b>elektronskal</b> (elektroner med negativ ladning bevæger sig i skaller). Atomnummeret Z = antal protoner. Det periodiske system: <b>Perioder</b> (vandret) = antal elektronskal. Periode 1: K-skal (2 el. max). Periode 2: L-skal (8 el. max). <b>Grupper</b> (lodret) = antal valenselektroner (1-8). Gruppe 1: 1 valenselektron (alkalimetaller). Gruppe 17: 7 valenselektroner (halogener). Gruppe 18: 8 valenselektroner (ædelgasser — stabile, reagerer ikke). Oktetregel: atomer søger at få 8 valenselektroner (som ædelgasser) ved at optage, afgive eller dele elektroner.'},
+    {type:'open',stem:'Forklar ionernes dannelse med udgangspunkt i Mg og O. Skriv reaktionsskema og forklar oxidationstrin.',
+     modelans:'Magnesium (2,8,2) har 2 valenselektroner og afgiver dem for at opnå oktet (2,8): Mg → Mg²⁺ + 2e⁻. Ilt (2,6) har 6 valenselektroner og optager 2 for at opnå oktet (2,8): O + 2e⁻ → O²⁻. Samlet reaktion ved forbrænding: 2Mg + O₂ → 2MgO. Ionbinding: Mg²⁺ og O²⁻ tiltrækker hinanden elektrostatisk og danner MgO-gitter. Oxidationstrin: Mg går fra 0 til +2 (oxideres, afgiver elektroner). O går fra 0 til -2 (reduceres, optager elektroner). Dette er en redoxreaktion.'},
+  ]
+},
+{
+  id:13, num:'16', name:'Fældningsreaktioner',
+  tags:['Opløselighed','Fælding','Iongitter','Vands polaritet'],
+  øvelse:'Bestemmelse af chloridindhold',
+  qs:[
+    {type:'mc',stem:'Hvad sker der med et letopløseligt salt som NaCl når det sættes i vand?',
+     opts:['Det smelter','Det dissocierer til frie ioner (Na⁺ og Cl⁻) — hydratisering','Det forbliver som fast NaCl','Det reagerer med vand til HCl + NaOH'],
+     correct:1,
+     fb:'NaCl dissocierer: NaCl(s) → Na⁺(aq) + Cl⁻(aq). Vandets polære molekyler omgiver ionerne og hydratiserer dem. Det er en fysisk opløsningsproces, ikke en kemisk reaktion. Hydratiseringsenergien kompenserer for den energi der kræves til at bryde gitteret.'},
+    {type:'mc',stem:'Hvad er en fældningsreaktion?',
+     opts:['En reaktion hvor en gas dannes','En reaktion hvor to opløsninger blandes og et tungtopløseligt salt fældes ud som bundfald','En reaktion der sker ved høj temperatur','En neutralisationsreaktion'],
+     correct:1,
+     fb:'En fældning sker når to opløsninger blandes og <b>ionerne danner et tungtopløseligt salt</b> der bundfældes. Eksempel: AgNO₃(aq) + NaCl(aq) → AgCl(s)↓ + NaNO₃(aq). AgCl er hvidt bundfald.'},
+    {type:'mc',stem:'Ionreaktionen for chlorid-fælding med sølvnitrat er:',
+     opts:['Ag⁺ + NO₃⁻ → AgNO₃','Ag⁺(aq) + Cl⁻(aq) → AgCl(s)','AgNO₃ + NaCl → Ag + NaCl + NO₃','2Ag + Cl₂ → 2AgCl'],
+     correct:1,
+     fb:'Nettoionreaktionen skriver kun de ioner der faktisk reagerer: <b>Ag⁺(aq) + Cl⁻(aq) → AgCl(s)</b>. Na⁺ og NO₃⁻ er spektatorioner — de deltager ikke i reaktionen og skrives ikke i nettoionreaktionen.'},
+    {type:'open',stem:'Forklar hvad der sker trin for trin ved Mohr-titreringen til bestemmelse af chloridindhold. Hvad er indikatorrektionen?',
+     modelans:'Mohr-titrering bruges til at bestemme Cl⁻-indhold. Trin: 1) Tilsæt kaliumchromation (K₂CrO₄) som indikator til prøven — gul opløsning. 2) Titrer med sølvnitrat (AgNO₃) fra byretten. 3) Ag⁺ fælder Cl⁻ som hvidt AgCl (Ksp meget lille). 4) Når alt Cl⁻ er fældet (ækvivalenspunkt), reagerer overskydende Ag⁺ med CrO₄²⁻: 2Ag⁺ + CrO₄²⁻ → Ag₂CrO₄ (rødbrunt bundfald). Farveomslag: gul → rødbrunt = ækvivalenspunktet. Beregning: n(Cl⁻) = n(Ag⁺) = c(AgNO₃) × V(AgNO₃).'},
+    {type:'open',stem:'Beskriv vands polaritet og forklar hvorfor vand er et godt opløsningsmiddel for ioner men ikke for upolære stoffer.',
+     modelans:'Vand er polært: H₂O-molekylet har et dipolmoment pga. den krumme struktur (104,5°) og ilts høje elektronegativitet. Oxygen er δ⁻, hydrogen er δ⁺. For <b>ioniske stoffer</b>: det positive δ⁺ ved H tiltrækkes mod negative ioner (Cl⁻), det negative δ⁻ ved O tiltrækkes mod positive ioner (Na⁺). Ionerne hydratiseres og trækkes ud af gitteret. For <b>upolære stoffer</b> (alkaner, olier): ingen elektrostatisk tiltrækning mellem vandmolekyler og det upolære stof. Vandmolekylerne foretrækker at danne hydrogenbindinger indbyrdes. Princippet "like dissolves like": polære stoffer opløses i polære opløsningsmidler.'},
+  ]
+},
+{
+  id:14, num:'14', name:'Kovalent binding & Polæritet',
+  tags:['Polær/upolær','Hydrofil/hydrofob','Elektronegativitet','Dipolmoment'],
+  øvelse:'Hvilken type stof',
+  qs:[
+    {type:'mc',stem:'Hvornår er en kovalent binding polær?',
+     opts:['Når to ens atomer deler elektroner','Når to atomer med forskellig elektronegativitet deler elektroner — elektronerne trækkes mod det mere elektronegative atom','Når bindingen er en dobbeltbinding','Når begge atomer er metaller'],
+     correct:1,
+     fb:'En binding er polær når de to atomer har <b>forskellig elektronegativitet</b>. Eksempel: H-F — fluor er meget mere elektronegativ end hydrogen → elektronerne sidder tættere ved F → δ⁻ ved F, δ⁺ ved H. H-H er upolær (ens atomer, samme elektronegativitet).'},
+    {type:'mc',stem:'CO₂ har to polære C=O bindinger. Alligevel er CO₂ som molekyle upolært. Hvorfor?',
+     opts:['Fordi dobbeltbindinger udligner polæriteten','Fordi CO₂ er lineært — de to dipolmomenter peger i modsatte retninger og udligner hinanden','Fordi carbon og oxygen har ens elektronegativitet','Fordi CO₂ er en gas'],
+     correct:1,
+     fb:'CO₂ er <b>lineært</b> (180°): O=C=O. De to polære C=O-bindinger peger i nøjagtig modsatte retninger. Dipolmomenternes vektorer er lige store og modsatrettede → de summerer til nul → molekylet er upolært. H₂O er IKKE lineært (104,5°) → summen er ikke nul → H₂O er polært.'},
+    {type:'mc',stem:'Hvad er en hydrofob gruppe?',
+     opts:['En gruppe der elsker vand','En gruppe der afviser vand — upolær, fx en kulkæde','En ionisk gruppe','En sur gruppe'],
+     correct:1,
+     fb:'Hydrofob ("vandskende") er upolære grupper, fx lange kulkæder (alkyl-grupper). De har svage van der Waals-kræfter og blandes ikke med vand. Hydrofil ("vandelskende") er polære eller ioniske grupper der tiltrækkes af vand. Sæbemolekyler har begge dele: hydrofil ionisk hoved + hydrofob kulkæde-hale (amfifil).'},
+    {type:'open',stem:'Forklar forskellen på polære og upolære molekyler med eksempler. Hvad er konsekvensen for opløselighed og kogepunkt?',
+     modelans:'<b>Upolære molekyler</b> (CH₄, Cl₂, O₂, CO₂): ingen permanent dipolmoment. Holdes kun af svage London-dispersionskræfter. Lave kogepunkter (gasser ved stuetemperatur). Opløselige i upolære opløsningsmidler. <b>Polære molekyler</b> (H₂O, HCl, NH₃, aceton): permanent dipolmoment. Dipol-dipol-kræfter og evt. hydrogenbindinger (H₂O, HF, NH₃). Højere kogepunkter. Opløselige i polære opløsningsmidler (vand). Vandets usædvanligt høje kogepunkt (100°C) skyldes stærke hydrogenbindinger (H-bindinger er meget stærkere end dipol-dipol). Hydrogenbinding kræver: H bundet til N, O eller F som er meget elektronegative.'},
+    {type:'open',stem:'Tegn og forklar strukturen af et sæbemolekyl. Forklar hvordan det fjerner fedt fra en overflade (miceller).',
+     modelans:'Et sæbemolekyl (fx natriumstearat, CH₃(CH₂)₁₆COO⁻Na⁺) har: <b>Hydrofobisk hale</b>: lang upolær kulkæde (CH₃(CH₂)₁₆-) der afviser vand. <b>Hydrofil hoved</b>: ionisk carboxylatgruppe (-COO⁻) der tiltrækkes af vand. Ved kontakt med fedt: de hydrofobe haler "stikker ind" i fedtet (løser det op). Hovederne vender mod vandet. Dannes en <b>micelle</b>: kugle med haler indad (omgiver fedtdråben) og ioniske hoveder udad (mod vand). Micellen suspenderes i vand og kan skylles væk. Sæbe virker fordi det er amfifilt — det kobler vand og fedt.'},
+  ]
+},
+];
+
+// Generate topics array for all 18 (some share IDs)
+// Fill missing topics with similar structure
+const EXTRA_TOPICS = [
+  {
+    id:15, num:'17', name:'Syrer og baser (II)', // repeat topic
+    tags:['Brønsted-Lowry','Reaktionsskema','pH','Oxoniumion'],
+    øvelse:'Eddikesyre-titrering',
+    qs: TOPICS[7].qs, // same as topic 8/17
+  }
+];
+
+const ALL_TOPICS = [...TOPICS, ...EXTRA_TOPICS];
+
+/* ══════════════════════════════════════════════
+   SAVE
+══════════════════════════════════════════════ */
+const KEY='kemicexam_v1';
+function loadSD(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{};}}
+function saveSD(){localStorage.setItem(KEY,JSON.stringify(SD));}
+let SD=loadSD();
+if(!SD.done)SD.done=[];
+if(!SD.scores)SD.scores={};
+
+/* ══════════════════════════════════════════════
+   HOME
+══════════════════════════════════════════════ */
+function buildHome(){
+  const g=document.getElementById('topic-grid');g.innerHTML='';
+  ALL_TOPICS.forEach((t,i)=>{
+    const done=SD.done.includes(t.id);
+    const d=document.createElement('div');
+    d.className=`tcard${done?' done':''}`;
+    d.innerHTML=`
+      <div class="tc-num">${t.num}</div>
+      <div class="tc-body">
+        <div class="tc-name">${t.name}</div>
+        <div class="tc-tags">${t.tags.map(tag=>`<span class="tag">${tag}</span>`).join('')}
+          <span class="tag" style="color:var(--muted2);opacity:.6">Øvelse: ${t.øvelse}</span>
+        </div>
+      </div>
+      <div class="tc-status">${done?'✅':''}</div>`;
+    d.onclick=()=>startTopic(t.id);
+    g.appendChild(d);
+  });
+}
+
+function goHome(){show('s-home');buildHome();}
+
+function startRandom(){
+  const t=ALL_TOPICS[Math.floor(Math.random()*ALL_TOPICS.length)];
+  startTopic(t.id);
+}
+
+/* ══════════════════════════════════════════════
+   QUIZ STATE
+══════════════════════════════════════════════ */
+let curTopic=null, curQIdx=0, qResults=[];
+
+function startTopic(topicId){
+  curTopic=ALL_TOPICS.find(t=>t.id===topicId);
+  if(!curTopic)return;
+  curQIdx=0;
+  qResults=new Array(curTopic.qs.length).fill(null);
+  document.getElementById('quiz-title').textContent=`${curTopic.num}. ${curTopic.name}`;
+  buildProg();
+  show('s-quiz');
+  renderQ();
+}
+
+let curTopicIdForRetry=null;
+function retryTopic(){if(curTopicIdForRetry!==null)startTopic(curTopicIdForRetry);}
+
+function buildProg(){
+  const p=document.getElementById('q-prog');p.innerHTML='';
+  curTopic.qs.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className=`qp ${q.type}`;d.id=`qp-${i}`;p.appendChild(d);
+  });
+}
+
+function updateProg(){
+  curTopic.qs.forEach((_,i)=>{
+    const d=document.getElementById(`qp-${i}`);if(!d)return;
+    d.classList.remove('ok','part','cur');
+    if(i===curQIdx)d.classList.add('cur');
+    if(qResults[i]==='ok')d.classList.add('ok');
+    if(qResults[i]==='part')d.classList.add('part');
+  });
+}
+
+function renderQ(){
+  const q=curTopic.qs[curQIdx];
+  const total=curTopic.qs.length;
+  document.getElementById('quiz-counter').textContent=`${curQIdx+1}/${total}`;
+  document.getElementById('q-num').textContent=`Spørgsmål ${curQIdx+1} af ${total}`;
+
+  // Badge
+  const badge=document.getElementById('q-badge');
+  if(q.type==='mc'){badge.className='q-badge qb-mc';badge.textContent='📋 Multiple Choice';}
+  else{badge.className='q-badge qb-open';badge.textContent='✏️ Åbent svar — beskriv som til eksamen';}
+
+  // Stem
+  document.getElementById('q-stem').innerHTML=q.stem;
+  document.getElementById('q-hint').textContent=q.type==='open'?'💡 Tip: forestil dig at du forklarer dette for eksaminator og censor — brug fagtermer.':'';
+
+  // MC or open
+  const mcDiv=document.getElementById('mc-opts');
+  const openDiv=document.getElementById('open-area');
+  const fbDiv=document.getElementById('mc-fb');
+  const aiDiv=document.getElementById('ai-panel');
+  fbDiv.className='mc-fb';
+  aiDiv.className='ai-panel';
+
+  if(q.type==='mc'){
+    mcDiv.style.display='flex';openDiv.style.display='none';
+    mcDiv.innerHTML=q.opts.map((opt,i)=>`
+      <button class="mco" id="mco-${i}" onclick="pickMC(${i})">
+        <span class="mco-key">${String.fromCharCode(65+i)}.</span>
+        <span>${opt}</span>
+      </button>`).join('');
+  } else {
+    mcDiv.style.display='none';openDiv.style.display='block';
+    const ta=document.getElementById('open-ta');
+    ta.value='';ta.disabled=false;
+    document.getElementById('open-chars').textContent='0 tegn';
+    ta.oninput=()=>{document.getElementById('open-chars').textContent=`${ta.value.length} tegn`;};
+  }
+
+  const sub=document.getElementById('submit-btn');
+  const nxt=document.getElementById('nxt-btn');
+  sub.disabled=false;sub.style.display='';
+  nxt.className='nxt-btn';
+
+  updateProg();
+}
+
+/* ══════════════════════════════════════════════
+   MC ANSWER
+══════════════════════════════════════════════ */
+let selectedMC=null;
+function pickMC(i){
+  if(document.getElementById('mco-0').disabled)return;
+  selectedMC=i;
+  document.querySelectorAll('.mco').forEach((b,j)=>{
+    b.style.background=j===i?'rgba(240,165,0,.1)':'';
+    b.style.borderColor=j===i?'rgba(240,165,0,.5)':'';
+  });
+  document.getElementById('submit-btn').disabled=false;
+}
+
+/* ══════════════════════════════════════════════
+   SUBMIT ANSWER
+══════════════════════════════════════════════ */
+function submitAnswer(){
+  const q=curTopic.qs[curQIdx];
+  const sub=document.getElementById('submit-btn');
+  sub.disabled=true;
+
+  if(q.type==='mc'){
+    if(selectedMC===null){sub.disabled=false;return;}
+    const ok=selectedMC===q.correct;
+    qResults[curQIdx]=ok?'ok':'part';
+    document.querySelectorAll('.mco').forEach((b,i)=>{
+      b.disabled=true;
+      if(i===q.correct)b.classList.add('ok');
+      else if(i===selectedMC&&!ok)b.classList.add('no');
+    });
+    const fb=document.getElementById('mc-fb');
+    fb.className='mc-fb '+(ok?'ok':'no');
+    fb.innerHTML=(ok?'✅ <b>Korrekt!</b> ':'❌ <b>Forkert.</b> Det rigtige svar er markeret med grønt.<br>')+q.fb;
+    selectedMC=null;
+    showNextBtn();
+    updateProg();
+  } else {
+    // Open answer — show model answer immediately, user compares
+    const ans=document.getElementById('open-ta').value.trim();
+    if(ans.length<20){sub.disabled=false;alert('Skriv et mere uddybende svar (mindst 20 tegn)');return;}
+    document.getElementById('open-ta').disabled=true;
+    showModelAnswer(q);
+    qResults[curQIdx]='ok';
+    updateProg();
+    showNextBtn();
+  }
+}
+
+/* ══════════════════════════════════════════════
+   SHOW MODEL ANSWER (no API — instant)
+══════════════════════════════════════════════ */
+function showModelAnswer(q){
+  const aiDiv=document.getElementById('ai-panel');
+  const aiScore=document.getElementById('ai-score');
+  const aiBody=document.getElementById('ai-body');
+
+  aiDiv.className='ai-panel on';
+  aiScore.className='ai-score score-good';
+  aiScore.textContent='Sammenlign med dit svar';
+
+  aiBody.innerHTML=`
+    <div class="ai-section">
+      <div class="ai-section-t">📋 Hvad skal et godt svar indeholde</div>
+      <div class="ai-section-b">
+        Sammenlign dit svar med modelsvarets fagtermer og struktur.
+        <b>Spørg dig selv:</b> Nævnte jeg de centrale begreber? Var min forklaring præcis nok til en mundtlig eksamen?
+      </div>
+    </div>
+    <div class="ai-section">
+      <div class="ai-section-t">💡 Modelsvar — lær dette</div>
+      <div class="model-answer">${q.modelans}</div>
+    </div>
+    <div class="ai-section">
+      <div class="ai-section-t">✅ Tjekliste til mundtlig fremlæggelse</div>
+      <div class="ai-section-b">
+        Brugte jeg de <b>rigtige fagtermer</b>? ·
+        Forklarede jeg <b>mekanismen</b> (ikke bare resultatet)? ·
+        Gav jeg et <b>konkret eksempel</b>? ·
+        Koblet jeg til <b>laboratorieøvelsen</b>?
+      </div>
+    </div>`;
+}
+
+function extract(text, start, end){
+  const si=text.indexOf(start);
+  if(si<0)return null;
+  const from=si+start.length;
+  const to=end?text.indexOf(end,from):text.length;
+  return (to<0?text.slice(from):text.slice(from,to)).trim();
+}
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+function showNextBtn(){
+  const nxt=document.getElementById('nxt-btn');
+  nxt.className='nxt-btn on';
+  nxt.textContent=curQIdx<curTopic.qs.length-1?'Næste spørgsmål →':'Afslut emne →';
+}
+
+function nextQuestion(){
+  curQIdx++;
+  if(curQIdx>=curTopic.qs.length){endTopic();}
+  else{
+    selectedMC=null;
+    renderQ();
+    document.querySelector('.q-wrap').scrollTop=0;
+  }
+}
+
+function endTopic(){
+  curTopicIdForRetry=curTopic.id;
+  const ok=qResults.filter(r=>r==='ok').length;
+  const total=qResults.length;
+  if(!SD.done.includes(curTopic.id)&&ok>=Math.ceil(total*.6))SD.done.push(curTopic.id);
+  SD.scores[curTopic.id]=ok;
+  saveSD();
+
+  document.getElementById('done-h').textContent=`${curTopic.name} — gennemgået!`;
+  document.getElementById('done-score').textContent=`${ok}/${total} besvaret`;
+
+  // Tips
+  const tips=document.getElementById('done-tip');
+  tips.innerHTML=`<h4>📌 Nøglepunkter til din mundtlige fremlæggelse</h4><ul>
+    ${curTopic.tags.map(t=>`<li>${t}</li>`).join('')}
+    <li>Vis til øvelsen: ${curTopic.øvelse}</li>
+    <li>Brug fagtermer præcist — eksaminatoren lytter efter dem</li>
+    <li>Tegn og skriv kemiformler på tavlen</li>
+    <li>Forbind teorien til laboratorieøvelsen</li>
+  </ul>`;
+
+  show('s-done');
+}
+
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+document.getElementById('open-ta').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.ctrlKey){submitAnswer();}
+});
+
+buildHome();
+</script>
+</body>
+</html>
