@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vand & Opløsning</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Syne:wght@700;800&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#04111e; --panel:#071828; --border:rgba(0,180,255,.18);
+  --water:#0a4a7a; --water2:#0d6090; --wave:#1a8ab8;
+  --blue:#00d4ff; --blue2:#5ab4f0; --green:#3dcc7e; --yellow:#ffd060;
+  --orange:#ff8c20; --red:#ff4466; --purple:#c060ff; --pink:#ff60aa;
+  --white:#e8f8ff; --muted:rgba(232,248,255,.45);
+  --fh:'Syne',sans-serif; --fb:'Nunito',sans-serif; --fm:'Space Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px); --sm:clamp(12px,2.7vw,14px); --md:clamp(14px,3.2vw,16px);
+  --lg:clamp(17px,4.2vw,22px); --xl:clamp(22px,5.5vw,30px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;}
+.scr.on{display:flex;}
+
+/* ══ HOME ══ */
+#s-home{background:radial-gradient(ellipse at 50% 100%,#051a30 0%,#04111e 65%);align-items:center;justify-content:flex-start;padding:20px 14px 50px;}
+.home-hero{max-width:500px;text-align:center;margin:0 auto 20px;}
+.h-icon{font-size:clamp(50px,12vw,76px);margin-bottom:10px;filter:drop-shadow(0 0 24px rgba(0,212,255,.5));animation:float 4s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.h-title{font-family:var(--fh);font-weight:800;font-size:var(--xl);color:var(--white);margin-bottom:4px;text-shadow:0 0 40px rgba(0,212,255,.35);}
+.h-title .acc{color:var(--blue);}
+.h-sub{font-family:var(--fm);font-size:var(--xs);color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px;}
+.h-water-cvs{width:100%;max-width:380px;margin:0 auto 20px;border-radius:16px;overflow:hidden;}
+#home-mol-cvs{display:block;width:100%;}
+.sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:500px;margin:0 auto 20px;}
+.sub-card{border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.04);padding:12px 8px;cursor:pointer;transition:all .15s;text-align:center;}
+.sub-card:hover{transform:translateY(-3px);border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.06);}
+.sub-card.done{border-color:rgba(61,204,126,.4);background:rgba(61,204,126,.06);}
+.sub-card .sc-icon{font-size:clamp(24px,6vw,34px);margin-bottom:5px;display:block;line-height:1;}
+.sub-card .sc-name{font-family:var(--fh);font-weight:700;font-size:var(--sm);color:var(--white);margin-bottom:2px;}
+.sub-card .sc-formula{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+.sub-card .sc-done{font-size:12px;color:var(--green);}
+.start-all{font-family:var(--fh);font-weight:800;font-size:var(--md);background:linear-gradient(135deg,var(--blue),var(--blue2));color:#001a2a;border:none;border-radius:100px;padding:14px 48px;cursor:pointer;box-shadow:0 6px 28px rgba(0,212,255,.3);transition:all .18s;display:block;margin:0 auto;}
+.start-all:hover{transform:scale(1.03);box-shadow:0 10px 36px rgba(0,212,255,.4);}
+
+/* ══ LAB ══ */
+#s-lab{background:var(--bg);}
+.lab-top{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.55);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));backdrop-filter:blur(12px);}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:var(--white);}
+.lab-title{font-family:var(--fh);font-weight:800;font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.info-btn{font-family:var(--fm);font-size:var(--xs);color:rgba(0,212,255,.7);background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.2);border-radius:6px;padding:6px 12px;cursor:pointer;}
+
+.lab-body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.lab-main{flex:1;display:flex;gap:0;min-height:0;overflow:hidden;}
+
+/* Beaker area */
+.beaker-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:12px 8px 8px;min-width:0;}
+#beaker-cvs{display:block;width:100%;max-width:340px;cursor:pointer;touch-action:none;}
+
+/* Side panel - substance selector & molecule */
+.side-panel{width:clamp(120px,28vw,160px);display:flex;flex-direction:column;gap:8px;padding:10px 8px;flex-shrink:0;overflow-y:auto;}
+.mol-mini{border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.03);padding:6px;margin-bottom:4px;}
+#mol-mini-cvs{display:block;width:100%;}
+.mol-label{font-family:var(--fm);font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;margin-top:4px;letter-spacing:.06em;text-transform:uppercase;}
+.sub-btns{display:flex;flex-direction:column;gap:6px;}
+.sub-btn{border:1px solid var(--border);border-radius:9px;background:rgba(255,255,255,.04);padding:9px 8px;cursor:pointer;text-align:center;transition:all .13s;position:relative;}
+.sub-btn:hover{border-color:rgba(0,212,255,.35);background:rgba(0,212,255,.06);transform:translateX(-2px);}
+.sub-btn.active{border-color:var(--blue);background:rgba(0,212,255,.1);box-shadow:0 0 12px rgba(0,212,255,.2);}
+.sub-btn.done{border-color:rgba(61,204,126,.35);background:rgba(61,204,126,.05);}
+.sb-icon{font-size:clamp(18px,4.5vw,24px);display:block;margin-bottom:3px;}
+.sb-name{font-family:var(--fh);font-weight:700;font-size:clamp(9px,2vw,11px);color:var(--white);line-height:1.2;}
+.sb-tick{position:absolute;top:4px;right:6px;font-size:10px;color:var(--green);}
+
+/* HUD bottom */
+.lab-hud{background:rgba(0,0,0,.6);border-top:1px solid var(--border);padding:8px 12px;flex-shrink:0;padding-bottom:max(8px,env(safe-area-inset-bottom,8px));}
+.hud-row{display:flex;gap:6px;margin-bottom:6px;}
+.hcard{flex:1;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.13);border-radius:8px;padding:6px 9px;}
+.hcard .hn{font-family:var(--fm);font-size:clamp(6px,1.4vw,8px);color:rgba(0,212,255,.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;}
+.hcard .hv{font-family:var(--fm);font-size:clamp(10px,2.3vw,12px);color:var(--white);line-height:1.3;}
+.hcard .hv .acc{color:var(--blue);}
+.action-row{display:flex;gap:8px;align-items:center;}
+.add-btn{font-family:var(--fh);font-weight:700;font-size:var(--sm);background:var(--blue);color:#001828;border:none;border-radius:8px;padding:10px 22px;cursor:pointer;transition:all .13s;flex:1;}
+.add-btn:hover{background:var(--blue2);}
+.add-btn:disabled{opacity:.3;cursor:default;}
+.reset-btn{font-family:var(--fh);font-weight:700;font-size:var(--xs);background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 16px;cursor:pointer;}
+
+/* ══ QUIZ ══ */
+.quiz-modal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.88);display:none;align-items:flex-end;justify-content:center;padding:0;}
+.quiz-modal.on{display:flex;}
+.quiz-sheet{background:var(--panel);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 16px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(60px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.qs-head{text-align:center;margin-bottom:16px;}
+.qs-icon{font-size:clamp(32px,8vw,48px);margin-bottom:6px;display:block;}
+.qs-title{font-family:var(--fh);font-weight:800;font-size:var(--lg);color:var(--white);margin-bottom:4px;}
+.qs-sub{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+.quiz-prog{display:flex;gap:5px;margin-bottom:14px;justify-content:center;}
+.qp-dot{width:clamp(8px,2.2vw,11px);height:clamp(8px,2.2vw,11px);border-radius:50%;background:rgba(255,255,255,.12);transition:all .2s;}
+.qp-dot.ok{background:var(--green);}
+.qp-dot.cur{background:var(--yellow);box-shadow:0 0 8px rgba(255,208,0,.5);}
+.quiz-q{margin-bottom:14px;}
+.quiz-q .qnum{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:6px;}
+.quiz-q .qtext{font-family:var(--fh);font-weight:700;font-size:var(--md);color:var(--white);line-height:1.4;margin-bottom:12px;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.qopt{border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.04);padding:12px 15px;cursor:pointer;font-size:var(--sm);color:rgba(255,255,255,.85);text-align:left;transition:all .13s;line-height:1.4;}
+.qopt:hover:not(:disabled){border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.07);}
+.qopt.ok{background:rgba(61,204,126,.15);border-color:rgba(61,204,126,.5);color:#a0ffcc;}
+.qopt.no{background:rgba(255,68,102,.1);border-color:rgba(255,68,102,.4);color:#ffb0bc;}
+.qopt.show-ok{background:rgba(61,204,126,.08);border-color:rgba(61,204,126,.3);}
+.qopt:disabled{cursor:default;}
+.quiz-fb{border-radius:10px;padding:12px 14px;font-size:var(--sm);line-height:1.65;margin-top:8px;margin-bottom:8px;display:none;}
+.quiz-fb.ok{background:rgba(61,204,126,.1);border:1px solid rgba(61,204,126,.25);color:#a0ffcc;display:block;}
+.quiz-fb.no{background:rgba(255,68,102,.08);border:1px solid rgba(255,68,102,.2);color:#ffb0bc;display:block;}
+.quiz-fb b{color:#fff;}
+.quiz-nxt{font-family:var(--fh);font-weight:800;font-size:var(--md);background:linear-gradient(135deg,var(--blue),var(--blue2));color:#001828;border:none;border-radius:10px;padding:12px 40px;cursor:pointer;display:none;margin:6px auto 0;display:none;}
+.quiz-nxt.on{display:block;}
+
+/* ══ DONE MODAL ══ */
+.done-modal{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;padding:20px;}
+.done-modal.on{display:flex;}
+.done-box{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:24px 20px;max-width:440px;width:100%;text-align:center;}
+.done-icon{font-size:clamp(52px,13vw,80px);margin-bottom:12px;animation:float 3s ease-in-out infinite;}
+.done-h{font-family:var(--fh);font-weight:800;font-size:var(--xl);color:var(--white);margin-bottom:6px;}
+.done-score{font-family:var(--fm);font-size:var(--lg);color:var(--yellow);margin-bottom:10px;}
+.done-sub{font-size:var(--sm);color:var(--muted);line-height:1.65;margin-bottom:20px;}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.dbtn{font-family:var(--fh);font-weight:700;font-size:var(--sm);border:none;border-radius:10px;padding:12px 30px;cursor:pointer;}
+.dbtn.primary{background:var(--blue);color:#001828;}
+.dbtn.sec{background:rgba(255,255,255,.08);color:var(--white);border:1px solid rgba(255,255,255,.14);}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="scr on" id="s-home">
+  <div class="home-hero">
+    <div class="h-icon">🔬</div>
+    <h1 class="h-title">Vand &<br><span class="acc">Opløsning</span></h1>
+    <p class="h-sub">Polaritet · Opløselighed · Intermolekylære kræfter</p>
+    <div class="h-water-cvs"><canvas id="home-mol-cvs" height="130"></canvas></div>
+  </div>
+  <div class="sub-grid" id="sub-grid"></div>
+  <button class="start-all" onclick="startLab(0)">🧪 Åbn laboratoriet →</button>
+</div>
+
+<!-- LAB -->
+<div class="scr" id="s-lab">
+  <div class="lab-top">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="lab-title" id="lab-title">Laboratoriet</div>
+    <button class="info-btn" onclick="showInfo()">💧 Info</button>
+  </div>
+  <div class="lab-body">
+    <div class="lab-main">
+      <div class="beaker-area">
+        <canvas id="beaker-cvs"></canvas>
+        <p style="font-family:var(--fm);font-size:var(--xs);color:var(--muted);text-align:center;margin-top:6px;" id="beaker-hint">Vælg et stof og tryk "Tilsæt"</p>
+      </div>
+      <div class="side-panel">
+        <div class="mol-mini">
+          <canvas id="mol-mini-cvs" height="80"></canvas>
+          <div class="mol-label">H₂O — polært</div>
+        </div>
+        <div class="sub-btns" id="sub-btns"></div>
+      </div>
+    </div>
+    <div class="lab-hud">
+      <div class="hud-row">
+        <div class="hcard"><div class="hn">Valgt stof</div><div class="hv" id="hv-sub"><span class="acc">–</span></div></div>
+        <div class="hcard"><div class="hn">Opløseligt?</div><div class="hv" id="hv-soluble">–</div></div>
+        <div class="hcard"><div class="hn">Hvorfor?</div><div class="hv" id="hv-why" style="font-size:clamp(8px,1.8vw,10px);">Vælg et stof</div></div>
+      </div>
+      <div class="action-row">
+        <button class="add-btn" id="add-btn" onclick="addSubstance()" disabled>+ Tilsæt i vand</button>
+        <button class="reset-btn" onclick="resetBeaker()">↺ Nyt bæger</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ MODAL -->
+<div class="quiz-modal" id="quiz-modal">
+  <div class="quiz-sheet">
+    <div class="qs-head">
+      <span class="qs-icon" id="qs-icon">🧪</span>
+      <div class="qs-title" id="qs-title">Quiz</div>
+      <div class="qs-sub" id="qs-sub">Test din forståelse</div>
+    </div>
+    <div class="quiz-prog" id="quiz-prog"></div>
+    <div class="quiz-q">
+      <div class="qnum" id="qnum"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="quiz-opts" id="quiz-opts"></div>
+    </div>
+    <div class="quiz-fb" id="quiz-fb"></div>
+    <button class="quiz-nxt" id="quiz-nxt" onclick="nextQuizQ()">Næste →</button>
+  </div>
+</div>
+
+<!-- DONE MODAL -->
+<div class="done-modal" id="done-modal">
+  <div class="done-box">
+    <div class="done-icon">🏆</div>
+    <h2 class="done-h" id="done-h">Eksperiment klaret!</h2>
+    <div class="done-score" id="done-score">–</div>
+    <p class="done-sub" id="done-sub">–</p>
+    <div class="done-btns">
+      <button class="dbtn primary" onclick="closeDone();nextSub()">Næste stof →</button>
+      <button class="dbtn sec" onclick="closeDone()">← Laboratoriet</button>
+      <button class="dbtn sec" onclick="closeDone();goHome()">Hjem</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   SUBSTANCES DATA
+══════════════════════════════════════════════ */
+const SUBS = [
+  {
+    id:0, name:'Salt', formula:'NaCl', icon:'🧂',
+    soluble:true, type:'ionic',
+    color:'rgba(220,220,255,.7)', particleColor:'rgba(200,200,255,.9)',
+    layers:[{y:0.5,color:'rgba(120,180,255,.45)',label:'Na⁺ og Cl⁻ ioner i opløsning'}],
+    why:'Salt er en ionforbindelse. Vands polære molekyler trækker Na⁺ og Cl⁻ ud af gitteret (hydratisering). Ioner og vand: "like dissolves like".',
+    animation:'dissolve_ionic',
+    hud:{soluble:'✅ Ja — fuldstændigt',why:'Ionbinding + polært vand → dissociation'},
+    quizzes:[
+      {q:'Hvad sker der med NaCl når det opløses i vand?',opts:['Det smelter til en væske','Na⁺ og Cl⁻ ioner adskilles og hydratiseres af vandmolekyler','Det danner kovalente bindinger til vand','Det reagerer kemisk og laver NaOH'],c:1,fb:'NaCl <b>dissocierer</b>: NaCl → Na⁺(aq) + Cl⁻(aq). Vandets polære molekyler omgiver ionerne (hydratisering) og trækker dem ud af iongitteret. Ingen kemisk reaktion — en fysisk opløsningsproces.'},
+      {q:'Hvorfor er NaCl opløseligt i vand men ikke i olie?',opts:['Fordi olie er for tykt','Fordi vand er polært og kan tiltrække ionerne elektrostatisk — olie er upolær og kan ikke','Fordi NaCl vejer for meget til olie','Fordi olie ikke er en væske'],c:1,fb:'"Like dissolves like": Polære og ioniske stoffer opløses i <b>polære opløsningsmidler</b> (vand). Upolære opløser i upolære. Olie er upolær og kan ikke danne elektrostatiske bindinger til Na⁺ og Cl⁻.'},
+      {q:'Hvad er hydratisering?',opts:['Vands reaktion med ilt','At vandmolekyler omgiver og stabiliserer ioner med deres polære ender','At salt smelter i vand','Fordampning af vand'],c:1,fb:'Hydratisering: <b>vandmolekylernes δ⁻ oxygen tiltrækkes mod positive ioner</b> (Na⁺) og δ⁺ hydrogen mod negative ioner (Cl⁻). Ionerne omgives af en "vandkappe" der holder dem adskilt i opløsning.'},
+    ]
+  },
+  {
+    id:1, name:'Eddike', formula:'CH₃COOH', icon:'🍶',
+    soluble:true, type:'polar',
+    color:'rgba(255,240,180,.5)', particleColor:'rgba(255,220,100,.8)',
+    layers:[{y:0.5,color:'rgba(200,220,255,.35)',label:'Eddikesyre blander sig med vand'}],
+    why:'Eddikesyre er polær og kan danne hydrogenbindinger med vand. Delvist dissociation til CH₃COO⁻ og H⁺ (svag syre). Blandbar i alle forhold.',
+    animation:'dissolve_polar',
+    hud:{soluble:'✅ Ja — blandbar',why:'Polær + H-bindinger til vand'},
+    quizzes:[
+      {q:'Hvorfor blander eddikesyre sig fuldstændigt med vand?',opts:['Fordi den er en syre','Fordi eddikesyre er polær og kan danne hydrogenbindinger med vandmolekyler','Fordi den er flydende','Fordi den indeholder carbon'],c:1,fb:'Eddikesyre (CH₃COOH) er <b>polær</b> og har en -OH gruppe der kan danne <b>hydrogenbindinger</b> med vandmolekyler. "Like dissolves like" — polær blander med polær. Derudover dissocierer den delvist: CH₃COOH ⇌ CH₃COO⁻ + H⁺.'},
+      {q:'Eddikesyre er en svag syre. Hvad betyder det?',opts:['Den er ufarlig','Den dissocierer kun delvist i vand — en del forbliver som CH₃COOH-molekyler','Den har lav molarmasse','Den reagerer ikke med baser'],c:1,fb:'Svag syre = <b>delvis dissociation</b>. CH₃COOH ⇌ CH₃COO⁻ + H⁺. Kun ca. 1% er dissocieret ved typisk koncentration. Modsætning: stærke syrer (HCl) dissocierer 100%. Dobbeltpil angiver ligevægt.'},
+      {q:'Hvad kendetegner en hydrogenbinding?',opts:['En binding mellem to carbonatomer','En elektrostatisk tiltrækning mellem H bundet til N/O/F og et andet N/O/F','En ionisk binding i vand','En kovalent binding i vandmolekylet'],c:1,fb:'Hydrogenbinding: H er bundet til en <b>meget elektronegativ atom</b> (O, N, F) og er derved δ+. Det tiltrækkes elektrostatisk af et frit elektronpar på et naboatoms O/N/F. I vand er det O···H-O. Stærkere end van der Waals, svagere end kovalente bindinger. Giver vand dets usædvanligt høje kogepunkt (100°C).'},
+    ]
+  },
+  {
+    id:2, name:'Olie', formula:'C₁₆H₃₄', icon:'🛢️',
+    soluble:false, type:'nonpolar',
+    color:'rgba(255,200,60,.55)', particleColor:'rgba(255,180,20,.8)',
+    layers:[{y:0.25,color:'rgba(255,190,30,.5)',label:'Olie flyder oven på — uopløselig'}],
+    why:'Olie er upolær (lange kulkæder). Vand er polært. De deler ikke intermolekylære kræfter. Vand foretrækker hydrogenbindinger indbyrdes. Olie flyder oven på (lavere densitet).',
+    animation:'float_layer',
+    hud:{soluble:'❌ Nej — flyder oven på',why:'Upolær vs polær → immiscible'},
+    quizzes:[
+      {q:'Hvorfor blander olie og vand sig ikke?',opts:['Olie er for viskøs','Olie er upolær — den kan ikke danne bindinger til vandets polære molekyler, og vand foretrækker sine egne hydrogenbindinger','Olie er tungere end vand','Olie indeholder salte'],c:1,fb:'"Immiscibel": vand og olie kan ikke blandes. Vands polære molekyler danner stærke <b>hydrogenbindinger</b> indbyrdes. Olie (upolær) kan kun danne svage van der Waals. Det er energetisk ugunstigt at bryde vandets H-bindinger for at lade olien trænge ind.'},
+      {q:'Hvorfor flyder olie oven på vand?',opts:['Olie er lettere (lavere densitet, ~0,9 g/mL) end vand (1,0 g/mL)','Olie er vandskydende','Olie indeholder luft','Olie er polær og stiger op'],c:0,fb:'Olie flyder fordi dens <b>densitet (~0,85-0,93 g/mL) er lavere end vands (1,00 g/mL)</b>. Kombineret med immiscibilitet danner de to adskilte faser med olien øverst. Emulgatorer (som sæbe) kan tvinge dem til at blandes midlertidigt.'},
+      {q:'Hvad er van der Waals-kræfter?',opts:['Ioniske bindinger i salt','Svage elektrostatiske kræfter mellem upolære molekyler pga. midlertidige dipoler','Hydrogenbindinger i vand','Kovalente bindinger i olier'],c:1,fb:'Van der Waals (London-dispersionskræfter): <b>midlertidige dipoler</b> opstår tilfældigt i upolære molekyler og inducerer dipoler i naboerne. Meget svagere end H-bindinger. Stiger med molekylstørrelse (flere elektroner). Alkaner (olie) holdes kun af van der Waals — deraf lave kogepunkter for korte alkaner.'},
+    ]
+  },
+  {
+    id:3, name:'Sukker', formula:'C₁₂H₂₂O₁₁', icon:'🍬',
+    soluble:true, type:'polar',
+    color:'rgba(255,220,160,.5)', particleColor:'rgba(255,200,120,.7)',
+    layers:[{y:0.5,color:'rgba(255,230,200,.2)',label:'Sakkarose opløst i vand'}],
+    why:'Sukker (sakkarose) har mange -OH grupper der danner hydrogenbindinger med vand. Polær og hydrofil. Langsom opløsning pga. stor molekylemasse.',
+    animation:'dissolve_slow',
+    hud:{soluble:'✅ Ja — langsomt',why:'Mange -OH grupper → H-bindinger med vand'},
+    quizzes:[
+      {q:'Hvorfor opløses sukker i vand?',opts:['Fordi sukker er ionisk','Fordi sukkermolekylerne har mange -OH grupper der danner hydrogenbindinger med vandmolekyler','Fordi sukker er upolær','Fordi sukker smelter i vand'],c:1,fb:'Sakkarose (C₁₂H₂₂O₁₁) har <b>8 OH-grupper</b> der alle kan danne hydrogenbindinger med vandmolekyler. Selvom sukker ikke er ionisk, er det meget polært og hydrofilt. Det opløses langsomt pga. den store molarmasse (342 g/mol).'},
+      {q:'Hvad er forskellen på sukkers og salts opløsning i vand?',opts:['Ingen forskel','Salt dissocierer til ioner (elektrolyt), sukker opløses som hele molekyler (non-elektrolyt)','Sukker danner ioner','Salt opløses som molekyler'],c:1,fb:'Salt: <b>dissociation</b> til ioner → elektrolyt (leder strøm). Sukker: <b>opløses som intakte molekyler</b> → non-elektrolyt (leder ikke strøm). Begge opløses i vand, men mekanismerne er forskellige. Osmotisk tryk skabes af begge.'},
+      {q:'Hvad sker der med sukkeropløsningens kogepunkt sammenlignet med rent vand?',opts:['Kogepunktet falder','Kogepunktet er uændret','Kogepunktet stiger (kogepunktsstigning)','Sukker fordamper med vand'],c:2,fb:'<b>Kogepunktsstigning</b>: opløste partikler (sukker) forstyrrer vandets overflade og gør det sværere at fordampe. Kogepunktet stiger proportionalt med koncentrationen (Raoults lov). Samme princip: frysepunktssænkning — sukker i is sænker frysepunktet.'},
+    ]
+  },
+  {
+    id:4, name:'Alkohol', formula:'C₂H₅OH', icon:'🍺',
+    soluble:true, type:'polar',
+    color:'rgba(200,240,255,.45)', particleColor:'rgba(160,220,255,.8)',
+    layers:[{y:0.5,color:'rgba(180,230,255,.25)',label:'Ethanol og vand blander sig fuldstændigt'}],
+    why:'Ethanol er amfifilt: -OH gruppen er polær (H-binding med vand), etylgruppen (-CH₂CH₃) er upolær men lille. Den polære del dominerer — fuldstændig blandbar.',
+    animation:'dissolve_fast',
+    hud:{soluble:'✅ Ja — fuldstændigt blandbar',why:'-OH gruppe → H-bindinger · etylkæde kort nok'},
+    quizzes:[
+      {q:'Ethanol (C₂H₅OH) er fuldstændig blandbar med vand. Hvad er grunden?',opts:['Fordi ethanol er en syre','Fordi -OH gruppen danner hydrogenbindinger med vand, og etylkæden er kort','Fordi ethanol er ionisk','Fordi ethanol er tung'],c:1,fb:'Ethanol er <b>amfifilt</b>: -OH (polær/hydrofil) danner H-bindinger med vand. CH₂CH₃ (upolær/hydrofob) er kort. Den polære del dominerer → fuldstændig blandbarhed. Sammenlign: decan (C₁₀H₂₁OH) er næsten uopløselig fordi den lange kulkæde dominerer.'},
+      {q:'Hvad menes med "amfifilt" molekyle?',opts:['Et molekyle med kun polære dele','Et molekyle med både en polær (hydrofil) og en upolær (hydrofob) del','Et ionisk molekyle','Et molekyle der kun opløses i olie'],c:1,fb:'"Amfifilt" (gr.: "begge dele elsker"): <b>polær/hydrofil ende + upolær/hydrofob ende</b>. Eksempler: ethanol, sæbemolekyler, fosfolipider. Sæbe er amfifilt og kan forbinde olie og vand (miceller). Cellemembraner er bygget af amfifile fosfolipider.'},
+      {q:'Hvad sker med blandbarhed af alkohol og vand jo længere kulkæden bliver?',opts:['Blandbarhed stiger','Blandbarhed er uafhængig af kædelængde','Blandbarhed falder — den hydrofobe hale dominerer mere og mere','Blandbarhed stiger og falder skiftevis'],c:2,fb:'Jo længere kulkæden er, jo mere dominerer den <b>upolære hydrofobe del</b>. Methanol (CH₃OH): fuldstændig blandbar. Ethanol: fuldstændig blandbar. Butanol: delvist blandbar. Oktan-1-ol (C₈H₁₇OH): næsten uopløselig i vand. Grænsen er ca. 4-5 carbonatomer.'},
+    ]
+  },
+  {
+    id:5, name:'Sand', formula:'SiO₂', icon:'⏳',
+    soluble:false, type:'solid',
+    color:'rgba(200,180,140,.6)', particleColor:'rgba(180,160,120,.85)',
+    layers:[{y:0.85,color:'rgba(170,150,110,.5)',label:'Sand synker — uopløseligt'}],
+    why:'Sand (SiO₂) er et kovalent netværk. Bindingerne er for stærke til at vand kan bryde dem. Sand er hverken ionisk eller polær — vand kan ikke interagere tilstrækkeligt.',
+    animation:'sink',
+    hud:{soluble:'❌ Nej — synker ned',why:'Kovalent netværk · vand for svagt til at bryde SiO₂'},
+    quizzes:[
+      {q:'Hvorfor opløses sand (SiO₂) ikke i vand?',opts:['Sand er for tungt','Sand er et kovalent netværksstof med meget stærke Si-O bindinger som vand ikke kan bryde','Sand er ionisk','Sand er upolær'],c:1,fb:'SiO₂ er et <b>kovalent netværksstof</b> — hele krystallen er ét stort molekyle med stærke Si-O kovalente bindinger i alle retninger. Vand mangler de nødvendige kræfter til at bryde disse bindinger. Hverken ionisk tiltrækning eller H-bindinger er tilstrækkelige.'},
+      {q:'Sand synker i vand. Hvad fortæller det os om sand?',opts:['At sand er opløseligt','At sand har højere densitet end vand (ρ_sand ≈ 2,65 g/mL) og ikke blander sig','At sand indeholder jern','At sand er en base'],c:1,fb:'Sand synker fordi: 1) Det er <b>uopløseligt</b> (danner ingen opløsning). 2) Dets <b>densitet (~2,65 g/mL) er langt højere end vands (1,00 g/mL)</b>. Tyngdekraften trækker det ned. Suspensioner (som sand i vand) er heterogene blandinger — ikke opløsninger.'},
+      {q:'Hvad er forskellen på en opløsning og en suspension?',opts:['Ingen forskel','En opløsning er homogen (partikler < 1 nm, klart), suspension er heterogen (partikler synlige, uklart, bundfælder sig)','En suspension er klar','En opløsning bundfælder sig'],c:1,fb:'<b>Opløsning</b>: homogen, partikler på molekyl/ion-niveau (<1 nm), transparent, bundfælder ikke. Eksempel: NaCl i vand. <b>Suspension</b>: heterogen, større partikler (>1000 nm), uklart, bundfælder med tid. Eksempel: sand i vand. Kolloider er mellemtrinnet (1-1000 nm): mælk, blæk.'},
+    ]
+  },
+];
+
+/* ══════════════════════════════════════════════
+   SAVE / STATE
+══════════════════════════════════════════════ */
+const KEY='watersolv_v1';
+function loadSD(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{};}}
+function saveSD(){localStorage.setItem(KEY,JSON.stringify(SD));}
+let SD=loadSD();
+if(!SD.done)SD.done=[];
+if(!SD.scores)SD.scores={};
+
+let curSub=null, beakerParticles=[], animId=null, simT=0, dissolved=false;
+let quizIdx=0, quizResults=[], curQuizSub=null;
+
+/* ══════════════════════════════════════════════
+   HOME
+══════════════════════════════════════════════ */
+function buildHome(){
+  const g=document.getElementById('sub-grid');g.innerHTML='';
+  SUBS.forEach(s=>{
+    const done=SD.done.includes(s.id);
+    const d=document.createElement('div');
+    d.className=`sub-card${done?' done':''}`;
+    d.innerHTML=`<span class="sc-icon">${s.icon}</span><div class="sc-name">${s.name}</div><div class="sc-formula">${s.formula}</div>${done?'<div class="sc-done">✅</div>':''}`;
+    d.onclick=()=>{startLab(s.id);};
+    g.appendChild(d);
+  });
+}
+function goHome(){if(animId){cancelAnimationFrame(animId);animId=null;}show('s-home');buildHome();}
+
+// Home molecule animation
+(function homeAnim(){
+  const cvs=document.getElementById('home-mol-cvs');
+  if(!cvs)return;
+  let w=cvs.offsetWidth||320;cvs.width=w;cvs.height=130;
+  let t=0;
+  function frame(){
+    requestAnimationFrame(frame);t+=0.016;
+    const ctx=cvs.getContext('2d');ctx.clearRect(0,0,w,130);
+    // Draw 3 water molecules
+    [[w*.18,65,t],[w*.5,65,t+1.2],[w*.82,65,t+2.4]].forEach(([cx,cy,ang])=>{
+      drawMol(ctx,cx,cy,ang,0.7);
+    });
+    // H-bond lines
+    ctx.setLineDash([3,3]);ctx.strokeStyle='rgba(0,212,255,.35)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(w*.18+22,65-10);ctx.lineTo(w*.5-22,65+5);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(w*.5+22,65-8);ctx.lineTo(w*.82-22,65+3);ctx.stroke();
+    ctx.setLineDash([]);
+    // Labels
+    ctx.fillStyle='rgba(0,212,255,.6)';ctx.font=`bold ${Math.max(9,w*.022)}px Space Mono,monospace`;ctx.textAlign='center';
+    ctx.fillText('δ−  H-binding  δ+  δ−  H-binding  δ+',w/2,118);
+  }
+  requestAnimationFrame(frame);
+})();
+
+function drawMol(ctx,cx,cy,t,scale=1){
+  const r=20*scale,bL=42*scale,ha=52.25*(Math.PI/180);
+  const h1x=cx+Math.cos(Math.PI+ha+t)*bL,h1y=cy+Math.sin(Math.PI+ha+t)*bL;
+  const h2x=cx+Math.cos(Math.PI-ha+t)*bL,h2y=cy+Math.sin(Math.PI-ha+t)*bL;
+  // Bonds
+  ctx.strokeStyle='rgba(0,212,255,.5)';ctx.lineWidth=2.5*scale;
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(h1x,h1y);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(h2x,h2y);ctx.stroke();
+  // O
+  ctx.shadowColor='rgba(0,212,255,.6)';ctx.shadowBlur=12*scale;
+  const og=ctx.createRadialGradient(cx-r*.25,cy-r*.25,r*.1,cx,cy,r);
+  og.addColorStop(0,'rgba(80,200,255,.92)');og.addColorStop(1,'rgba(0,90,200,.7)');
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=og;ctx.fill();ctx.shadowBlur=0;
+  // H
+  [[h1x,h1y],[h2x,h2y]].forEach(([hx,hy])=>{
+    const hr=13*scale;
+    ctx.shadowColor='rgba(255,255,255,.4)';ctx.shadowBlur=8*scale;
+    const hg=ctx.createRadialGradient(hx-hr*.2,hy-hr*.2,hr*.1,hx,hy,hr);
+    hg.addColorStop(0,'rgba(255,255,255,.95)');hg.addColorStop(1,'rgba(180,220,255,.7)');
+    ctx.beginPath();ctx.arc(hx,hy,hr,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();ctx.shadowBlur=0;
+  });
+  // Labels
+  ctx.font=`bold ${Math.max(8,10*scale)}px Nunito`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillText('O',cx,cy+1);
+  [[h1x,h1y],[h2x,h2y]].forEach(([hx,hy])=>{ctx.fillStyle='rgba(20,20,40,.7)';ctx.fillText('H',hx,hy+1);});
+  // delta labels
+  const sc2=Math.max(8,8*scale);ctx.font=`${sc2}px Space Mono,monospace`;
+  ctx.fillStyle='rgba(100,200,255,.85)';ctx.fillText('δ−',cx+r*.9,cy-r*.85);
+  [[h1x,h1y],[h2x,h2y]].forEach(([hx,hy])=>{
+    const nx=(hx-cx)/bL,ny=(hy-cy)/bL;
+    ctx.fillStyle='rgba(255,200,100,.85)';ctx.fillText('δ+',hx+nx*15*scale,hy+ny*15*scale);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   LAB
+══════════════════════════════════════════════ */
+function startLab(subId){
+  curSub=SUBS.find(s=>s.id===subId)||SUBS[0];
+  dissolved=false;beakerParticles=[];simT=0;
+  buildSubBtns();selectSub(curSub.id);
+  show('s-lab');
+  requestAnimationFrame(()=>{
+    const cvs=document.getElementById('beaker-cvs');
+    cvs.width=cvs.offsetWidth;cvs.height=cvs.offsetHeight;
+    sizeBeaker();
+    startMolMini();
+    if(animId)cancelAnimationFrame(animId);
+    animId=requestAnimationFrame(labLoop);
+  });
+}
+
+function sizeBeaker(){
+  const cvs=document.getElementById('beaker-cvs');
+  const W=cvs.offsetWidth||300;
+  const H=Math.min(cvs.offsetHeight||400, W*1.3);
+  cvs.width=W;cvs.height=H;
+}
+
+function buildSubBtns(){
+  const g=document.getElementById('sub-btns');g.innerHTML='';
+  SUBS.forEach(s=>{
+    const done=SD.done.includes(s.id);
+    const d=document.createElement('div');
+    d.className=`sub-btn${s.id===curSub?.id?' active':''}${done?' done':''}`;
+    d.id=`sb-${s.id}`;
+    d.innerHTML=`<span class="sb-icon">${s.icon}</span><div class="sb-name">${s.name}</div>${done?'<span class="sb-tick">✅</span>':''}`;
+    d.onclick=()=>selectSub(s.id);
+    g.appendChild(d);
+  });
+}
+
+function selectSub(id){
+  curSub=SUBS.find(s=>s.id===id);
+  dissolved=false;beakerParticles=[];
+  document.querySelectorAll('.sub-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById(`sb-${id}`);if(btn)btn.classList.add('active');
+  document.getElementById('hv-sub').innerHTML=`<span class="acc">${curSub.icon} ${curSub.name}</span> <span style="color:var(--muted);font-size:var(--xs)">${curSub.formula}</span>`;
+  document.getElementById('hv-soluble').textContent='–';
+  document.getElementById('hv-why').textContent='Tryk "Tilsæt" for at se';
+  document.getElementById('beaker-hint').textContent=`${curSub.icon} Tryk "+ Tilsæt i vand" for at eksperimentere`;
+  document.getElementById('add-btn').disabled=false;
+  document.getElementById('lab-title').textContent=`${curSub.icon} ${curSub.name} i vand`;
+}
+
+function addSubstance(){
+  if(dissolved)return;
+  dissolved=true;
+  document.getElementById('add-btn').disabled=true;
+  const s=curSub;
+  document.getElementById('hv-soluble').textContent=s.hud.soluble;
+  document.getElementById('hv-why').textContent=s.hud.why;
+  document.getElementById('beaker-hint').textContent='Se hvad der sker! Quizzen åbner snart...';
+  // Spawn particles
+  spawnParticles(s);
+  // After animation, show quiz
+  setTimeout(()=>openQuiz(s), 3200);
+}
+
+function spawnParticles(s){
+  const cvs=document.getElementById('beaker-cvs');
+  const W=cvs.width,H=cvs.height;
+  const bW=W*.6,bH=H*.72,bX=(W-bW)/2,bY=H*.15;
+  const n=s.animation==='sink'?8:s.animation==='float_layer'?10:18;
+  for(let i=0;i<n;i++){
+    beakerParticles.push({
+      x:W/2+rnd(-20,20), y:bY-20,
+      vx:rnd(-60,60), vy:rnd(-20,30),
+      r:rnd(4,9), alpha:1,
+      color:s.particleColor,
+      type:s.animation,
+      targetY:s.animation==='float_layer'?bY+bH*.18:s.animation==='sink'?bY+bH*.88:bY+bH*(0.3+Math.random()*0.4),
+      tx:bX+rnd(20,bW-20),
+      settled:false, age:0,
+      delay:i*80
+    });
+  }
+}
+
+function rnd(a,b){return Math.random()*(b-a)+a;}
+
+/* ══════════════════════════════════════════════
+   LAB LOOP
+══════════════════════════════════════════════ */
+function labLoop(ts){
+  animId=requestAnimationFrame(labLoop);
+  simT+=0.016;
+  const cvs=document.getElementById('beaker-cvs');
+  const ctx=cvs.getContext('2d');
+  const W=cvs.width,H=cvs.height;
+  ctx.clearRect(0,0,W,H);
+  drawBeaker(ctx,W,H);
+  drawParticles(ctx,W,H,ts);
+  drawMolMini();
+}
+
+function drawBeaker(ctx,W,H){
+  const bW=W*.6,bH=H*.72,bX=(W-bW)/2,bY=H*.15;
+
+  // Beaker glass outer
+  ctx.strokeStyle='rgba(180,230,255,.35)';ctx.lineWidth=3;ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(bX,bY);ctx.lineTo(bX,bY+bH);ctx.lineTo(bX+bW,bY+bH);ctx.lineTo(bX+bW,bY);ctx.stroke();
+  // Beaker lip
+  ctx.strokeStyle='rgba(180,230,255,.25)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(bX-8,bY);ctx.lineTo(bX+bW+8,bY);ctx.stroke();
+  // Inner glass reflection
+  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(bX+8,bY+10);ctx.lineTo(bX+8,bY+bH-10);ctx.stroke();
+
+  // Water fill
+  const waterTop=bY+bH*.18;
+  const waterG=ctx.createLinearGradient(0,waterTop,0,bY+bH);
+  if(dissolved&&curSub&&curSub.id===2){
+    // Oil layer on top
+    waterG.addColorStop(0,'rgba(255,190,30,.6)');
+    waterG.addColorStop(0.22,'rgba(255,190,30,.55)');
+    waterG.addColorStop(0.25,'rgba(20,100,160,.7)');
+    waterG.addColorStop(1,'rgba(10,60,120,.85)');
+  } else if(dissolved&&curSub&&curSub.id===5){
+    // Sand at bottom
+    waterG.addColorStop(0,'rgba(20,100,160,.7)');
+    waterG.addColorStop(0.8,'rgba(20,100,160,.85)');
+    waterG.addColorStop(0.85,'rgba(160,140,100,.8)');
+    waterG.addColorStop(1,'rgba(150,130,90,.9)');
+  } else if(dissolved&&curSub&&curSub.id===1){
+    waterG.addColorStop(0,'rgba(40,120,180,.6)');
+    waterG.addColorStop(1,'rgba(10,70,130,.85)');
+  } else {
+    waterG.addColorStop(0,'rgba(20,100,160,.65)');
+    waterG.addColorStop(1,'rgba(10,60,120,.85)');
+  }
+  ctx.fillStyle=waterG;
+  ctx.beginPath();ctx.rect(bX+2,waterTop,bW-4,bY+bH-waterTop-2);ctx.fill();
+
+  // Water surface waves
+  ctx.strokeStyle=`rgba(100,200,255,${dissolved?'.5':'.3'})`;ctx.lineWidth=1.8;
+  ctx.beginPath();
+  for(let x=bX+2;x<=bX+bW-2;x+=3){ctx.lineTo(x,waterTop+Math.sin(x*.08+simT*2)*2);}
+  ctx.stroke();
+
+  // Beaker markings
+  ctx.strokeStyle='rgba(180,230,255,.15)';ctx.lineWidth=1;
+  for(let m=1;m<=4;m++){
+    const my=bY+bH-m*bH*.18;
+    ctx.beginPath();ctx.moveTo(bX+3,my);ctx.lineTo(bX+14,my);ctx.stroke();
+    ctx.fillStyle='rgba(180,230,255,.25)';ctx.font=`${Math.max(7,W*.02)}px Space Mono`;ctx.textAlign='left';
+    ctx.fillText(`${m*25}`,bX+16,my+4);
+  }
+
+  // Bottom gradient shadow
+  const botG=ctx.createLinearGradient(0,bY+bH-20,0,bY+bH);
+  botG.addColorStop(0,'transparent');botG.addColorStop(1,'rgba(0,0,0,.4)');
+  ctx.fillStyle=botG;ctx.fillRect(bX+2,bY+bH-20,bW-4,20);
+
+  // "H₂O" label
+  ctx.fillStyle='rgba(100,180,255,.4)';ctx.font=`bold ${Math.max(10,W*.025)}px Syne,sans-serif`;ctx.textAlign='center';
+  ctx.fillText('H₂O',bX+bW/2,bY+bH-12);
+}
+
+function drawParticles(ctx,W,H,ts){
+  const bW=W*.6,bH=H*.72,bX=(W-bW)/2,bY=H*.15;
+  const now=ts||0;
+  beakerParticles.forEach(p=>{
+    p.age+=16;
+    if(p.age<p.delay)return;
+    if(!p.settled){
+      // Move toward target
+      const dx=p.tx-p.x,dy=p.targetY-p.y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<8){p.settled=true;p.x=p.tx;p.y=p.targetY;}
+      else{
+        const spd=p.type==='dissolve_ionic'?130:p.type==='sink'?80:p.type==='float_layer'?60:100;
+        p.x+=dx/dist*spd*0.016;p.y+=dy/dist*spd*0.016;
+      }
+    }
+    // Draw
+    let alpha=p.alpha;
+    if(p.type==='dissolve_ionic'||p.type==='dissolve_slow'||p.type==='dissolve_polar'||p.type==='dissolve_fast'){
+      // Sparkle/pulse effect for dissolved particles
+      if(p.settled)alpha=0.45+Math.sin(simT*3+p.tx)*.2;
+    }
+    ctx.save();ctx.globalAlpha=alpha;
+    ctx.shadowColor=p.color;ctx.shadowBlur=p.settled?12:8;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();
+    // Ion labels for salt
+    if(p.type==='dissolve_ionic'&&p.settled){
+      ctx.shadowBlur=0;ctx.fillStyle='rgba(0,0,0,.7)';ctx.font=`bold ${Math.max(6,p.r*.8)}px Nunito`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(p.r>6?'Na⁺':'Cl⁻',p.x,p.y+1);
+    }
+    ctx.restore();
+  });
+}
+
+/* ══════════════════════════════════════════════
+   MINI MOLECULE CANVAS
+══════════════════════════════════════════════ */
+let molMiniAnimId=null;
+function startMolMini(){
+  if(molMiniAnimId)cancelAnimationFrame(molMiniAnimId);
+  const cvs=document.getElementById('mol-mini-cvs');
+  const W=cvs.offsetWidth||140;cvs.width=W;cvs.height=80;
+  let t=0;
+  function frame(){
+    molMiniAnimId=requestAnimationFrame(frame);
+    t+=0.025;
+    const ctx=cvs.getContext('2d');
+    ctx.clearRect(0,0,W,80);
+    drawMol(ctx,W/2,42,t,0.55);
+  }
+  requestAnimationFrame(frame);
+}
+function drawMolMini(){} // handled by startMolMini
+
+/* ══════════════════════════════════════════════
+   QUIZ
+══════════════════════════════════════════════ */
+function openQuiz(s){
+  curQuizSub=s;quizIdx=0;quizResults=[];
+  document.getElementById('qs-icon').textContent=s.icon;
+  document.getElementById('qs-title').textContent=`Quiz: ${s.name} i vand`;
+  document.getElementById('qs-sub').textContent=s.formula+' — test din forståelse';
+  buildQuizProg(s);
+  renderQuizQ();
+  document.getElementById('quiz-modal').classList.add('on');
+}
+
+function buildQuizProg(s){
+  const p=document.getElementById('quiz-prog');p.innerHTML='';
+  s.quizzes.forEach((_,i)=>{
+    const d=document.createElement('div');d.className='qp-dot';d.id=`qpd-${i}`;p.appendChild(d);
+  });
+  updateQuizProg();
+}
+
+function updateQuizProg(){
+  curQuizSub.quizzes.forEach((_,i)=>{
+    const d=document.getElementById(`qpd-${i}`);if(!d)return;
+    d.className='qp-dot';
+    if(i<quizIdx)d.classList.add('ok');
+    if(i===quizIdx)d.classList.add('cur');
+  });
+}
+
+let selQ=null;
+function renderQuizQ(){
+  selQ=null;
+  const q=curQuizSub.quizzes[quizIdx];
+  document.getElementById('qnum').textContent=`Spørgsmål ${quizIdx+1} af ${curQuizSub.quizzes.length}`;
+  document.getElementById('qtext').textContent=q.q;
+  document.getElementById('quiz-opts').innerHTML=q.opts.map((o,i)=>`<button class="qopt" id="qo-${i}" onclick="pickQ(${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join('');
+  document.getElementById('quiz-fb').className='quiz-fb';
+  document.getElementById('quiz-nxt').className='quiz-nxt';
+  updateQuizProg();
+}
+
+function pickQ(i){
+  if(selQ!==null)return;
+  selQ=i;
+  const q=curQuizSub.quizzes[quizIdx];
+  const ok=i===q.c;
+  quizResults.push(ok);
+  document.querySelectorAll('.qopt').forEach((b,j)=>{
+    b.disabled=true;
+    if(j===q.c)b.classList.add('ok');
+    else if(j===i&&!ok)b.classList.add('no');
+  });
+  const fb=document.getElementById('quiz-fb');
+  fb.className='quiz-fb '+(ok?'ok':'no');
+  fb.innerHTML=(ok?'✅ <b>Rigtigt!</b> ':'❌ <b>Forkert.</b> ')+q.fb;
+  const nxt=document.getElementById('quiz-nxt');
+  nxt.className='quiz-nxt on';
+  nxt.textContent=quizIdx<curQuizSub.quizzes.length-1?'Næste →':'Se resultat →';
+}
+
+function nextQuizQ(){
+  quizIdx++;
+  if(quizIdx>=curQuizSub.quizzes.length){
+    endQuiz();
+  } else {
+    renderQuizQ();
+    document.getElementById('quiz-sheet')?.scrollTo(0,0);
+  }
+}
+
+function endQuiz(){
+  document.getElementById('quiz-modal').classList.remove('on');
+  const s=curQuizSub;
+  const ok=quizResults.filter(Boolean).length;
+  const total=quizResults.length;
+  if(!SD.done.includes(s.id)){SD.done.push(s.id);saveSD();}
+  const btn=document.getElementById(`sb-${s.id}`);if(btn)btn.classList.add('done');
+  buildSubBtns();selectSub(s.id);
+
+  document.getElementById('done-h').textContent=`${s.icon} ${s.name} — klaret!`;
+  document.getElementById('done-score').textContent=`${ok}/${total} rigtige svar`;
+  document.getElementById('done-sub').innerHTML=
+    `<b>${s.name} (${s.formula})</b> er ${s.soluble?'opløseligt':'uopløseligt'} i vand.<br>${s.why}`;
+  document.getElementById('done-modal').classList.add('on');
+}
+
+function closeDone(){document.getElementById('done-modal').classList.remove('on');}
+
+function nextSub(){
+  const idx=SUBS.findIndex(s=>s.id===curSub?.id);
+  const next=SUBS[(idx+1)%SUBS.length];
+  dissolved=false;beakerParticles=[];
+  selectSub(next.id);
+}
+
+function resetBeaker(){
+  dissolved=false;beakerParticles=[];
+  if(curSub)selectSub(curSub.id);
+}
+
+/* ══════════════════════════════════════════════
+   INFO
+══════════════════════════════════════════════ */
+function showInfo(){
+  alert('💧 Vandets polaritet\n\nVand (H₂O) er et polært molekyle med en vinkel på 104,5°. Ilt er δ⁻ og hydrogen er δ⁺. Dette giver vand dets enestående evne til at opløse ioniske og polære stoffer.\n\n"Like dissolves like": polære stoffer opløses i polære opløsningsmidler. Upolære (olie) opløses kun i upolære opløsningsmidler.');
+}
+
+/* ══════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════ */
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+// Handle resize
+addEventListener('resize',()=>{
+  const cvs=document.getElementById('beaker-cvs');
+  if(cvs&&cvs.offsetParent){cvs.width=cvs.offsetWidth;sizeBeaker();}
+});
+
+buildHome();
+</script>
+</body>
+</html>
