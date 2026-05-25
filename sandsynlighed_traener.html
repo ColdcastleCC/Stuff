@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sandsynlighed & Kombinatorik Træner — 10. klasse</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e1117;--panel:#161b27;--card:#1c2333;--border:#2a3344;
+  --green:#00e676;--green2:#69f0ae;--yellow:#ffeb3b;--orange:#ff9800;
+  --red:#f44336;--blue:#42a5f5;
+  --white:#e8eaf0;--muted:#8892a4;--muted2:#545e6f;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px);--sm:clamp(12px,2.7vw,14px);--md:clamp(14px,3.2vw,16px);
+  --lg:clamp(18px,4.2vw,22px);--xl:clamp(24px,5.5vw,32px);--xxl:clamp(32px,8vw,52px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;}
+.scr.on{display:flex;}
+#s-home{background:linear-gradient(160deg,#0e1117 0%,#111827 100%);align-items:center;justify-content:flex-start;padding:20px 14px 50px;}
+.home-hero{width:100%;max-width:520px;margin:0 auto 22px;text-align:center;}
+.hero-eye{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+.hero-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);line-height:.95;letter-spacing:-.01em;margin-bottom:6px;}
+.hero-h .acc{color:var(--green);}
+.hero-sub{font-size:var(--sm);color:var(--muted);line-height:1.65;max-width:380px;margin:0 auto 20px;}
+.xp-wrap{background:rgba(255,255,255,.07);border-radius:4px;height:8px;width:100%;max-width:300px;margin:0 auto 6px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:4px;transition:width .5s;}
+.xp-lbl{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:20px;}
+.mgrid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;}
+.mcard{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:15px 17px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.mcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);transform:scaleY(0);transition:transform .15s;transform-origin:bottom;}
+.mcard:hover:not(.locked)::before{transform:scaleY(1);}
+.mcard:hover:not(.locked){border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.04);}
+.mcard.locked{opacity:.4;cursor:default;}
+.mcard.done{border-color:rgba(0,230,118,.25);background:rgba(0,230,118,.03);}
+.mcard.done::before{transform:scaleY(1);}
+.mc-icon{font-size:clamp(24px,6vw,34px);flex-shrink:0;line-height:1;}
+.mc-info{flex:1;min-width:0;}
+.mc-num{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+.mc-title{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);margin-bottom:2px;}
+.mc-desc{font-size:var(--xs);color:var(--muted);line-height:1.4;}
+.mc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-family:var(--fm);font-size:clamp(7px,1.6vw,9px);border:1px solid var(--border);border-radius:3px;padding:2px 8px;color:var(--muted2);}
+.mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.mc-xp{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);}
+.mc-status{font-size:16px;}
+#s-mission{background:var(--bg);}
+.mtop{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));backdrop-filter:blur(10px);}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:var(--white);}
+.mtop-title{font-family:var(--fh);font-weight:700;font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.mtop-ctr{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+.sprog{display:flex;gap:5px;padding:8px 14px;background:rgba(0,0,0,.3);flex-shrink:0;flex-wrap:wrap;}
+.sp{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);transition:all .3s;}
+.sp.ok{background:var(--green);}
+.sp.cur{background:rgba(0,230,118,.4);animation:bl .8s ease-in-out infinite alternate;}
+@keyframes bl{from{opacity:.5}to{opacity:1}}
+.qscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 30px;}
+.qarea{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+.ctx-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.ctx-head{font-family:var(--fm);font-size:var(--xs);color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.ctx-body{font-size:var(--sm);color:var(--white);line-height:1.7;}
+.ctx-body b{color:var(--green2);}
+.ctx-body code{font-family:var(--fm);background:rgba(0,230,118,.08);color:var(--green2);padding:1px 6px;border-radius:3px;font-size:var(--xs);}
+.dtbl{width:100%;border-collapse:collapse;margin-top:10px;font-family:var(--fm);font-size:var(--xs);}
+.dtbl th{background:rgba(0,230,118,.08);color:var(--green);text-align:left;padding:6px 10px;border-bottom:1px solid rgba(0,230,118,.2);}
+.dtbl td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--white);}
+.dtbl .hi{background:rgba(0,230,118,.1);color:var(--green2);font-weight:700;}
+.qq-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.qq-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:6px;}
+.qq-text{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);line-height:1.35;margin-bottom:10px;}
+.qq-hint{font-size:var(--xs);color:var(--muted);font-style:italic;margin-bottom:10px;line-height:1.5;}
+.mc-opts{display:flex;flex-direction:column;gap:8px;}
+.mco{border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.03);padding:12px 15px;cursor:pointer;font-size:var(--sm);color:rgba(255,255,255,.85);text-align:left;transition:all .13s;display:flex;align-items:flex-start;gap:10px;line-height:1.4;}
+.mco:hover:not(:disabled){border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.06);}
+.mco.ok{background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.5);color:var(--green2);}
+.mco.no{background:rgba(244,67,54,.08);border-color:rgba(244,67,54,.4);color:#ff8a80;}
+.mco:disabled{cursor:default;}
+.mco-k{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);min-width:18px;flex-shrink:0;padding-top:1px;}
+.nrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.nlbl{font-family:var(--fm);font-size:var(--sm);color:var(--muted);}
+.ninp{font-family:var(--fm);font-weight:700;font-size:var(--xl);width:clamp(110px,28vw,170px);background:rgba(0,230,118,.06);border:2px solid rgba(0,230,118,.3);border-radius:7px;color:var(--green2);text-align:center;padding:10px 8px;outline:none;-webkit-appearance:none;transition:all .18s;}
+.ninp:focus{border-color:var(--green);background:rgba(0,230,118,.1);box-shadow:0 0 16px rgba(0,230,118,.15);}
+.ninp.ok{border-color:var(--green);}
+.ninp.no{border-color:var(--red);animation:sh .3s ease;}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.fb{border-radius:10px;padding:14px 16px;display:none;}
+.fb.ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);display:block;}
+.fb.no{background:rgba(244,67,54,.07);border:1px solid rgba(244,67,54,.2);display:block;}
+.fb-verdict{font-family:var(--fh);font-weight:700;font-size:var(--lg);margin-bottom:8px;}
+.fb-verdict.ok{color:var(--green);}
+.fb-verdict.no{color:var(--red);}
+.fb-exp{font-size:var(--sm);color:rgba(255,255,255,.82);line-height:1.7;margin-bottom:10px;}
+.fb-exp b{color:var(--white);}
+.fb-exp code{font-family:var(--fm);background:rgba(0,230,118,.1);color:var(--green2);padding:1px 6px;border-radius:3px;}
+.why{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;}
+.why-h{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.why-b{font-size:var(--sm);color:rgba(255,255,255,.72);line-height:1.7;}
+.why-b b{color:var(--white);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.chkbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:var(--green);color:#001a0d;border:none;border-radius:8px;padding:12px 36px;cursor:pointer;transition:all .13s;}
+.chkbtn:hover{background:var(--green2);}
+.chkbtn:disabled{opacity:.3;cursor:default;}
+.nxtbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 32px;cursor:pointer;display:none;transition:all .13s;}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(255,255,255,.14);}
+#s-done{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.dtrophy{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bonce 1.2s ease infinite alternate;}
+@keyframes bonce{from{transform:translateY(0) scale(1)}to{transform:translateY(-10px) scale(1.05)}}
+.done-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);margin-bottom:6px;line-height:.95;}
+.done-h .acc{color:var(--green);}
+.done-sc{font-family:var(--fm);font-size:var(--xl);color:var(--yellow);margin-bottom:12px;}
+.done-msg{font-size:var(--md);color:var(--muted);max-width:380px;line-height:1.65;margin-bottom:26px;}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.dbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);border:none;border-radius:8px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;}
+.dbtn.p{background:var(--green);color:#001a0d;}
+.dbtn.s{background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<div class="scr on" id="s-home">
+  <div class="home-hero">
+    <div class="hero-eye">🎲 10. klasse · Eksamensforberedelse</div>
+    <h1 class="hero-h">SANDSYNLIGHED &<br><span class="acc">KOMBINATORIK</span></h1>
+    <p class="hero-sub">Træn sandsynlighed fra buelængde, forventet gevinst, husfordel, sammensatte hændelser og design af fair spil.</p>
+    <div class="xp-wrap"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-lbl" id="xp-lbl">0 XP — Begynder</div>
+  </div>
+  <div class="mgrid" id="mgrid"></div>
+</div>
+
+<div class="scr" id="s-mission">
+  <div class="mtop">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="mtop-title" id="mtop-title">–</div>
+    <div class="mtop-ctr" id="mtop-ctr">1/1</div>
+  </div>
+  <div class="sprog" id="sprog"></div>
+  <div class="qscroll">
+    <div class="qarea" id="qarea"></div>
+  </div>
+</div>
+
+<div class="scr" id="s-done">
+  <div class="dtrophy">🏆</div>
+  <h2 class="done-h">MISSION<br><span class="acc">KLARET!</span></h2>
+  <div class="done-sc" id="done-sc">–</div>
+  <p class="done-msg" id="done-msg">–</p>
+  <div class="done-btns">
+    <button class="dbtn p" onclick="goHome()">← Vælg ny mission</button>
+    <button class="dbtn s" onclick="retryMission()">↺ Prøv igen</button>
+  </div>
+</div>
+
+<script>
+const r2=x=>Math.round(x*100)/100;
+const r1=x=>Math.round(x*10)/10;
+const r0=x=>Math.round(x);
+
+// Neutral spinner: total circumference = 400 cm (different from PDF's 420)
+// Fields: A=80cm/50kr, B=120cm/25kr, C=60cm/10kr, D=140cm/0kr
+const FIELDS=[
+  {name:'A',arc:80,prize:50},
+  {name:'B',arc:120,prize:25},
+  {name:'C',arc:60,prize:10},
+  {name:'D',arc:140,prize:0},
+];
+const TOTAL_ARC=FIELDS.reduce((s,f)=>s+f.arc,0); // 400
+const STAKE=12; // indsats pr. runde
+FIELDS.forEach(f=>{f.p=r2(f.arc/TOTAL_ARC);});
+const EV=r2(FIELDS.reduce((s,f)=>s+f.prize*f.p,0)); // forventet gevinst
+const HOUSE_EDGE=r2((STAKE-EV)/STAKE*100); // husfordel i %
+
+const MISSIONS=[
+
+/* ─── MISSION 1: Buelængde → Sandsynlighed ─── */
+{
+  id:0,icon:'🎡',title:'Buelængde & Sandsynlighed',xp:150,
+  desc:'Fra buelængde til sandsynlighed via andel af omkredsen',
+  tags:['Buelængde','Andel','Sandsynlighed','Jævnt udfaldsrum'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎡 Rotationshjul — 4 felter</div>
+        <div class="ctx-body">Et rotationshjul har 4 felter. Buernes længder angiver hvor stor en del af hjulet hvert felt udgør:<br><br>
+        <table class="dtbl">
+          <tr><th>Felt</th><th>Buelængde</th><th>Gevinst</th></tr>
+          <tr><td>A</td><td>${FIELDS[0].arc} cm</td><td>${FIELDS[0].prize} kr.</td></tr>
+          <tr><td>B</td><td>${FIELDS[1].arc} cm</td><td>${FIELDS[1].prize} kr.</td></tr>
+          <tr><td>C</td><td>${FIELDS[2].arc} cm</td><td>${FIELDS[2].prize} kr.</td></tr>
+          <tr><td>D</td><td>${FIELDS[3].arc} cm</td><td>${FIELDS[3].prize} kr.</td></tr>
+        </table><br>
+        Total buelængde (omkreds) = ${TOTAL_ARC} cm</div>`,
+      q:'Hvad er sandsynligheden for at lande på felt A? (brug andel = buelængde/total)',
+      hint:`P(A) = ${FIELDS[0].arc} / ${TOTAL_ARC}`,
+      opts:[`${r2(FIELDS[0].arc/TOTAL_ARC-0.05)}`,`${FIELDS[0].p}`,`${r2(FIELDS[0].arc/TOTAL_ARC+0.05)}`,`${r2(FIELDS[0].arc/360)}`],
+      correct:1,
+      fb:{v:`P(A) = ${FIELDS[0].p} ✓`,
+        e:`P(A) = ${FIELDS[0].arc} / ${TOTAL_ARC} = <b>${FIELDS[0].p}</b> = ${FIELDS[0].p*100}%`,
+        w:'<b>Buelængde som sandsynlighed:</b><br>Et rotationshjul har et <b>jævnt udfaldsrum</b> — hvert punkt på kanten er lige sandsynligt. Sandsynligheden for et felt = dets andel af den samlede omkreds = buens andel. <code>P(felt) = buens længde / total omkredsslængde</code>. Det svarer til at spørge: "Hvilken brøkdel af hjulet er dette felt?" Det er den samme idé som vinkler: andel af 360°.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Sandsynlighed for felt D (nul-gevinst)</div>
+        <div class="ctx-body">Felt D: buelængde = <b>${FIELDS[3].arc} cm</b><br>
+        Total = <b>${TOTAL_ARC} cm</b><br><br>
+        <code>P(D) = ${FIELDS[3].arc} / ${TOTAL_ARC}</code></div>`,
+      q:`Hvad er P(D)? (2 decimaler)`,
+      hint:`${FIELDS[3].arc} / ${TOTAL_ARC}`,
+      label:'P(D) =',unit:'',
+      correct:FIELDS[3].p,tol:0.005,
+      fb:{v:`P(D) = ${FIELDS[3].p} ✓`,
+        e:`P(D) = ${FIELDS[3].arc} / ${TOTAL_ARC} = <b>${FIELDS[3].p}</b> = ${FIELDS[3].p*100}%`,
+        w:'<b>Tjek: sandsynlighederne summer til 1:</b><br>P(A)+P(B)+P(C)+P(D) = ${FIELDS[0].p}+${FIELDS[1].p}+${FIELDS[2].p}+${FIELDS[3].p} = ${r2(FIELDS.reduce((s,f)=>s+f.p,0))} ≈ 1 ✓<br>Det er altid et godt tjek — alle sandsynligheder i et udfaldsrum skal summere til præcis 1 (100%). Afviger summen fra 1, er der en regnefejl.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📊 Fra sandsynlighed til forventet antal</div>
+        <div class="ctx-body">P(B) = ${FIELDS[1].p} · Man spiller <b>200 runder</b>.<br><br>
+        Forventet antal gange man lander på B:<br>
+        <code>Forventet antal = P(B) × antal runder</code></div>`,
+      q:`Hvor mange gange forventer man at lande på felt B i 200 runder?`,
+      hint:`${FIELDS[1].p} × 200`,
+      label:'Antal gange:',unit:'',
+      correct:r0(FIELDS[1].p*200),tol:1,
+      fb:{v:`${r0(FIELDS[1].p*200)} gange ✓`,
+        e:`${FIELDS[1].p} × 200 = <b>${r0(FIELDS[1].p*200)} gange</b>`,
+        w:'<b>Forventet antal = sandsynlighed × antal forsøg:</b><br>Formlen <code>μ = p × n</code> giver det forventede antal succeser i n forsøg med sandsynlighed p. Vigtigt: det er ikke garanteret — det er det <b>gennemsnitlige</b> antal over mange forsøg. I et enkelt forsøg kan alt ske. Til eksamen: "I 200 runder forventes ca. ${r0(FIELDS[1].p*200)} landinger på felt B — men det faktiske tal vil variere."'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🔢 Vinkel fra buelængde</div>
+        <div class="ctx-body">Centervinklen svarer til andelen af 360°:<br>
+        <code>vinkel = (bue / total) × 360°</code><br><br>
+        Felt C: bue = ${FIELDS[2].arc} cm, total = ${TOTAL_ARC} cm</div>`,
+      q:'Hvad er centervinklen for felt C?',
+      hint:`(${FIELDS[2].arc} / ${TOTAL_ARC}) × 360°`,
+      opts:[`${r1(FIELDS[2].arc/TOTAL_ARC*360-10)}°`,`${r1(FIELDS[2].arc/TOTAL_ARC*360)}°`,`${r1(FIELDS[2].arc/TOTAL_ARC*360+10)}°`,`${r0(FIELDS[2].p*100)}°`],
+      correct:1,
+      fb:{v:`Vinkel C = ${r1(FIELDS[2].arc/TOTAL_ARC*360)}° ✓`,
+        e:`(${FIELDS[2].arc} / ${TOTAL_ARC}) × 360° = ${FIELDS[2].p} × 360° = <b>${r1(FIELDS[2].arc/TOTAL_ARC*360)}°</b>`,
+        w:'<b>Bue ↔ vinkel ↔ sandsynlighed:</b><br>De tre størrelser er proportionale. P = bue/total = vinkel/360°. Du kan frit konvertere: bue (cm) → andel (%) → vinkel (°) → sandsynlighed (0–1). Til eksamen bruges alle tre former — vær præcis på hvilken der spørges om.'}
+    },
+  ]
+},
+
+/* ─── MISSION 2: Forventet gevinst og husfordel ─── */
+{
+  id:1,icon:'💰',title:'Forventet Gevinst & Husfordel',xp:200,
+  desc:'Beregn E[X], fortjeneste pr. runde og husfordel i procent',
+  tags:['Forventet gevinst','E[X]=Σx·P','Husfordel','Indsats'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">💰 Forventet gevinst E[X]</div>
+        <div class="ctx-body">Forventet gevinst pr. runde:<br>
+        <code>E[X] = Σ (gevinst × sandsynlighed)</code><br><br>
+        <table class="dtbl">
+          <tr><th>Felt</th><th>Gevinst</th><th>P</th><th>Gevinst × P</th></tr>
+          <tr><td>A</td><td>${FIELDS[0].prize} kr.</td><td>${FIELDS[0].p}</td><td>${r2(FIELDS[0].prize*FIELDS[0].p)} kr.</td></tr>
+          <tr><td>B</td><td>${FIELDS[1].prize} kr.</td><td>${FIELDS[1].p}</td><td>${r2(FIELDS[1].prize*FIELDS[1].p)} kr.</td></tr>
+          <tr><td>C</td><td>${FIELDS[2].prize} kr.</td><td>${FIELDS[2].p}</td><td>${r2(FIELDS[2].prize*FIELDS[2].p)} kr.</td></tr>
+          <tr class="hi"><td>D</td><td>0 kr.</td><td>${FIELDS[3].p}</td><td>0 kr.</td></tr>
+        </table><br>
+        E[X] = ${r2(FIELDS[0].prize*FIELDS[0].p)} + ${r2(FIELDS[1].prize*FIELDS[1].p)} + ${r2(FIELDS[2].prize*FIELDS[2].p)} + 0</div>`,
+      q:`Hvad er den forventede gevinst pr. runde E[X]? (kr., 2 decimaler)`,
+      hint:`${r2(FIELDS[0].prize*FIELDS[0].p)} + ${r2(FIELDS[1].prize*FIELDS[1].p)} + ${r2(FIELDS[2].prize*FIELDS[2].p)}`,
+      label:'E[X] =',unit:'kr.',
+      correct:EV,tol:0.05,
+      fb:{v:`E[X] = ${EV} kr. ✓`,
+        e:`E[X] = ${r2(FIELDS[0].prize*FIELDS[0].p)} + ${r2(FIELDS[1].prize*FIELDS[1].p)} + ${r2(FIELDS[2].prize*FIELDS[2].p)} + 0 = <b>${EV} kr.</b>`,
+        w:'<b>Forventet gevinst — vægtet gennemsnit:</b><br>E[X] = Σ(x · P(x)) er det vejede gennemsnit af alle mulige udfald, vægtet med deres sandsynlighed. Det er det gennemsnitlige udbytte pr. spil over rigtig mange runder. Vigtig pointe: E[X] er ikke nødvendigvis et muligt udfald — man kan ikke vinde præcis ${EV} kr. i ét spil, men i gennemsnit over mange spil svarer det til dette.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📉 Husfordel pr. runde</div>
+        <div class="ctx-body">Indsats pr. runde: <b>${STAKE} kr.</b><br>
+        Forventet gevinst til spilleren: <b>${EV} kr.</b><br><br>
+        Forventet fortjeneste til arrangøren (pr. runde):<br>
+        <code>Fortjeneste = indsats − E[X]</code></div>`,
+      q:`Hvad er arrangørens forventede fortjeneste pr. runde? (kr., 2 decimaler)`,
+      hint:`${STAKE} − ${EV}`,
+      label:'Fortjeneste:',unit:'kr.',
+      correct:r2(STAKE-EV),tol:0.05,
+      fb:{v:`${r2(STAKE-EV)} kr. pr. runde ✓`,
+        e:`${STAKE} − ${EV} = <b>${r2(STAKE-EV)} kr. pr. runde</b>`,
+        w:'<b>Nulsumsspil og husfordel:</b><br>Det spil arrangøren tjener er nøjagtigt det spiller taber i gennemsnit. Fordi E[indsats] = ${STAKE} kr. og E[gevinst] = ${EV} kr., taber spilleren ${r2(STAKE-EV)} kr. pr. runde i gennemsnit. Det er det som kaldes <b>negativ forventet nettogevinst</b> for spilleren. Husfordelen (house edge) er dette som procent af indsatsen.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📊 Husfordel i procent</div>
+        <div class="ctx-body">Husfordel = arrangørens forventede fortjeneste som andel af indsatsen:<br>
+        <code>Husfordel% = (indsats − E[X]) / indsats × 100%</code><br><br>
+        Indsats = ${STAKE} kr. · E[X] = ${EV} kr.</div>`,
+      q:`Hvad er husfordelen i procent? (1 decimal)`,
+      hint:`(${STAKE} − ${EV}) / ${STAKE} × 100`,
+      label:'Husfordel:',unit:'%',
+      correct:HOUSE_EDGE,tol:0.2,
+      fb:{v:`Husfordel = ${HOUSE_EDGE}% ✓`,
+        e:`(${STAKE} − ${EV}) / ${STAKE} × 100 = ${r2(STAKE-EV)} / ${STAKE} × 100 = <b>${HOUSE_EDGE}%</b>`,
+        w:'<b>Husfordelen — nøgletal for spillets fairness:</b><br>Husfordelen angiver hvor mange procent af indsatsen arrangøren tjener i gennemsnit. Et fair spil har husfordel = 0%. Et casino-spil typisk 1-15%. Eksamen beder dig vurdere om et spil er "godt" — det gøres ved at beregne E[X] og sammenligne med indsatsen. Er E[X] < indsats → spilleren taber i gennemsnit → "ufordelagtigt for spiller".'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">💡 Fortjeneste over 100 runder</div>
+        <div class="ctx-body">Husfordel = ${HOUSE_EDGE}%<br>
+        Indsats pr. runde = ${STAKE} kr.<br>
+        100 runder → total indsats = ${STAKE*100} kr.</div>`,
+      q:'Hvad er arrangørens forventede fortjeneste ved 100 runder?',
+      hint:`Fortjeneste = ${HOUSE_EDGE}% × ${STAKE*100} kr.`,
+      opts:[
+        `${r0(HOUSE_EDGE/100*STAKE*100-50)} kr.`,
+        `${r0(HOUSE_EDGE/100*STAKE*100)} kr.`,
+        `${r0(HOUSE_EDGE/100*STAKE*100+50)} kr.`,
+        `${r0(r2(STAKE-EV)*100)} kr.`
+      ],
+      correct:3,
+      fb:{v:`${r0(r2(STAKE-EV)*100)} kr. ✓`,
+        e:`${r2(STAKE-EV)} kr./runde × 100 runder = <b>${r0(r2(STAKE-EV)*100)} kr.</b><br>Eller: ${HOUSE_EDGE}% × ${STAKE*100} kr. = ${r0(HOUSE_EDGE/100*STAKE*100)} kr. (lille afrundingsforskel)`,
+        w:'<b>To måder at beregne samlet fortjeneste:</b><br>Metode 1: fortjeneste pr. runde × antal runder = ${r2(STAKE-EV)} × 100 = ${r0(r2(STAKE-EV)*100)} kr.<br>Metode 2: husfordel% × samlet indsats = ${HOUSE_EDGE}% × ${STAKE*100} = ${r0(HOUSE_EDGE/100*STAKE*100)} kr.<br>De giver (næsten) samme svar — lille forskel pga. afrunding. Til eksamen: brug metode 1 (fortjeneste × antal) for størst præcision.'}
+    },
+  ]
+},
+
+/* ─── MISSION 3: Sammensatte hændelser / to runder ─── */
+{
+  id:2,icon:'🎲',title:'Sammensatte Hændelser — To Runder',xp:200,
+  desc:'Udfaldsrum for to runder, multiplikationsreglen og kombinationer',
+  tags:['Udfaldsrum','P(A∩B)','Multiplikationsregel','To runder'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎲 Udfaldsrum for to runder</div>
+        <div class="ctx-body">Spillet spilles <b>to gange i træk</b>. Hvert spil har 4 mulige udfald: A, B, C, D.<br><br>
+        Alle kombinationer af (runde 1, runde 2) udgør udfaldsrummet.<br>
+        Eksempel: (A,A), (A,B), (A,C), (A,D), (B,A), ...<br><br>
+        Antal kombinationer = 4 × 4 = ?</div>`,
+      q:'Hvor mange forskellige kombinationer er der i to runder?',
+      opts:['8','12','16','20'],
+      correct:2,
+      fb:{v:'16 kombinationer ✓',
+        e:'4 mulige udfald i runde 1 × 4 mulige udfald i runde 2 = 4 × 4 = <b>16 kombinationer</b>',
+        w:'<b>Multiplikationsprincippet for kombinationer:</b><br>Når to uafhængige valg (her: de to runder) kombineres, er det samlede antal muligheder produktet af de enkelt muligheder: n₁ × n₂. Med 4 felter og 2 runder: 4² = 16. Med n felter og k runder: nᵏ muligheder. Til eksamen: "Udfaldsrummet for to runder er {(A,A),(A,B),...,(D,D)}" — vis evt. som tabel med 4×4 = 16 celler.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🎯 Sandsynlighed for samme felt to gange</div>
+        <div class="ctx-body">Sandsynligheder: P(A)=${FIELDS[0].p}, P(B)=${FIELDS[1].p}, P(C)=${FIELDS[2].p}, P(D)=${FIELDS[3].p}<br><br>
+        Multiplikationsreglen for uafhængige hændelser:<br>
+        <code>P(A og A) = P(A) × P(A)</code><br><br>
+        Hvad er P(lander på B begge gange)?</div>`,
+      q:`Hvad er P(B i runde 1 OG B i runde 2)? (4 decimaler)`,
+      hint:`P(B)² = ${FIELDS[1].p}²`,
+      label:'P(B,B) =',unit:'',
+      correct:r2(FIELDS[1].p**2*10000)/10000,tol:0.0005,
+      fb:{v:`P(B,B) = ${r2(FIELDS[1].p**2*10000)/10000} ✓`,
+        e:`P(B,B) = ${FIELDS[1].p} × ${FIELDS[1].p} = <b>${r2(FIELDS[1].p**2*10000)/10000}</b>`,
+        w:'<b>Multiplikationsreglen for uafhængige hændelser:</b><br>Når to hændelser er <b>uafhængige</b> (resultatet af runde 1 påvirker ikke runde 2), gælder: P(A og B) = P(A) × P(B). Rotationshjulet husker ikke forrige udfald — hvert spil starter forfra. Sandsynligheder for uafhængige sekvenser ganges altid. P(B, B) = P(B)² = ${FIELDS[1].p}² = ${r2(FIELDS[1].p**2*10000)/10000}.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📊 Bonus-regel</div>
+        <div class="ctx-body">Ny regel: lander man på <b>samme gevinstfelt</b> to gange i træk, får man gevinsten × 2 + <b>5 kr. bonus</b>.<br><br>
+        Gevinstfelterne er A (${FIELDS[0].prize} kr.) og B (${FIELDS[1].prize} kr.).<br><br>
+        P(A,A) = ${r2(FIELDS[0].p**2*10000)/10000}<br>
+        P(B,B) = ${r2(FIELDS[1].p**2*10000)/10000}<br><br>
+        Bonus-udbetaling ved A,A: ${FIELDS[0].prize}×2 + 5 = ${FIELDS[0].prize*2+5} kr.<br>
+        Bonus-udbetaling ved B,B: ${FIELDS[1].prize}×2 + 5 = ${FIELDS[1].prize*2+5} kr.</div>`,
+      q:`Hvad er den samlede sandsynlighed for at få bonus (A,A eller B,B)? (4 decimaler)`,
+      hint:`P(A,A) + P(B,B)`,
+      correct:r2((FIELDS[0].p**2+FIELDS[1].p**2)*10000)/10000,tol:0.0005,
+      label:'P(bonus) =',unit:'',
+      fb:{v:`P(bonus) = ${r2((FIELDS[0].p**2+FIELDS[1].p**2)*10000)/10000} ✓`,
+        e:`${r2(FIELDS[0].p**2*10000)/10000} + ${r2(FIELDS[1].p**2*10000)/10000} = <b>${r2((FIELDS[0].p**2+FIELDS[1].p**2)*10000)/10000}</b>`,
+        w:'<b>Addition af gensidigt udelukkende hændelser:</b><br>P(A,A eller B,B) = P(A,A) + P(B,B) fordi hændelserne er gensidigt udelukkende (man kan ikke få begge). Additionsreglen: P(X eller Y) = P(X) + P(Y) når X og Y ikke kan ske samtidigt. Husk: gælder kun for <b>gensidigt udelukkende</b> hændelser — ellers skal man trække fælles del fra.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">💡 Er bonusreglen god for arrangøren?</div>
+        <div class="ctx-body">To runder: samlet indsats = ${STAKE*2} kr.<br><br>
+        Forventet udbytte med bonus:<br>
+        De fleste udfald: normal gevinst (evt. 0 kr.)<br>
+        Bonus-tilfælde (sker med P=${r2((FIELDS[0].p**2+FIELDS[1].p**2)*10000)/10000}): ekstra 5 kr. bonus + dobbelt gevinst<br><br>
+        Uden bonus: E[to runder] = 2 × ${EV} = ${r2(2*EV)} kr.</div>`,
+      q:'Hvad sker der med arrangørens forventede fortjeneste når bonusreglen indføres?',
+      opts:[
+        'Fortjenesten stiger — bonusreglen tiltrækker flere spillere uden at koste meget',
+        'Fortjenesten falder — den ekstra bonus på 5 kr. koster arrangøren penge i gennemsnit',
+        'Fortjenesten er uændret — bonusreglen påvirker ikke gennemsnittet',
+        'Det er umuligt at sige uden at kende antallet af spillere'
+      ],
+      correct:1,
+      fb:{v:'Fortjenesten falder! Bonussen koster ✓',
+        e:`Bonus tilføjer i gennemsnit ${r2((FIELDS[0].p**2+FIELDS[1].p**2)*10000)/10000} × 5 = ${r2((FIELDS[0].p**2+FIELDS[1].p**2)*5)} kr./to runder ekstra til spillerne. Det tager ud af arrangørens fortjeneste.`,
+        w:'<b>Beregn effekten af ny regel på E[X]:</b><br>Den forventede ekstraomkostning ved bonus = P(bonus) × 5 kr. = ${r2((FIELDS[0].p**2+FIELDS[1].p**2)*10000)/10000} × 5 = ${r2((FIELDS[0].p**2+FIELDS[1].p**2)*5)} kr. pr. to runder. Det sænker arrangørens E[fortjeneste] med denne størrelse. Til eksamen: beregn den nye E[X] og sammenlign med den gamle — en klar kvantitativ vurdering er stærkere end en kvalitativ.'}
+    },
+  ]
+},
+
+/* ─── MISSION 4: Design af spil med krav ─── */
+{
+  id:3,icon:'🛠️',title:'Design et Nyt Spil',xp:250,
+  desc:'Opstil og løs krav til et rotationshjuls felter og sandsynligheder',
+  tags:['Designkrav','Ulighed','Forventet gevinst','Husfordel 10-15%'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🛠️ Krav til et nyt spil</div>
+        <div class="ctx-body">Et nyt spil skal opfylde tre krav:<br><br>
+        <b>Krav 1:</b> Indsats ≤ 20 kr.<br>
+        <b>Krav 2:</b> Maksimal gevinst = 5–8 gange indsatsen<br>
+        <b>Krav 3:</b> Husfordel = 10–15% af indsatsen<br><br>
+        Indsats sættes til <b>15 kr.</b><br>
+        Maksimal gevinst skal være 5–8× indsatsen = <b>75–120 kr.</b></div>`,
+      q:'Indsatsen er 15 kr. Hvad er kravet til maksimal gevinst?',
+      opts:['5 kr. til 8 kr.','45 kr. til 80 kr.','75 kr. til 120 kr.','150 kr. til 180 kr.'],
+      correct:2,
+      fb:{v:'75–120 kr. ✓',
+        e:'5 × 15 = 75 kr. · 8 × 15 = 120 kr. Gevinsten skal ligge i intervallet [75, 120] kr.',
+        w:'<b>Kravene formuleres som uligheder:</b><br>Krav 2 siger: 5 × indsats ≤ max gevinst ≤ 8 × indsats. Med indsats = 15 kr.: 75 kr. ≤ max gevinst ≤ 120 kr. Til eksamen formulerer du kravene som konkrete talinterval og checker om dit forslag opfylder dem. En tydelig krav-tabel er god matematik-kommunikation.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Husfordel-krav → krav til E[X]</div>
+        <div class="ctx-body">Husfordel = 10–15% af indsatsen (15 kr.).<br><br>
+        Husfordel = indsats − E[X] = 10–15% × 15 kr.<br>
+        → E[X] = indsats − husfordel<br><br>
+        Husfordel på 10%: 0,10 × 15 = 1,50 kr. → E[X] = 15 − 1,50 = 13,50 kr.<br>
+        Husfordel på 15%: 0,15 × 15 = 2,25 kr. → E[X] = 15 − 2,25 = ?</div>`,
+      q:'Hvad er E[X] når husfordelen er præcis 15%? (kr.)',
+      hint:'E[X] = 15 − 0,15 × 15 = 15 − 2,25',
+      label:'E[X] =',unit:'kr.',
+      correct:12.75,tol:0.01,
+      fb:{v:'E[X] = 12,75 kr. ✓',
+        e:'E[X] = 15 − 2,25 = <b>12,75 kr.</b><br>Kravet til E[X]: det skal ligge i [13,50; 12,75]... altså 12,75 ≤ E[X] ≤ 13,50',
+        w:'<b>Husfordel-kravet giver et interval for E[X]:</b><br>Krav om husfordel 10–15% svarer til krav om E[X] i [indsats×0,85; indsats×0,90]. Med indsats=15: E[X] ∈ [12,75; 13,50]. Nu skal du designe felterne så E[X] = Σ(gevinst×P) havner i dette interval. Det er et designproblem — mange løsninger er mulige, men alle skal dokumenteres med beregning.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🧩 Vurder et forslag</div>
+        <div class="ctx-body">Et forslag til nyt hjul med indsats 15 kr.:<br><br>
+        <table class="dtbl">
+          <tr><th>Felt</th><th>P</th><th>Gevinst</th><th>G × P</th></tr>
+          <tr><td>Jackpot</td><td>0,05</td><td>100 kr.</td><td>5,00 kr.</td></tr>
+          <tr><td>Medium</td><td>0,20</td><td>30 kr.</td><td>6,00 kr.</td></tr>
+          <tr><td>Lille</td><td>0,30</td><td>10 kr.</td><td>3,00 kr.</td></tr>
+          <tr class="hi"><td>Ingen</td><td>0,45</td><td>0 kr.</td><td>0 kr.</td></tr>
+        </table><br>
+        E[X] = 5,00 + 6,00 + 3,00 + 0 = 14,00 kr.</div>`,
+      q:'Opfylder dette forslag alle tre krav? (Indsats 15 kr., max gevinst = 100 kr., E[X] = 14 kr.)',
+      opts:[
+        'Ja — alle tre krav er opfyldt',
+        'Nej — max gevinst (100 kr.) er over 8×15=120 kr... vent, 100 < 120 ✓. Men E[X]= 14 > 13,50 → husfordel kun 6,7% < 10%. Krav 3 opfyldes ikke.',
+        'Nej — indsatsen er for høj',
+        'Nej — max gevinsten er for lav'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Krav 3 opfyldes ikke ✓',
+        e:'E[X]=14 kr. → husfordel = (15−14)/15×100% = 6,7%. Kravet er 10–15%. 6,7% < 10% → krav 3 er IKKE opfyldt.',
+        w:'<b>Tjek krav systematisk:</b><br>Krav 1: indsats 15 ≤ 20 ✓<br>Krav 2: max gevinst 100 ∈ [75, 120] ✓<br>Krav 3: husfordel 6,7% ∉ [10%, 15%] ✗<br><br>Et godt svar til eksamen tjekker ALLE krav og er explicit om hvilke der opfyldes og hvilke der ikke gør. Man kan ikke nøjes med at vise E[X] — man skal vise beregning af husfordelen og sammenligne med kravintervallet.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">✅ Korrekt forslag</div>
+        <div class="ctx-body">Revideret forslag (indsats 15 kr.):<br><br>
+        <table class="dtbl">
+          <tr><th>Felt</th><th>P</th><th>Gevinst</th><th>G × P</th></tr>
+          <tr><td>Jackpot</td><td>0,05</td><td>100 kr.</td><td>5,00 kr.</td></tr>
+          <tr><td>Medium</td><td>0,15</td><td>30 kr.</td><td>4,50 kr.</td></tr>
+          <tr><td>Lille</td><td>0,20</td><td>10 kr.</td><td>2,00 kr.</td></tr>
+          <tr class="hi"><td>Ingen</td><td>0,60</td><td>0 kr.</td><td>0 kr.</td></tr>
+        </table><br>
+        E[X] = 5,00+4,50+2,00+0 = 11,50 kr.<br>
+        Husfordel = (15−11,50)/15×100 = 23,3%</div>`,
+      q:'Opfylder dette reviderede forslag krav 3 (husfordel 10–15%)?',
+      opts:[
+        'Ja — husfordelen er 23,3% som er over 10%',
+        'Nej — husfordelen er 23,3% som er OVER de maksimalt tilladte 15%',
+        'Ja — E[X] er lavere end indsatsen så det er godt for arrangøren',
+        'Krav 3 kan ikke checkes uden at kende antal spillere'
+      ],
+      correct:1,
+      fb:{v:'Nej — husfordelen er for høj! ✓',
+        e:'Husfordel 23,3% > 15% → krav 3 opfyldes ikke. Ingen-feltet er for stort (60%). Reducer det og øg gevinstfelternes sandsynlighed.',
+        w:'<b>Iterativ design-proces:</b><br>At designe et spil med præcise krav kræver ofte flere forsøg. Systematisk fremgangsmåde:<br>1. Sæt indsats og max gevinst (opfyld krav 1+2)<br>2. Beregn krav-interval for E[X] fra husfordels-kravet<br>3. Vælg felter og sandsynligheder så Σ(G×P) = E[X] i intervallet<br>4. Tjek alle tre krav eksplicit<br><br>Til eksamen: vis dit design i en tabel med G×P-kolonne, beregn E[X] og husfordel, og konkludér om alle krav er opfyldt.'}
+    },
+  ]
+},
+
+/* ─── MISSION 5: Cirkelgeometri + sandsynlighed ─── */
+{
+  id:4,icon:'📐',title:'Cirkelgeometri & Sandsynlighed',xp:300,
+  desc:'Vinkel fra sandsynlighedskrav, buelængde og sammensatte krav',
+  tags:['Centervinkel','Buelængde','Radius','Procent af felt'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Fra sandsynlighed til vinkel</div>
+        <div class="ctx-body">Et hjul skal have et gevinstfelt så man vinder med sandsynlighed <b>1/5</b>.<br><br>
+        Centervinklen for gevinstfeltet:<br>
+        <code>vinkel = P × 360° = (1/5) × 360°</code></div>`,
+      q:'Hvad er centervinklen for gevinstfeltet?',
+      hint:'(1/5) × 360°',
+      label:'Vinkel =',unit:'°',
+      correct:72,tol:0,
+      fb:{v:'72° ✓',
+        e:'(1/5) × 360° = <b>72°</b>',
+        w:'<b>Sandsynlighed ↔ vinkel:</b><br>P = vinkel/360° → vinkel = P × 360°. Et felt med P = 1/5 udgør 1/5 af cirklen = 72°. Det er det geometriske udtryk for sandsynligheden. Til eksamen kan man også beregne buelængden: bue = P × 2πr = (1/5) × 2πr. Med radius 30 cm: bue = (1/5) × 2π × 30 = 37,7 cm.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔄 Reducér gevinstfeltet</div>
+        <div class="ctx-body">Et gevinstfelt udgør <b>1/5 = 20%</b> af hjulet (72°).<br><br>
+        Man ønsker at reducere feltet med <b>15%</b> af dets nuværende størrelse — altså 15% af de 72° ændres til nul-felt.<br><br>
+        <code>Ny størrelse = 72° × (1 − 0,15) = 72° × 0,85</code></div>`,
+      q:'Hvad er det nye gevinstfelts størrelse (°)?',
+      hint:'72 × 0,85',
+      label:'Ny vinkel =',unit:'°',
+      correct:72*0.85,tol:0.1,
+      fb:{v:`${72*0.85}° ✓`,
+        e:`72° × 0,85 = <b>${72*0.85}°</b><br>Ny sandsynlighed: ${72*0.85}/360 = ${r2(72*0.85/360*100)/100} = ${r1(72*0.85/360*100)}%`,
+        w:'<b>Procentvis reduktion af et felt:</b><br>"15% af feltet ændres" → feltet reduceres til 85% af sin nuværende størrelse. Ny størrelse = gammel × (1−0,15) = gammel × 0,85. Den ny sandsynlighed = ny vinkel/360° = ${72*0.85}°/360° = ${r2(72*0.85/360*100)/100}. Det er en stigning i husfordelen — spillerens chance er nu lavere.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📏 Buelængde fra radius</div>
+        <div class="ctx-body">Et hjul har radius <b>40 cm</b>.<br>
+        Et felt har centervinkel <b>45°</b>.<br><br>
+        Buelængde = (vinkel/360°) × 2πr<br>
+        <code>= (45/360) × 2π × 40</code></div>`,
+      q:'Hvad er buelængden? (cm, 1 decimal)',
+      hint:'(45/360) × 2π × 40 = (1/8) × 2π × 40',
+      label:'Bue =',unit:'cm',
+      correct:r1(45/360*2*Math.PI*40),tol:0.2,
+      fb:{v:`Bue = ${r1(45/360*2*Math.PI*40)} cm ✓`,
+        e:`(45/360) × 2π × 40 = (1/8) × 251,3 = <b>${r1(45/360*2*Math.PI*40)} cm</b>`,
+        w:'<b>Buelængde-formlen:</b><br>Buelængde b = (v/360°) × 2πr = P × 2πr. Tre former: v (grader), P (andel), b (cm) — de tre er proportionale. I opgaver med rotationshjul angives som regel buens cm-længde, og du skal omregne til sandsynlighed via total-omkredsslængden.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎓 Samlet eksamensstruktur</div>
+        <div class="ctx-body">Du skal analysere et eksisterende hjul og designe et nyt.<br><br>
+        Fuldstændig analyse-checkliste:<br>
+        ✅ Beregn P for hvert felt (bue/total)<br>
+        ✅ Opstil tabel med gevinst, P, gevinst×P<br>
+        ✅ Beregn E[X] = Σ(gevinst×P)<br>
+        ✅ Beregn husfordel = (indsats−E[X])/indsats × 100%<br>
+        ✅ Konkludér om spillet er fordelagtigt for arrangøren<br>
+        ✅ Design nyt hjul der opfylder alle krav (vis tabel + beregning)</div>`,
+      q:'Hvad er det FØRSTE skridt i en korrekt analyse af et rotationshjul?',
+      opts:[
+        'Beregn forventet gevinst E[X] med det samme',
+        'Find sandsynligheden for hvert felt ved at beregne buens andel af total omkredsslængde',
+        'Bestem om spillet er fair ved at tælle felter',
+        'Beregn husfordelen direkte fra gevinstbeløbene'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Sandsynlighederne bestemmes først ✓',
+        e:'Uden P for hvert felt kan E[X] ikke beregnes. Alt starter med P = bue/total.',
+        w:'<b>Den rigtige rækkefølge til eksamen:</b><br>1. P(felt) = bue/total for hvert felt<br>2. Tjek: ΣP = 1 (kontrolberegning)<br>3. E[X] = Σ(gevinst × P)<br>4. Husfordel = (indsats − E[X])/indsats × 100%<br>5. Sammenlign med eventuelle krav<br>6. Konkludér: "Arrangøren forventer at tjene X kr. pr. runde (Y% husfordel) → spillet er [gunstigt/ugunstigt] for spiller"<br><br>Vis ALTID en tabel med gevinst, P, og G×P — det er struktureret og giver delpoint.'}
+    },
+  ]
+},
+];
+
+/* ═══════════ ENGINE ═══════════ */
+const SKEY='sandk_v2';
+function ldSD(){try{return JSON.parse(localStorage.getItem(SKEY)||'{}')}catch{return{};}}
+function svSD(){localStorage.setItem(SKEY,JSON.stringify(SD));}
+let SD=ldSD();
+if(!SD.xp)SD.xp=0;if(!SD.done)SD.done=[];
+function xpLv(){const x=SD.xp;if(x<150)return{l:'Begynder'};if(x<350)return{l:'Elev'};if(x<700)return{l:'Analytiker'};if(x<1200)return{l:'Ekspert'};return{l:'Sandsynligheds-Mester'};}
+function buildHome(){
+  const lv=xpLv();const tot=MISSIONS.reduce((s,m)=>s+m.xp,0);const pct=Math.min(100,Math.round(SD.xp/tot*100));
+  document.getElementById('xp-fill').style.width=pct+'%';document.getElementById('xp-lbl').textContent=`${SD.xp} XP — ${lv.l}`;
+  const g=document.getElementById('mgrid');g.innerHTML='';
+  MISSIONS.forEach((m,i)=>{
+    const done=SD.done.includes(m.id),locked=i>0&&!SD.done.includes(MISSIONS[i-1].id);
+    const d=document.createElement('div');d.className=`mcard${done?' done':locked?' locked':''}`;
+    d.innerHTML=`<div class="mc-icon">${m.icon}</div><div class="mc-info"><div class="mc-num">Mission ${i+1} · ${m.steps.length} opgaver</div><div class="mc-title">${m.title}</div><div class="mc-desc">${m.desc}</div><div class="mc-tags">${m.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div><div class="mc-right"><div class="mc-xp">+${m.xp} XP</div><div class="mc-status">${done?'✅':locked?'🔒':''}</div></div>`;
+    if(!locked)d.onclick=()=>startMission(m.id);g.appendChild(d);
+  });
+}
+function goHome(){curStep=0;show('s-home');buildHome();}
+let curMId=null,curStep=0,stepRes=[];
+function startMission(id){curMId=id;curStep=0;stepRes=[];const m=MISSIONS.find(x=>x.id===id);document.getElementById('mtop-title').textContent=`${m.icon} ${m.title}`;buildProg(m);renderStep();show('s-mission');}
+function buildProg(m){const p=document.getElementById('sprog');p.innerHTML='';m.steps.forEach((_,i)=>{const d=document.createElement('div');d.className='sp';d.id=`sp${i}`;p.appendChild(d);});updProg();}
+function updProg(){const m=MISSIONS.find(x=>x.id===curMId);m.steps.forEach((_,i)=>{const d=document.getElementById(`sp${i}`);if(!d)return;d.className='sp';if(i<curStep)d.classList.add('ok');if(i===curStep)d.classList.add('cur');});}
+function renderStep(){
+  selMC=null;const m=MISSIONS.find(x=>x.id===curMId);const s=m.steps[curStep];const total=m.steps.length;
+  document.getElementById('mtop-ctr').textContent=`${curStep+1}/${total}`;
+  const area=document.getElementById('qarea');area.innerHTML='';
+  const ctxEl=document.createElement('div');ctxEl.className='ctx-card';ctxEl.innerHTML=s.ctx;area.appendChild(ctxEl);
+  const qqEl=document.createElement('div');qqEl.className='qq-card';
+  let inp=s.type==='mc'?`<div class="mc-opts">${s.opts.map((o,i)=>`<button class="mco" id="mco${i}" onclick="pickMC(${i})"><span class="mco-k">${String.fromCharCode(65+i)}.</span><span>${o}</span></button>`).join('')}</div>`:`<div class="nrow"><span class="nlbl">${s.label||'Svar ='}</span><input class="ninp" id="ninp" type="number" step="any" inputmode="decimal" placeholder="?" autocomplete="off"><span class="nlbl">${s.unit||''}</span></div>`;
+  qqEl.innerHTML=`<div class="qq-num">Opgave ${curStep+1} af ${total}</div><div class="qq-text">${s.q}</div>${s.hint?`<div class="qq-hint">💡 ${s.hint}</div>`:''}${inp}`;
+  area.appendChild(qqEl);
+  const fbEl=document.createElement('div');fbEl.className='fb';fbEl.id='fbel';area.appendChild(fbEl);
+  const br=document.createElement('div');br.className='btn-row';br.innerHTML=`<button class="chkbtn" id="chkbtn" onclick="checkStep()">Tjek svar ✓</button><button class="nxtbtn" id="nxtbtn" onclick="nextStep()">${curStep<total-1?'Næste opgave →':'Afslut mission →'}</button>`;
+  area.appendChild(br);updProg();
+  if(s.type==='num'){const ni=document.getElementById('ninp');setTimeout(()=>ni?.focus(),80);ni?.addEventListener('keydown',e=>{if(e.key==='Enter')checkStep();});}
+}
+let selMC=null;
+function pickMC(i){if(document.getElementById('mco0')?.disabled)return;selMC=i;document.querySelectorAll('.mco').forEach((b,j)=>{b.style.background=j===i?'rgba(0,230,118,.1)':'';b.style.borderColor=j===i?'rgba(0,230,118,.4)':'';});}
+function checkStep(){
+  const m=MISSIONS.find(x=>x.id===curMId);const s=m.steps[curStep];let ok=false;
+  if(s.type==='mc'){if(selMC===null)return;ok=selMC===s.correct;document.querySelectorAll('.mco').forEach((b,i)=>{b.disabled=true;b.style.background='';b.style.borderColor='';if(i===s.correct)b.classList.add('ok');else if(i===selMC&&!ok)b.classList.add('no');});selMC=null;}
+  else{const ni=document.getElementById('ninp');const v=parseFloat(ni?.value?.replace(',','.'));if(isNaN(v)){ni?.classList.add('no');setTimeout(()=>ni?.classList.remove('no'),400);return;}ok=Math.abs(v-s.correct)<=s.tol;ni.disabled=true;ni.classList.add(ok?'ok':'no');}
+  stepRes.push(ok);renderFB(s,ok);document.getElementById('chkbtn').disabled=true;document.getElementById('nxtbtn').classList.add('on');
+}
+function renderFB(s,ok){
+  const fb=document.getElementById('fbel');if(!fb)return;
+  fb.className='fb '+(ok?'ok':'no');
+  fb.innerHTML=`<div class="fb-verdict ${ok?'ok':'no'}">${ok?'✅ '+s.fb.v:'❌ Ikke helt — her er forklaringen:'}</div><div class="fb-exp">${s.fb.e}</div><div class="why"><div class="why-h">🎓 Hvorfor gør man det sådan?</div><div class="why-b">${s.fb.w}</div></div>`;
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function nextStep(){const m=MISSIONS.find(x=>x.id===curMId);curStep++;if(curStep>=m.steps.length){endMission();}else{selMC=null;renderStep();document.querySelector('.qscroll')?.scrollTo(0,0);}}
+function endMission(){const m=MISSIONS.find(x=>x.id===curMId);const ok=stepRes.filter(Boolean).length,tot=stepRes.length;const earned=Math.round(m.xp*(ok/tot));SD.xp+=earned;if(!SD.done.includes(m.id)&&ok>=Math.ceil(tot*.6))SD.done.push(m.id);svSD();document.getElementById('done-sc').textContent=`${ok}/${tot} korrekte · +${earned} XP`;document.getElementById('done-msg').textContent=ok===tot?'Perfekt score! Du behersker dette emne fuldt ud.':ok>=Math.ceil(tot*.6)?'Godt klaret! Gennemgå forklaringerne igen.':'Prøv igen og læs forklaringerne grundigt.';show('s-done');}
+function retryMission(){if(curMId!==null)startMission(curMId);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+buildHome();
+</script>
+</body>
+</html>

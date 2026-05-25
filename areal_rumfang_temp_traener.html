@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Areal, Rumfang & Temperatur Træner — 10. klasse</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e1117;--panel:#161b27;--card:#1c2333;--border:#2a3344;
+  --green:#00e676;--green2:#69f0ae;--yellow:#ffeb3b;--orange:#ff9800;
+  --red:#f44336;--blue:#42a5f5;
+  --white:#e8eaf0;--muted:#8892a4;--muted2:#545e6f;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px);--sm:clamp(12px,2.7vw,14px);--md:clamp(14px,3.2vw,16px);
+  --lg:clamp(18px,4.2vw,22px);--xl:clamp(24px,5.5vw,32px);--xxl:clamp(32px,8vw,52px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;}
+.scr.on{display:flex;}
+#s-home{background:linear-gradient(160deg,#0e1117 0%,#111827 100%);align-items:center;justify-content:flex-start;padding:20px 14px 50px;}
+.home-hero{width:100%;max-width:520px;margin:0 auto 22px;text-align:center;}
+.hero-eye{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+.hero-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);line-height:.95;letter-spacing:-.01em;margin-bottom:6px;}
+.hero-h .acc{color:var(--green);}
+.hero-sub{font-size:var(--sm);color:var(--muted);line-height:1.65;max-width:380px;margin:0 auto 20px;}
+.xp-wrap{background:rgba(255,255,255,.07);border-radius:4px;height:8px;width:100%;max-width:300px;margin:0 auto 6px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:4px;transition:width .5s;}
+.xp-lbl{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:20px;}
+.mgrid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;}
+.mcard{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:15px 17px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.mcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);transform:scaleY(0);transition:transform .15s;transform-origin:bottom;}
+.mcard:hover:not(.locked)::before{transform:scaleY(1);}
+.mcard:hover:not(.locked){border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.04);}
+.mcard.locked{opacity:.4;cursor:default;}
+.mcard.done{border-color:rgba(0,230,118,.25);background:rgba(0,230,118,.03);}
+.mcard.done::before{transform:scaleY(1);}
+.mc-icon{font-size:clamp(24px,6vw,34px);flex-shrink:0;line-height:1;}
+.mc-info{flex:1;min-width:0;}
+.mc-num{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+.mc-title{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);margin-bottom:2px;}
+.mc-desc{font-size:var(--xs);color:var(--muted);line-height:1.4;}
+.mc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-family:var(--fm);font-size:clamp(7px,1.6vw,9px);border:1px solid var(--border);border-radius:3px;padding:2px 8px;color:var(--muted2);}
+.mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.mc-xp{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);}
+.mc-status{font-size:16px;}
+#s-mission{background:var(--bg);}
+.mtop{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));backdrop-filter:blur(10px);}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:var(--white);}
+.mtop-title{font-family:var(--fh);font-weight:700;font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.mtop-ctr{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+.sprog{display:flex;gap:5px;padding:8px 14px;background:rgba(0,0,0,.3);flex-shrink:0;flex-wrap:wrap;}
+.sp{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);transition:all .3s;}
+.sp.ok{background:var(--green);}
+.sp.cur{background:rgba(0,230,118,.4);animation:bl .8s ease-in-out infinite alternate;}
+@keyframes bl{from{opacity:.5}to{opacity:1}}
+.qscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 30px;}
+.qarea{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+.ctx-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.ctx-head{font-family:var(--fm);font-size:var(--xs);color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.ctx-body{font-size:var(--sm);color:var(--white);line-height:1.7;}
+.ctx-body b{color:var(--green2);}
+.ctx-body code{font-family:var(--fm);background:rgba(0,230,118,.08);color:var(--green2);padding:1px 6px;border-radius:3px;font-size:var(--xs);}
+.dtbl{width:100%;border-collapse:collapse;margin-top:10px;font-family:var(--fm);font-size:var(--xs);}
+.dtbl th{background:rgba(0,230,118,.08);color:var(--green);text-align:left;padding:6px 10px;border-bottom:1px solid rgba(0,230,118,.2);}
+.dtbl td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--white);}
+.dtbl .hi{background:rgba(0,230,118,.1);color:var(--green2);font-weight:700;}
+.qq-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.qq-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:6px;}
+.qq-text{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);line-height:1.35;margin-bottom:10px;}
+.qq-hint{font-size:var(--xs);color:var(--muted);font-style:italic;margin-bottom:10px;line-height:1.5;}
+.mc-opts{display:flex;flex-direction:column;gap:8px;}
+.mco{border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.03);padding:12px 15px;cursor:pointer;font-size:var(--sm);color:rgba(255,255,255,.85);text-align:left;transition:all .13s;display:flex;align-items:flex-start;gap:10px;line-height:1.4;}
+.mco:hover:not(:disabled){border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.06);}
+.mco.ok{background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.5);color:var(--green2);}
+.mco.no{background:rgba(244,67,54,.08);border-color:rgba(244,67,54,.4);color:#ff8a80;}
+.mco:disabled{cursor:default;}
+.mco-k{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);min-width:18px;flex-shrink:0;padding-top:1px;}
+.nrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.nlbl{font-family:var(--fm);font-size:var(--sm);color:var(--muted);}
+.ninp{font-family:var(--fm);font-weight:700;font-size:var(--xl);width:clamp(110px,28vw,170px);background:rgba(0,230,118,.06);border:2px solid rgba(0,230,118,.3);border-radius:7px;color:var(--green2);text-align:center;padding:10px 8px;outline:none;-webkit-appearance:none;transition:all .18s;}
+.ninp:focus{border-color:var(--green);background:rgba(0,230,118,.1);box-shadow:0 0 16px rgba(0,230,118,.15);}
+.ninp.ok{border-color:var(--green);}
+.ninp.no{border-color:var(--red);animation:sh .3s ease;}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.fb{border-radius:10px;padding:14px 16px;display:none;}
+.fb.ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);display:block;}
+.fb.no{background:rgba(244,67,54,.07);border:1px solid rgba(244,67,54,.2);display:block;}
+.fb-verdict{font-family:var(--fh);font-weight:700;font-size:var(--lg);margin-bottom:8px;}
+.fb-verdict.ok{color:var(--green);}
+.fb-verdict.no{color:var(--red);}
+.fb-exp{font-size:var(--sm);color:rgba(255,255,255,.82);line-height:1.7;margin-bottom:10px;}
+.fb-exp b{color:var(--white);}
+.fb-exp code{font-family:var(--fm);background:rgba(0,230,118,.1);color:var(--green2);padding:1px 6px;border-radius:3px;}
+.why{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;}
+.why-h{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.why-b{font-size:var(--sm);color:rgba(255,255,255,.72);line-height:1.7;}
+.why-b b{color:var(--white);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.chkbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:var(--green);color:#001a0d;border:none;border-radius:8px;padding:12px 36px;cursor:pointer;transition:all .13s;}
+.chkbtn:hover{background:var(--green2);}
+.chkbtn:disabled{opacity:.3;cursor:default;}
+.nxtbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 32px;cursor:pointer;display:none;transition:all .13s;}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(255,255,255,.14);}
+#s-done{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.dtrophy{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bonce 1.2s ease infinite alternate;}
+@keyframes bonce{from{transform:translateY(0) scale(1)}to{transform:translateY(-10px) scale(1.05)}}
+.done-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);margin-bottom:6px;line-height:.95;}
+.done-h .acc{color:var(--green);}
+.done-sc{font-family:var(--fm);font-size:var(--xl);color:var(--yellow);margin-bottom:12px;}
+.done-msg{font-size:var(--md);color:var(--muted);max-width:380px;line-height:1.65;margin-bottom:26px;}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.dbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);border:none;border-radius:8px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;}
+.dbtn.p{background:var(--green);color:#001a0d;}
+.dbtn.s{background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<div class="scr on" id="s-home">
+  <div class="home-hero">
+    <div class="hero-eye">📦 10. klasse · Eksamensforberedelse</div>
+    <h1 class="hero-h">AREAL, RUMFANG<br><span class="acc">&amp; TEMPERATUR</span></h1>
+    <p class="hero-sub">Træn enhedsomregning, overfladeareal, rumfang, prisberegning og vægtet gennemsnitstemperatur — med fuld ligningsløsning.</p>
+    <div class="xp-wrap"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-lbl" id="xp-lbl">0 XP — Begynder</div>
+  </div>
+  <div class="mgrid" id="mgrid"></div>
+</div>
+
+<div class="scr" id="s-mission">
+  <div class="mtop">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="mtop-title" id="mtop-title">–</div>
+    <div class="mtop-ctr" id="mtop-ctr">1/1</div>
+  </div>
+  <div class="sprog" id="sprog"></div>
+  <div class="qscroll">
+    <div class="qarea" id="qarea"></div>
+  </div>
+</div>
+
+<div class="scr" id="s-done">
+  <div class="dtrophy">🏆</div>
+  <h2 class="done-h">MISSION<br><span class="acc">KLARET!</span></h2>
+  <div class="done-sc" id="done-sc">–</div>
+  <p class="done-msg" id="done-msg">–</p>
+  <div class="done-btns">
+    <button class="dbtn p" onclick="goHome()">← Vælg ny mission</button>
+    <button class="dbtn s" onclick="retryMission()">↺ Prøv igen</button>
+  </div>
+</div>
+
+<script>
+const r2=x=>Math.round(x*100)/100;
+const r1=x=>Math.round(x*10)/10;
+const r0=x=>Math.round(x);
+
+// Neutral box: 1500 mm × 900 mm × 200 mm (different from PDF's 1200×800×144)
+const LMM=1500, BMM=900, HMM=200;
+const L=LMM/1000, B=BMM/1000, H=HMM/1000; // in meters
+// 5 boxes arranged: 2 long × 2 wide + 1 on top → custom shape doesn't matter
+// Use simple single box scenario for training
+const N_BOXES=5; // 5 identiske kasser sat op som bassin
+// Arranged: 2 lange rader af 2 + 1 → men vi laver det simpelt som rektangulær form
+// Bassin: l_bas=2L, b_bas=2B, h_bas=H (4 kasser)
+// For simplicity: bassin = 4 kasser, L_bas=2*L, B_bas=2*B, H_bas=H
+const LB=2*L, BB=2*B, HB=H; // bassin dimensions
+
+// Surface area for tarpaulin covering inside+outside
+// Inside: bund + 4 vægge
+const A_bund_in=r2(LB*BB);
+const A_vaeg_lang_in=r2(LB*HB);
+const A_vaeg_kort_in=r2(BB*HB);
+const A_inside=r2(A_bund_in+2*A_vaeg_lang_in+2*A_vaeg_kort_in);
+// Outside: same but +2*H on each side dimension for the outside wall
+// Simplified: outside = same as inside for a box (no bottom outside)
+// Total for tarpaulin (one sheet covering inside + outside): 
+// imagine unfolding: inside bund + 4 vægge indvendig + 4 vægge udvendig 
+// outside top edges fold over, so outside walls also covered
+const A_total_tarp=r2(2*A_inside-A_bund_in); // bund kun én gang; vægge 2x (inde+ude)
+
+// Volume
+const V_bassin=r2(LB*BB*HB);
+const V_twothirds=r2(V_bassin*2/3);
+
+// Prices
+const P_COLD=72; // kr/m³ (neutral, different from PDF's 67)
+const P_WARM=110; // kr/m³
+
+// Temperature mixing
+const T_COLD=17; // grader (different from PDF's 19)
+const T_HOT=95;  // kogende vand afkølet (same principle as PDF)
+const T_TARGET=28; // ønsket temperatur (different from PDF's 26)
+const M_COLD=V_twothirds*1000; // liter ≈ kg
+
+// m2 = m1*(T_target-T_cold)/(T_hot-T_target)
+const M_HOT=r2(M_COLD*(T_TARGET-T_COLD)/(T_HOT-T_TARGET));
+
+const MISSIONS=[
+
+/* ─── MISSION 1: Enhedsomregning ─── */
+{
+  id:0,icon:'📏',title:'Enhedsomregning — mm til m',xp:150,
+  desc:'Omregn millimeter til meter og beregn arealer med korrekte enheder',
+  tags:['mm → m','÷ 1000','Enhed','Areal'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📏 Enhedsomregning</div>
+        <div class="ctx-body">Et rektangulært bassin er bygget af moduler.<br>
+        Dimensioner i millimeter: <b>Længde: ${LMM} mm · Bredde: ${BMM} mm · Højde: ${HMM} mm</b><br><br>
+        <table class="dtbl">
+          <tr><th>Fra</th><th>Til</th><th>Regneoperation</th></tr>
+          <tr><td>mm</td><td>cm</td><td>÷ 10</td></tr>
+          <tr class="hi"><td>mm</td><td>m</td><td>÷ 1000</td></tr>
+          <tr><td>cm</td><td>m</td><td>÷ 100</td></tr>
+        </table></div>`,
+      q:`Hvad er bassinnets bredde i meter?`,
+      hint:`${BMM} mm ÷ 1000`,
+      opts:[`${BMM/100} m`,`${BMM/1000} m`,`${BMM*10} m`,`${BMM} m`],
+      correct:1,
+      fb:{v:`${BMM/1000} m ✓`,
+        e:`${BMM} mm ÷ 1000 = <b>${BMM/1000} m</b>`,
+        w:'<b>Hvorfor omregne til meter?</b><br>Arealer beregnes i m² og rumfang i m³ i praktiske opgaver. Millimeter er præcist til opmåling men uhåndterligt til udregning (1 m² = 1.000.000 mm²!). Reglen er simpel: mm ÷ 1000 = m. Til eksamen: omregn <b>alle</b> mål til meter inden du begynder at beregne — og notér enheden ved hvert trin.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Areal af én flade</div>
+        <div class="ctx-body">Bassinet (i meter): L = <b>${L} m</b> · B = <b>${B} m</b> · H = <b>${H} m</b><br><br>
+        Arealet af bunden:<br>
+        <code>A_bund = L × B</code></div>`,
+      q:`Hvad er bundarealet? (m², 2 decimaler)`,
+      hint:`${L} × ${B}`,
+      label:'A_bund =',unit:'m²',
+      correct:r2(L*B),tol:0.005,
+      fb:{v:`A_bund = ${r2(L*B)} m² ✓`,
+        e:`A_bund = ${L} × ${B} = <b>${r2(L*B)} m²</b>`,
+        w:'<b>Areal = længde × bredde:</b><br>Bundfladen er et rektangel med L × B. Enheden er m × m = m². Til eksamen: vis beregningen med enheder. Fx "A_bund = 1,5 m × 0,9 m = 1,35 m²". Det viser at du forstår at enheder ganges med hinanden.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Areal af én langside</div>
+        <div class="ctx-body">En langside (væg) er et rektangel:<br>
+        Bredde = bassinnets længde L = <b>${L} m</b><br>
+        Højde = bassinnets højde H = <b>${H} m</b><br><br>
+        <code>A_langside = L × H</code></div>`,
+      q:`Hvad er arealet af én langside? (m², 2 decimaler)`,
+      hint:`${L} × ${H}`,
+      label:'A_lang =',unit:'m²',
+      correct:r2(L*H),tol:0.005,
+      fb:{v:`A_lang = ${r2(L*H)} m² ✓`,
+        e:`A_lang = ${L} × ${H} = <b>${r2(L*H)} m²</b>`,
+        w:'<b>Identificér de rigtige mål til hver flade:</b><br>Til eksamen er det vigtigt at identificere hvilke to mål der giver arealet af en given flade. En langside bruger L og H, en kortside bruger B og H, og bunden bruger L og B. Lav en liste over alle flader og deres mål inden du beregner.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">💡 Hvad er 3600 mm² i m²?</div>
+        <div class="ctx-body">Enhedsomregning af arealer:<br><br>
+        1 m = 1000 mm<br>
+        1 m² = 1000 mm × 1000 mm = <b>1.000.000 mm²</b><br><br>
+        Så for at omregne fra mm² til m² divideres med 1.000.000.</div>`,
+      q:'Hvad er 3.600.000 mm² i m²?',
+      hint:'3.600.000 ÷ 1.000.000',
+      opts:['0,36 m²','3,6 m²','36 m²','360 m²'],
+      correct:1,
+      fb:{v:'3,6 m² ✓',
+        e:'3.600.000 ÷ 1.000.000 = <b>3,6 m²</b>',
+        w:'<b>Areal-enheder kvadreres:</b><br>Når man omregner areal fra mm² til m², dividerer man med 1000² = 1.000.000 (ikke 1000!). Samme princip for rumfang: 1 m³ = 1000³ mm³ = 1.000.000.000 mm³. Det er en klassisk fejl at dividere med 1000 i stedet for 1.000.000 ved areal. Reglen: tal enheder i potensen svarer til regneoperationen i potensen.'}
+    },
+  ]
+},
+
+/* ─── MISSION 2: Samlet overfladeareal (indre + ydre) ─── */
+{
+  id:1,icon:'🧱',title:'Samlet Dækareal — Indre & Ydre Flader',xp:200,
+  desc:'Beregn det samlede areal der skal dækkes når både indre og ydre vægge medregnes',
+  tags:['Overfladeareal','Indre flader','Ydre flader','Netto'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🧱 Hvilke flader skal dækkes?</div>
+        <div class="ctx-body">Et rektangulært bassin (åbent i toppen) skal beklædes med et materiale på <b>både indre og ydre side</b>.<br><br>
+        <table class="dtbl">
+          <tr><th>Flade</th><th>Antal</th><th>Skal dækkes?</th></tr>
+          <tr><td>Bund (indre)</td><td>1</td><td>✅ Ja</td></tr>
+          <tr><td>Lange sider (indre)</td><td>2</td><td>✅ Ja</td></tr>
+          <tr><td>Korte sider (indre)</td><td>2</td><td>✅ Ja</td></tr>
+          <tr><td>Lange sider (ydre)</td><td>2</td><td>✅ Ja</td></tr>
+          <tr><td>Korte sider (ydre)</td><td>2</td><td>✅ Ja</td></tr>
+          <tr><td>Top-kant (ydre)</td><td>–</td><td>❌ Nej</td></tr>
+        </table></div>`,
+      q:'Hvor mange rektangulære flader skal samlet dækkes (bortset fra toppen)?',
+      opts:['5 flader','7 flader','9 flader','11 flader'],
+      correct:2,
+      fb:{v:'9 flader ✓',
+        e:'1 bund + 2 lange indre + 2 korte indre + 2 lange ydre + 2 korte ydre = <b>9 flader</b>',
+        w:'<b>Systematisk opremsning af flader:</b><br>Tegn bassinet og marker hver flade der skal dækkes. Indre: bund + 4 vægge = 5 flader. Ydre: 4 vægge (bunden på ydersiden er ikke relevant hvis bassinet står på gulv). Samlet: 5 + 4 = 9 flader. Til eksamen: lav en tabel som ovenfor — det viser systematisk tænkning og giver delpoint selv om slutresultatet afviger.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Samlet indre areal</div>
+        <div class="ctx-body">Bassin: L=${L} m · B=${B} m · H=${H} m<br><br>
+        Indre flader:<br>
+        Bund: L×B = ${r2(L*B)} m²<br>
+        2 langsider: 2 × L×H = ${r2(2*L*H)} m²<br>
+        2 kortsider: 2 × B×H = ${r2(2*B*H)} m²</div>`,
+      q:`Hvad er det samlede indre areal? (m², 2 decimaler)`,
+      hint:`${r2(L*B)} + ${r2(2*L*H)} + ${r2(2*B*H)}`,
+      label:'A_indre =',unit:'m²',
+      correct:r2(L*B+2*L*H+2*B*H),tol:0.01,
+      fb:{v:`A_indre = ${r2(L*B+2*L*H+2*B*H)} m² ✓`,
+        e:`${r2(L*B)} + ${r2(2*L*H)} + ${r2(2*B*H)} = <b>${r2(L*B+2*L*H+2*B*H)} m²</b>`,
+        w:'<b>Overfladeareal af åben kasse:</b><br>En åben kasse (uden låg) har 5 flader: bund + 4 sider. Generel formel: A = L·B + 2·L·H + 2·B·H. Det er standardformlen for en "åben kasse". En lukket kasse ville have + L·B (låg). Husk at vægge tæller 2× fordi der er to af hver type.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Ydre vægge (ingen bund)</div>
+        <div class="ctx-body">De ydre sider skal også dækkes — men bunden på ydersiden er ikke relevant.<br><br>
+        Ydre flader = 4 vægge (2 lange + 2 korte):<br>
+        2 langsider ydre: 2 × L×H = ${r2(2*L*H)} m²<br>
+        2 kortsider ydre: 2 × B×H = ${r2(2*B*H)} m²</div>`,
+      q:`Hvad er det samlede ydre væggareal? (m², 2 decimaler)`,
+      hint:`${r2(2*L*H)} + ${r2(2*B*H)}`,
+      label:'A_ydre =',unit:'m²',
+      correct:r2(2*L*H+2*B*H),tol:0.01,
+      fb:{v:`A_ydre = ${r2(2*L*H+2*B*H)} m² ✓`,
+        e:`${r2(2*L*H)} + ${r2(2*B*H)} = <b>${r2(2*L*H+2*B*H)} m²</b>`,
+        w:'<b>Ydre flader = samme dimensioner som indre:</b><br>Ydervæggenes mål er de samme som indervæggenes (vi ignorerer materialetykkelse som er neglierbar). Bunden tæller ikke på ydersiden da bassinet står på noget. Samlet dækareal = A_indre + A_ydre − bund (som kun tæller én gang indre) = alternativt: A_bund + 2×(A_lange+A_korte) × 2 flader (inde+ude).'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📦 Samlet dækareal</div>
+        <div class="ctx-body">Indre areal: <b>${r2(L*B+2*L*H+2*B*H)} m²</b><br>
+        Ydre vægge: <b>${r2(2*L*H+2*B*H)} m²</b><br><br>
+        Samlet dækareal = indre + ydre</div>`,
+      q:`Hvad er det samlede areal der skal dækkes? (m², 2 decimaler)`,
+      hint:`${r2(L*B+2*L*H+2*B*H)} + ${r2(2*L*H+2*B*H)}`,
+      label:'A_total =',unit:'m²',
+      correct:r2(L*B+2*L*H+2*B*H+2*L*H+2*B*H),tol:0.02,
+      fb:{v:`A_total = ${r2(L*B+2*L*H+2*B*H+2*L*H+2*B*H)} m² ✓`,
+        e:`${r2(L*B+2*L*H+2*B*H)} + ${r2(2*L*H+2*B*H)} = <b>${r2(L*B+2*L*H+2*B*H+2*L*H+2*B*H)} m²</b>`,
+        w:'<b>Husk at bunden kun tæller én gang:</b><br>Det er en typisk fejl at tælle bunden dobbelt (inde og ude). I denne opgave antages bunden kun at være indvendig (ydersiden er gulvet). Det samlede dækareal = bund + 2×(lange sider) + 2×(korte sider) + 2×(lange sider ydre) + 2×(korte sider ydre) = bund + 4×(L·H) + 4×(B·H). Til eksamen: opstil beregningen i en tabel.'}
+    },
+  ]
+},
+
+/* ─── MISSION 3: Rumfang og pris ─── */
+{
+  id:2,icon:'💧',title:'Rumfang & Prisberegning',xp:200,
+  desc:'Beregn rumfang, andel af rumfang og pris ved givne enhedspriser',
+  tags:['Rumfang','L × B × H','Brøk af V','Pris = V × enhedspris'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">💧 Rumfang af bassin</div>
+        <div class="ctx-body">Bassin: L = <b>${L} m</b> · B = <b>${B} m</b> · H = <b>${H} m</b><br><br>
+        <code>V = L × B × H</code></div>`,
+      q:`Hvad er bassinnets rumfang? (m³, 2 decimaler)`,
+      hint:`${L} × ${B} × ${H}`,
+      label:'V =',unit:'m³',
+      correct:V_bassin,tol:0.005,
+      fb:{v:`V = ${V_bassin} m³ ✓`,
+        e:`V = ${L} × ${B} × ${H} = <b>${V_bassin} m³</b>`,
+        w:'<b>Rumfang af kasse = L × B × H:</b><br>Enheden er m × m × m = m³. 1 m³ = 1000 liter = 1000 kg vand. Til eksamen: vis alle tre mål med enheder. Fx "V = 1,5 m × 0,9 m × 0,2 m = 0,27 m³". Det er præcist og viser forståelse for enheder.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">💧 2/3 fyldt</div>
+        <div class="ctx-body">Bassinet er kun fyldt <b>2/3</b> op med vand.<br>
+        Bassinnets totale rumfang: <b>${V_bassin} m³</b><br><br>
+        <code>V_vand = V_bassin × 2/3</code></div>`,
+      q:`Hvad er vandets volumen? (m³, 2 decimaler)`,
+      hint:`${V_bassin} × 2/3 = ${V_bassin} × 0,6667`,
+      label:'V_vand =',unit:'m³',
+      correct:V_twothirds,tol:0.005,
+      fb:{v:`V_vand = ${V_twothirds} m³ ✓`,
+        e:`V_vand = ${V_bassin} × 2/3 = <b>${V_twothirds} m³</b>`,
+        w:'<b>Brøk af rumfang:</b><br>2/3 af rumfanget = V × 2 ÷ 3. Husk at dividere med 3 og gange med 2 — eller brug decimaltallet 0,6667. Til eksamen: vis brøken eksplicit: "V_vand = ${V_bassin} m³ × 2/3 = ${V_twothirds} m³". Det viser at du håndterer brøkdele af rumfang korrekt.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">💰 Pris for koldt vand</div>
+        <div class="ctx-body">Vandvolumen: <b>${V_twothirds} m³</b><br>
+        Koldt vand: <b>${P_COLD} kr./m³</b><br><br>
+        <code>Pris = V × kr./m³</code></div>`,
+      q:`Hvad koster det at fylde bassinet med koldt vand? (kr., 2 decimaler)`,
+      hint:`${V_twothirds} × ${P_COLD}`,
+      label:'Pris =',unit:'kr.',
+      correct:r2(V_twothirds*P_COLD),tol:0.1,
+      fb:{v:`${r2(V_twothirds*P_COLD)} kr. ✓`,
+        e:`${V_twothirds} × ${P_COLD} = <b>${r2(V_twothirds*P_COLD)} kr.</b>`,
+        w:'<b>Pris = volumen × enhedspris:</b><br>Formlen er simpel: pris = V (m³) × kr./m³. Enheden m³ "går ud" og tilbage er kr. Det er det samme princip som m × kr./m = kr. ved stolpelængder. Til eksamen: vis enhedsanalyse: "V × kr./m³ = ${V_twothirds} m³ × ${P_COLD} kr./m³ = ${r2(V_twothirds*P_COLD)} kr."'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">💰 Koldt vs varmt vand</div>
+        <div class="ctx-body">Koldt vand: ${P_COLD} kr./m³ · Varmt vand: ${P_WARM} kr./m³<br>
+        Volumen: ${V_twothirds} m³<br><br>
+        Pris koldt: ${r2(V_twothirds*P_COLD)} kr.<br>
+        Pris varmt: ${r2(V_twothirds*P_WARM)} kr.<br>
+        Difference: ${r2(V_twothirds*(P_WARM-P_COLD))} kr.</div>`,
+      q:'Hvad er merudgiften i procent hvis man vælger varmt frem for koldt vand?',
+      hint:`(${P_WARM} − ${P_COLD}) / ${P_COLD} × 100%`,
+      opts:[
+        `${r1((P_WARM-P_COLD)/P_COLD*100-10)}%`,
+        `${r1((P_WARM-P_COLD)/P_COLD*100)}%`,
+        `${r1((P_WARM-P_COLD)/P_COLD*100+10)}%`,
+        `${r1((P_WARM-P_COLD)/P_WARM*100)}%`
+      ],
+      correct:1,
+      fb:{v:`${r1((P_WARM-P_COLD)/P_COLD*100)}% dyrere ✓`,
+        e:`(${P_WARM}−${P_COLD})/${P_COLD} × 100 = ${P_WARM-P_COLD}/${P_COLD} × 100 = <b>${r1((P_WARM-P_COLD)/P_COLD*100)}%</b>`,
+        w:'<b>Procentvis forskel — husk starværdien i nævneren:</b><br>Stigning% = (ny−gammel)/gammel × 100. Gammel = koldt vand (${P_COLD} kr./m³). Ny = varmt vand (${P_WARM} kr./m³). Fejlkilden er at bruge ny-prisen i nævneren — det giver "forkert procent". Til eksamen: specificer altid hvad der er udgangspunktet (100%).'}
+    },
+  ]
+},
+
+/* ─── MISSION 4: Vægtet gennemsnitstemperatur ─── */
+{
+  id:3,icon:'🌡️',title:'Vægtet Gennemsnitstemperatur',xp:250,
+  desc:'Forstå og beregn blandingstemperatur med formlen m₁·t₁+m₂·t₂ / (m₁+m₂)',
+  tags:['Vægtet gennemsnit','Blandingstemperatur','m₁t₁+m₂t₂','Formel'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🌡️ Blandingstemperatur — intuition</div>
+        <div class="ctx-body">To mængder vand blandes:<br><br>
+        <table class="dtbl">
+          <tr><th></th><th>Mængde</th><th>Temperatur</th></tr>
+          <tr><td>Glas 1</td><td>100 ml</td><td>60°C</td></tr>
+          <tr><td>Glas 2</td><td>100 ml</td><td>20°C</td></tr>
+          <tr class="hi"><td>Blandet</td><td>200 ml</td><td>?</td></tr>
+        </table><br>
+        Mængderne er ens — hvad er blandingstemperaturen?</div>`,
+      q:'Hvad er blandingstemperaturen når to lige store mængder blandes?',
+      opts:['60°C — det varmeste dominerer','20°C — det kolde køler alt','40°C — simpelt gennemsnit','80°C — temperaturer lægges sammen'],
+      correct:2,
+      fb:{v:'40°C — simpelt gennemsnit ✓',
+        e:'(100×60 + 100×20) / (100+100) = (6000+2000)/200 = 8000/200 = <b>40°C</b>',
+        w:'<b>Lige store mængder → simpelt gennemsnit:</b><br>Når mængderne er ens (m₁ = m₂), reduceres formlen til (t₁+t₂)/2 — det almindelige gennemsnit. Men når mængderne er <b>uens</b>, trækker den større mængde temperaturen mere mod sin side. Det er det "vægtede" aspekt. Prøv: 900 ml @ 20°C + 100 ml @ 100°C → temperaturen trækkes kun lidt mod 100°C.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🌡️ Formel for blandingstemperatur</div>
+        <div class="ctx-body">Den generelle formel:<br>
+        <code>T = (m₁·t₁ + m₂·t₂) / (m₁ + m₂)</code><br><br>
+        Eksempel: 800 ml @ 20°C blandes med 200 ml @ ${T_HOT}°C<br>
+        <code>T = (800×20 + 200×${T_HOT}) / (800+200)</code><br>
+        <code>T = (${800*20} + ${200*T_HOT}) / 1000</code></div>`,
+      q:`Hvad er blandingstemperaturen? (°C, 1 decimal)`,
+      hint:`(${800*20} + ${200*T_HOT}) / 1000`,
+      label:'T =',unit:'°C',
+      correct:r1((800*20+200*T_HOT)/1000),tol:0.1,
+      fb:{v:`T = ${r1((800*20+200*T_HOT)/1000)}°C ✓`,
+        e:`(${800*20} + ${200*T_HOT}) / 1000 = ${r0(800*20+200*T_HOT)} / 1000 = <b>${r1((800*20+200*T_HOT)/1000)}°C</b>`,
+        w:'<b>Formlen — det vejede gennemsnit:</b><br>T = (m₁·t₁ + m₂·t₂)/(m₁+m₂). Tæller: summen af (mængde × temperatur) for hvert stof. Nævner: samlet mængde. Formlen er parallel til det vejede gennemsnit i statistik: Σ(værdi × vægt)/Σvægt. Her er "vægt" = mængden af vand og "værdi" = temperaturen. En større mængde trækker resultatet mere.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🧮 Isolér m₂ — find mængden af varmt vand</div>
+        <div class="ctx-body">Bassinet indeholder <b>${r0(M_COLD)} liter</b> @ <b>${T_COLD}°C</b>.<br>
+        Vi tilsætter varmt vand @ <b>${T_HOT}°C</b>.<br>
+        Ønsket temperatur: <b>${T_TARGET}°C</b><br><br>
+        Sæt formlen op:<br>
+        <code>(${r0(M_COLD)}·${T_COLD} + m₂·${T_HOT}) / (${r0(M_COLD)} + m₂) = ${T_TARGET}</code><br><br>
+        Gang begge sider med (${r0(M_COLD)} + m₂):<br>
+        <code>${r0(M_COLD)}·${T_COLD} + m₂·${T_HOT} = ${T_TARGET}·(${r0(M_COLD)} + m₂)</code><br>
+        <code>${r0(M_COLD*T_COLD)} + ${T_HOT}m₂ = ${T_TARGET*r0(M_COLD)} + ${T_TARGET}m₂</code><br>
+        <code>(${T_HOT}−${T_TARGET})m₂ = ${T_TARGET*r0(M_COLD)} − ${r0(M_COLD*T_COLD)}</code><br>
+        <code>${T_HOT-T_TARGET}m₂ = ${T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD)}</code></div>`,
+      q:`Hvad er m₂ — mængden af varmt vand? (liter, 1 decimal)`,
+      hint:`m₂ = ${T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD)} / ${T_HOT-T_TARGET}`,
+      label:'m₂ =',unit:'liter',
+      correct:r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET)),tol:0.5,
+      fb:{v:`m₂ = ${r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET))} liter ✓`,
+        e:`m₂ = ${T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD)} / ${T_HOT-T_TARGET} = <b>${r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET))} liter</b>`,
+        w:'<b>Isolér den ubekendte i en brøkligning:</b><br>Trin 1: Gang begge sider med nævneren (m₁+m₂). Trin 2: Sæt alle led med m₂ på én side. Trin 3: Sæt alle konstantled på den anden side. Trin 4: Divider med koefficienten foran m₂. Det er standardmetoden til ligningsløsning. Til eksamen: vis hvert trin — tag ikke genveje. En løsning med mellemregninger giver fuld point.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">💡 Tjek svaret</div>
+        <div class="ctx-body">Vi fandt m₂ = ${r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET))} liter @ ${T_HOT}°C.<br><br>
+        Indsæt i formlen og tjek:<br>
+        T = (${r0(M_COLD)}×${T_COLD} + ${r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET))}×${T_HOT}) / (${r0(M_COLD)}+${r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET))})<br><br>
+        Tæller ≈ ${r0(M_COLD*T_COLD)} + ${r0(r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET))*T_HOT)}<br>
+        = ${r0(M_COLD*T_COLD+r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET))*T_HOT)}<br>
+        Nævner ≈ ${r0(M_COLD+r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET)))}</div>`,
+      q:'Er svaret verificeret korrekt?',
+      opts:[
+        `Ja — T ≈ ${T_TARGET}°C som ønsket`,
+        'Nej — svaret afviger markant',
+        'Umuligt at tjekke',
+        'Formlen gælder ikke for store mængder'
+      ],
+      correct:0,
+      fb:{v:'Ja — verificeret! ✓',
+        e:`T ≈ ${r0(M_COLD*T_COLD+r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET))*T_HOT)} / ${r0(M_COLD+r1((T_TARGET*r0(M_COLD)-r0(M_COLD*T_COLD))/(T_HOT-T_TARGET)))} ≈ ${T_TARGET}°C ✓`,
+        w:'<b>Verificering er god eksamenspraksis:</b><br>Sæt det fundne m₂ tilbage i den originale formel og tjek at T ≈ ønsket temperatur. Hvis det stemmer, er din løsning korrekt. Hvis det ikke stemmer, er der en fejl i udregningen. Til eksamen: skriv "Tjek:" og vis verifikationen — det demonstrerer matematisk stringens og giver ekstra point.'}
+    },
+  ]
+},
+
+/* ─── MISSION 5: Samlet analyse — alt i en ─── */
+{
+  id:4,icon:'🎓',title:'Samlet Analyse — Alle Færdigheder',xp:300,
+  desc:'Kombinér enhedsomregning, areal, rumfang, pris og temperaturblanding i én opgave',
+  tags:['Samlet analyse','Enhedsomregning','Rumfang','Temperaturblanding','Budget'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎓 Opgavestruktur</div>
+        <div class="ctx-body">Et projekt indeholder disse trin:<br><br>
+        <b>Trin A:</b> Omregn mål fra mm til m<br>
+        <b>Trin B:</b> Beregn overfladeareal (dækareal)<br>
+        <b>Trin C:</b> Beregn rumfang og andel<br>
+        <b>Trin D:</b> Beregn fyldepris<br>
+        <b>Trin E:</b> Find mængde varmt vand via temperaturformlen<br><br>
+        Hvad er den rigtige rækkefølge?</div>`,
+      q:'Hvad er den rigtige arbejdsrækkefølge?',
+      opts:[
+        'E → D → C → B → A (start med temperatur)',
+        'A → B → C → D → E (omregn enheder først)',
+        'C → A → B → D → E',
+        'Rækkefølgen er ligegyldig'
+      ],
+      correct:1,
+      fb:{v:'A → B → C → D → E ✓',
+        e:'Enheder omregnes først (A), så arealer og rumfang kan beregnes korrekt (B+C), derefter priser (D) og temperaturer (E).',
+        w:'<b>Systematisk arbejdsgang til eksamen:</b><br>Start altid med at få styr på enheder og grunddata. Areal og rumfang kræver korrekte mål i m. Pris kræver rumfang i m³. Temperaturberegning kræver vand-volumen (fra rumfang). Hvert trin bygger på det forrige — forkert mål i trin A forplanter sig til alle efterfølgende trin.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔢 Nyt bassin — fra mm til m</div>
+        <div class="ctx-body">Et nyt bassin har dimensioner:<br>
+        <b>2400 mm × 1200 mm × 300 mm</b><br><br>
+        Omregn til meter og beregn rumfanget.</div>`,
+      q:'Hvad er bassinnets rumfang? (m³, 3 decimaler)',
+      hint:'L=2,4 m · B=1,2 m · H=0,3 m → V=L×B×H',
+      label:'V =',unit:'m³',
+      correct:r2(2.4*1.2*0.3*1000)/1000,tol:0.001,
+      fb:{v:`V = ${r2(2.4*1.2*0.3*1000)/1000} m³ ✓`,
+        e:`L=2,4 m · B=1,2 m · H=0,3 m · V = 2,4×1,2×0,3 = <b>${r2(2.4*1.2*0.3*1000)/1000} m³</b>`,
+        w:'<b>Hele kæden i ét trin:</b><br>2400 mm ÷ 1000 = 2,4 m. 1200 mm ÷ 1000 = 1,2 m. 300 mm ÷ 1000 = 0,3 m. V = 2,4 × 1,2 × 0,3 = 0,864 m³ = 864 liter. Til eksamen: vis omregningerne eksplicit — skriv "2400 mm = 2,4 m" som første skridt.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🌡️ Temperaturblanding</div>
+        <div class="ctx-body">Bassinet (fra forrige opgave) er fyldt <b>3/4</b> op med vand ved <b>15°C</b>.<br>
+        V_vand = 3/4 × 0,864 m³ = <b>0,648 m³ = 648 liter</b><br><br>
+        Varmt vand fra kedel: <b>90°C</b><br>
+        Ønsket temperatur: <b>30°C</b><br><br>
+        Formlen: <code>(648·15 + m₂·90) / (648 + m₂) = 30</code></div>`,
+      q:'Hvor mange liter varmt vand skal tilsættes? (liter, 1 decimal)',
+      hint:'(648×15 + m₂×90) / (648 + m₂) = 30 → 9720 + 90m₂ = 19440 + 30m₂ → 60m₂ = 9720',
+      label:'m₂ =',unit:'liter',
+      correct:r1((648*(30-15))/(90-30)),tol:0.5,
+      fb:{v:`m₂ = ${r1((648*(30-15))/(90-30))} liter ✓`,
+        e:`m₂ = m₁×(T_ønsket−T_kold) / (T_varm−T_ønsket) = 648×${30-15}/${90-30} = <b>${r1((648*(30-15))/(90-30))} liter</b>`,
+        w:'<b>Genvejsformlen for m₂:</b><br>Når man isolerer m₂ i temperaturformlen generelt, fås:<br><code>m₂ = m₁·(T_ønsket − t₁) / (t₂ − T_ønsket)</code><br>Her: m₂ = 648×(30−15)/(90−30) = 648×15/60 = ${r1(648*15/60)}. Denne formel kan lærers udenad og bruges direkte. Til eksamen: vis den fulde udledning første gang, men noter gerne genvejsformlen.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎓 Samlet eksamensstruktur</div>
+        <div class="ctx-body">Du har nu trænet hele kæden:<br><br>
+        ✅ mm → m (÷ 1000)<br>
+        ✅ Overfladeareal: bund + 4 vægge (indre + ydre)<br>
+        ✅ Rumfang: V = L×B×H<br>
+        ✅ Brøk af V: V × 2/3 eller 3/4<br>
+        ✅ Pris = V × enhedspris<br>
+        ✅ Temperaturformel: T = (m₁t₁ + m₂t₂)/(m₁+m₂)<br>
+        ✅ Isolering af m₂ i temperaturformlen</div>`,
+      q:'Hvad er den vigtigste ting at huske om temperaturformlen?',
+      opts:[
+        'Temperaturerne lægges bare sammen og deles med 2',
+        'Formlen er et vægtet gennemsnit — en stor mængde trækker temperaturen mere mod sin temperatur end en lille mængde',
+        'Formlen gælder kun for vand',
+        'Formlen kræver at temperaturerne er i Kelvin'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Det vejede gennemsnit ✓',
+        e:'Stor mængde → større "trækken" mod sin temperatur. En lille mængde varmt vand hæver temperaturen kun lidt i en stor kold mængde.',
+        w:'<b>Eksamenssvar for temperaturformlen:</b><br>"Blandingstemperaturen beregnes som det vejede gennemsnit af de to temperaturer, vægtet med mængderne: T = (m₁·t₁ + m₂·t₂)/(m₁+m₂). Det betyder at en stor mængde vand ved en bestemt temperatur trækker blandingstemperaturen mere mod sin temperatur end en lille mængde gør. For at finde den mængde varmt vand der skal tilsættes for at nå en ønsket temperatur, isoleres m₂ i formlen ved at gange med (m₁+m₂) og samle m₂-led på én side."'}
+    },
+  ]
+},
+];
+
+/* ═══════════ ENGINE ═══════════ */
+const SKEY='arealrumfang_v2';
+function ldSD(){try{return JSON.parse(localStorage.getItem(SKEY)||'{}')}catch{return{};}}
+function svSD(){localStorage.setItem(SKEY,JSON.stringify(SD));}
+let SD=ldSD();
+if(!SD.xp)SD.xp=0;if(!SD.done)SD.done=[];
+function xpLv(){const x=SD.xp;if(x<150)return{l:'Begynder'};if(x<350)return{l:'Elev'};if(x<700)return{l:'Tekniker'};if(x<1200)return{l:'Ekspert'};return{l:'Mester'};}
+function buildHome(){
+  const lv=xpLv();const tot=MISSIONS.reduce((s,m)=>s+m.xp,0);const pct=Math.min(100,Math.round(SD.xp/tot*100));
+  document.getElementById('xp-fill').style.width=pct+'%';document.getElementById('xp-lbl').textContent=`${SD.xp} XP — ${lv.l}`;
+  const g=document.getElementById('mgrid');g.innerHTML='';
+  MISSIONS.forEach((m,i)=>{
+    const done=SD.done.includes(m.id),locked=i>0&&!SD.done.includes(MISSIONS[i-1].id);
+    const d=document.createElement('div');d.className=`mcard${done?' done':locked?' locked':''}`;
+    d.innerHTML=`<div class="mc-icon">${m.icon}</div><div class="mc-info"><div class="mc-num">Mission ${i+1} · ${m.steps.length} opgaver</div><div class="mc-title">${m.title}</div><div class="mc-desc">${m.desc}</div><div class="mc-tags">${m.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div><div class="mc-right"><div class="mc-xp">+${m.xp} XP</div><div class="mc-status">${done?'✅':locked?'🔒':''}</div></div>`;
+    if(!locked)d.onclick=()=>startMission(m.id);g.appendChild(d);
+  });
+}
+function goHome(){curStep=0;show('s-home');buildHome();}
+let curMId=null,curStep=0,stepRes=[];
+function startMission(id){curMId=id;curStep=0;stepRes=[];const m=MISSIONS.find(x=>x.id===id);document.getElementById('mtop-title').textContent=`${m.icon} ${m.title}`;buildProg(m);renderStep();show('s-mission');}
+function buildProg(m){const p=document.getElementById('sprog');p.innerHTML='';m.steps.forEach((_,i)=>{const d=document.createElement('div');d.className='sp';d.id=`sp${i}`;p.appendChild(d);});updProg();}
+function updProg(){const m=MISSIONS.find(x=>x.id===curMId);m.steps.forEach((_,i)=>{const d=document.getElementById(`sp${i}`);if(!d)return;d.className='sp';if(i<curStep)d.classList.add('ok');if(i===curStep)d.classList.add('cur');});}
+function renderStep(){
+  selMC=null;const m=MISSIONS.find(x=>x.id===curMId);const s=m.steps[curStep];const total=m.steps.length;
+  document.getElementById('mtop-ctr').textContent=`${curStep+1}/${total}`;
+  const area=document.getElementById('qarea');area.innerHTML='';
+  const ctxEl=document.createElement('div');ctxEl.className='ctx-card';ctxEl.innerHTML=s.ctx;area.appendChild(ctxEl);
+  const qqEl=document.createElement('div');qqEl.className='qq-card';
+  let inp=s.type==='mc'?`<div class="mc-opts">${s.opts.map((o,i)=>`<button class="mco" id="mco${i}" onclick="pickMC(${i})"><span class="mco-k">${String.fromCharCode(65+i)}.</span><span>${o}</span></button>`).join('')}</div>`:`<div class="nrow"><span class="nlbl">${s.label||'Svar ='}</span><input class="ninp" id="ninp" type="number" step="any" inputmode="decimal" placeholder="?" autocomplete="off"><span class="nlbl">${s.unit||''}</span></div>`;
+  qqEl.innerHTML=`<div class="qq-num">Opgave ${curStep+1} af ${total}</div><div class="qq-text">${s.q}</div>${s.hint?`<div class="qq-hint">💡 ${s.hint}</div>`:''}${inp}`;
+  area.appendChild(qqEl);
+  const fbEl=document.createElement('div');fbEl.className='fb';fbEl.id='fbel';area.appendChild(fbEl);
+  const br=document.createElement('div');br.className='btn-row';br.innerHTML=`<button class="chkbtn" id="chkbtn" onclick="checkStep()">Tjek svar ✓</button><button class="nxtbtn" id="nxtbtn" onclick="nextStep()">${curStep<total-1?'Næste opgave →':'Afslut mission →'}</button>`;
+  area.appendChild(br);updProg();
+  if(s.type==='num'){const ni=document.getElementById('ninp');setTimeout(()=>ni?.focus(),80);ni?.addEventListener('keydown',e=>{if(e.key==='Enter')checkStep();});}
+}
+let selMC=null;
+function pickMC(i){if(document.getElementById('mco0')?.disabled)return;selMC=i;document.querySelectorAll('.mco').forEach((b,j)=>{b.style.background=j===i?'rgba(0,230,118,.1)':'';b.style.borderColor=j===i?'rgba(0,230,118,.4)':'';});}
+function checkStep(){
+  const m=MISSIONS.find(x=>x.id===curMId);const s=m.steps[curStep];let ok=false;
+  if(s.type==='mc'){if(selMC===null)return;ok=selMC===s.correct;document.querySelectorAll('.mco').forEach((b,i)=>{b.disabled=true;b.style.background='';b.style.borderColor='';if(i===s.correct)b.classList.add('ok');else if(i===selMC&&!ok)b.classList.add('no');});selMC=null;}
+  else{const ni=document.getElementById('ninp');const v=parseFloat(ni?.value?.replace(',','.'));if(isNaN(v)){ni?.classList.add('no');setTimeout(()=>ni?.classList.remove('no'),400);return;}ok=Math.abs(v-s.correct)<=s.tol;ni.disabled=true;ni.classList.add(ok?'ok':'no');}
+  stepRes.push(ok);renderFB(s,ok);document.getElementById('chkbtn').disabled=true;document.getElementById('nxtbtn').classList.add('on');
+}
+function renderFB(s,ok){
+  const fb=document.getElementById('fbel');if(!fb)return;
+  fb.className='fb '+(ok?'ok':'no');
+  fb.innerHTML=`<div class="fb-verdict ${ok?'ok':'no'}">${ok?'✅ '+s.fb.v:'❌ Ikke helt — her er forklaringen:'}</div><div class="fb-exp">${s.fb.e}</div><div class="why"><div class="why-h">🎓 Hvorfor gør man det sådan?</div><div class="why-b">${s.fb.w}</div></div>`;
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function nextStep(){const m=MISSIONS.find(x=>x.id===curMId);curStep++;if(curStep>=m.steps.length){endMission();}else{selMC=null;renderStep();document.querySelector('.qscroll')?.scrollTo(0,0);}}
+function endMission(){const m=MISSIONS.find(x=>x.id===curMId);const ok=stepRes.filter(Boolean).length,tot=stepRes.length;const earned=Math.round(m.xp*(ok/tot));SD.xp+=earned;if(!SD.done.includes(m.id)&&ok>=Math.ceil(tot*.6))SD.done.push(m.id);svSD();document.getElementById('done-sc').textContent=`${ok}/${tot} korrekte · +${earned} XP`;document.getElementById('done-msg').textContent=ok===tot?'Perfekt score! Du behersker dette emne fuldt ud.':ok>=Math.ceil(tot*.6)?'Godt klaret! Gennemgå forklaringerne igen.':'Prøv igen og læs forklaringerne grundigt.';show('s-done');}
+function retryMission(){if(curMId!==null)startMission(curMId);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+buildHome();
+</script>
+</body>
+</html>

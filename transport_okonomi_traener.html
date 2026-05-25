@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Transport & Økonomi Træner — 10. klasse</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e1117;--panel:#161b27;--card:#1c2333;--border:#2a3344;
+  --green:#00e676;--green2:#69f0ae;--yellow:#ffeb3b;--orange:#ff9800;
+  --red:#f44336;--blue:#42a5f5;
+  --white:#e8eaf0;--muted:#8892a4;--muted2:#545e6f;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px);--sm:clamp(12px,2.7vw,14px);--md:clamp(14px,3.2vw,16px);
+  --lg:clamp(18px,4.2vw,22px);--xl:clamp(24px,5.5vw,32px);--xxl:clamp(32px,8vw,52px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;}
+.scr.on{display:flex;}
+
+/* HOME */
+#s-home{background:linear-gradient(160deg,#0e1117 0%,#111827 100%);align-items:center;justify-content:flex-start;padding:20px 14px 50px;}
+.home-hero{width:100%;max-width:520px;margin:0 auto 22px;text-align:center;}
+.hero-eye{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+.hero-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);line-height:.95;letter-spacing:-.01em;margin-bottom:6px;}
+.hero-h .acc{color:var(--green);}
+.hero-sub{font-size:var(--sm);color:var(--muted);line-height:1.65;max-width:380px;margin:0 auto 20px;}
+.xp-wrap{background:rgba(255,255,255,.07);border-radius:4px;height:8px;width:100%;max-width:300px;margin:0 auto 6px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:4px;transition:width .5s;}
+.xp-lbl{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:20px;}
+.mgrid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;}
+.mcard{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:15px 17px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.mcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);transform:scaleY(0);transition:transform .15s;transform-origin:bottom;}
+.mcard:hover:not(.locked)::before{transform:scaleY(1);}
+.mcard:hover:not(.locked){border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.04);}
+.mcard.locked{opacity:.4;cursor:default;}
+.mcard.done{border-color:rgba(0,230,118,.25);background:rgba(0,230,118,.03);}
+.mcard.done::before{transform:scaleY(1);}
+.mc-icon{font-size:clamp(24px,6vw,34px);flex-shrink:0;line-height:1;}
+.mc-info{flex:1;min-width:0;}
+.mc-num{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+.mc-title{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);margin-bottom:2px;}
+.mc-desc{font-size:var(--xs);color:var(--muted);line-height:1.4;}
+.mc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-family:var(--fm);font-size:clamp(7px,1.6vw,9px);border:1px solid var(--border);border-radius:3px;padding:2px 8px;color:var(--muted2);}
+.mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.mc-xp{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);}
+.mc-status{font-size:16px;}
+
+/* MISSION */
+#s-mission{background:var(--bg);}
+.mtop{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));backdrop-filter:blur(10px);}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:var(--white);}
+.mtop-title{font-family:var(--fh);font-weight:700;font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.mtop-ctr{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+.sprog{display:flex;gap:5px;padding:8px 14px;background:rgba(0,0,0,.3);flex-shrink:0;flex-wrap:wrap;}
+.sp{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);transition:all .3s;}
+.sp.ok{background:var(--green);}
+.sp.cur{background:rgba(0,230,118,.4);animation:bl .8s ease-in-out infinite alternate;}
+@keyframes bl{from{opacity:.5}to{opacity:1}}
+.qscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 30px;}
+.qarea{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+
+/* Cards */
+.ctx-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.ctx-head{font-family:var(--fm);font-size:var(--xs);color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.ctx-body{font-size:var(--sm);color:var(--white);line-height:1.7;}
+.ctx-body b{color:var(--green2);}
+.ctx-body code{font-family:var(--fm);background:rgba(0,230,118,.08);color:var(--green2);padding:1px 6px;border-radius:3px;font-size:var(--xs);}
+.dtbl{width:100%;border-collapse:collapse;margin-top:10px;font-family:var(--fm);font-size:var(--xs);}
+.dtbl th{background:rgba(0,230,118,.08);color:var(--green);text-align:left;padding:6px 10px;border-bottom:1px solid rgba(0,230,118,.2);}
+.dtbl td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--white);}
+.dtbl .hi{background:rgba(0,230,118,.1);color:var(--green2);font-weight:700;}
+.qq-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.qq-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:6px;}
+.qq-text{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);line-height:1.35;margin-bottom:10px;}
+.qq-hint{font-size:var(--xs);color:var(--muted);font-style:italic;margin-bottom:10px;line-height:1.5;}
+
+/* MC */
+.mc-opts{display:flex;flex-direction:column;gap:8px;}
+.mco{border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.03);padding:12px 15px;cursor:pointer;font-size:var(--sm);color:rgba(255,255,255,.85);text-align:left;transition:all .13s;display:flex;align-items:flex-start;gap:10px;line-height:1.4;}
+.mco:hover:not(:disabled){border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.06);}
+.mco.ok{background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.5);color:var(--green2);}
+.mco.no{background:rgba(244,67,54,.08);border-color:rgba(244,67,54,.4);color:#ff8a80;}
+.mco:disabled{cursor:default;}
+.mco-k{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);min-width:18px;flex-shrink:0;padding-top:1px;}
+
+/* Num */
+.nrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.nlbl{font-family:var(--fm);font-size:var(--sm);color:var(--muted);}
+.ninp{font-family:var(--fm);font-weight:700;font-size:var(--xl);width:clamp(110px,28vw,170px);background:rgba(0,230,118,.06);border:2px solid rgba(0,230,118,.3);border-radius:7px;color:var(--green2);text-align:center;padding:10px 8px;outline:none;-webkit-appearance:none;transition:all .18s;}
+.ninp:focus{border-color:var(--green);background:rgba(0,230,118,.1);box-shadow:0 0 16px rgba(0,230,118,.15);}
+.ninp.ok{border-color:var(--green);}
+.ninp.no{border-color:var(--red);animation:sh .3s ease;}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* Feedback */
+.fb{border-radius:10px;padding:14px 16px;display:none;}
+.fb.ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);display:block;}
+.fb.no{background:rgba(244,67,54,.07);border:1px solid rgba(244,67,54,.2);display:block;}
+.fb-verdict{font-family:var(--fh);font-weight:700;font-size:var(--lg);margin-bottom:8px;}
+.fb-verdict.ok{color:var(--green);}
+.fb-verdict.no{color:var(--red);}
+.fb-exp{font-size:var(--sm);color:rgba(255,255,255,.82);line-height:1.7;margin-bottom:10px;}
+.fb-exp b{color:var(--white);}
+.fb-exp code{font-family:var(--fm);background:rgba(0,230,118,.1);color:var(--green2);padding:1px 6px;border-radius:3px;}
+.why{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;}
+.why-h{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.why-b{font-size:var(--sm);color:rgba(255,255,255,.72);line-height:1.7;}
+.why-b b{color:var(--white);}
+
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.chkbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:var(--green);color:#001a0d;border:none;border-radius:8px;padding:12px 36px;cursor:pointer;transition:all .13s;}
+.chkbtn:hover{background:var(--green2);}
+.chkbtn:disabled{opacity:.3;cursor:default;}
+.nxtbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 32px;cursor:pointer;display:none;transition:all .13s;}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(255,255,255,.14);}
+
+/* DONE */
+#s-done{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.dtrophy{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bonce 1.2s ease infinite alternate;}
+@keyframes bonce{from{transform:translateY(0) scale(1)}to{transform:translateY(-10px) scale(1.05)}}
+.done-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);margin-bottom:6px;line-height:.95;}
+.done-h .acc{color:var(--green);}
+.done-sc{font-family:var(--fm);font-size:var(--xl);color:var(--yellow);margin-bottom:12px;}
+.done-msg{font-size:var(--md);color:var(--muted);max-width:380px;line-height:1.65;margin-bottom:26px;}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.dbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);border:none;border-radius:8px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;}
+.dbtn.p{background:var(--green);color:#001a0d;}
+.dbtn.s{background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<div class="scr on" id="s-home">
+  <div class="home-hero">
+    <div class="hero-eye">🚗 10. klasse · Eksamensforberedelse</div>
+    <h1 class="hero-h">TRANSPORT &<br><span class="acc">ØKONOMI</span></h1>
+    <p class="hero-sub">Træn de matematiske færdigheder du skal bruge når du sammenligner udgifter, beregner renter og laver budgetter til eksamen.</p>
+    <div class="xp-wrap"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-lbl" id="xp-lbl">0 XP — Begynder</div>
+  </div>
+  <div class="mgrid" id="mgrid"></div>
+</div>
+
+<div class="scr" id="s-mission">
+  <div class="mtop">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="mtop-title" id="mtop-title">–</div>
+    <div class="mtop-ctr" id="mtop-ctr">1/1</div>
+  </div>
+  <div class="sprog" id="sprog"></div>
+  <div class="qscroll">
+    <div class="qarea" id="qarea"></div>
+  </div>
+</div>
+
+<div class="scr" id="s-done">
+  <div class="dtrophy">🏆</div>
+  <h2 class="done-h">MISSION<br><span class="acc">KLARET!</span></h2>
+  <div class="done-sc" id="done-sc">–</div>
+  <p class="done-msg" id="done-msg">–</p>
+  <div class="done-btns">
+    <button class="dbtn p" onclick="goHome()">← Vælg ny mission</button>
+    <button class="dbtn s" onclick="retryMission()">↺ Prøv igen</button>
+  </div>
+</div>
+
+<script>
+const r2=x=>Math.round(x*100)/100;
+const r0=x=>Math.round(x);
+
+/* ═══════════════════════════════════════════════
+   MISSIONER
+═══════════════════════════════════════════════ */
+const MISSIONS = [
+
+/* ── MISSION 1: Brændstofomkostning pr. km ── */
+{
+  id:0, icon:'⛽', title:'Drivmiddelomkostning pr. km', xp:150,
+  desc:'Beregn hvad det koster at køre 1 km med forskelligt brændstof og hastighed',
+  tags:['Forbrug pr. km','Pris pr. enhed','Hastighed','Procent'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">⛽ Scenario — To køretøjer</div>
+        <div class="ctx-body">Du skal beregne driftsomkostninger for to scootere.<br><br>
+        <table class="dtbl">
+          <tr><th>Drivmiddel</th><th>Pris pr. enhed</th><th>Forbrug pr. 100 km</th></tr>
+          <tr><td>Benzin</td><td><b>14,50 kr./liter</b></td><td><b>4,20 liter</b></td></tr>
+          <tr><td>El</td><td><b>2,10 kr./kWh</b></td><td><b>8,50 kWh</b></td></tr>
+        </table><br>
+        Hvad koster det at køre <b>100 km</b> på benzin?</div>`,
+      q:'Hvad koster 100 km på benzin? (afrund til 2 decimaler)',
+      hint:'Pris = forbrug × pris pr. enhed = 4,20 liter × 14,50 kr./liter',
+      label:'100 km koster:', unit:'kr.',
+      correct:r2(4.20*14.50), tol:0.05,
+      fb:{v:`Korrekt! 4,20 × 14,50 = ${r2(4.20*14.50)} kr. ✓`,
+        e:`Pris pr. 100 km = forbrug × pris pr. enhed = 4,20 L × 14,50 kr./L = <b>${r2(4.20*14.50)} kr.</b>`,
+        w:'<b>Sådan beregner man brændstofomkostning:</b><br>Formlen er simpel: <code>pris = forbrug pr. 100 km × pris pr. enhed</code>. Det giver prisen for 100 km. For at finde prisen pr. km dividerer man med 100. Til eksamen skal du altid <b>vise mellemregningerne</b> — skriv enheder med (liter, kr./liter) så det er klart hvad du ganger med hvad.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">⚡ Pris pr. km — El</div>
+        <div class="ctx-body">El: <b>2,10 kr./kWh</b> · Forbrug: <b>8,50 kWh/100 km</b><br><br>
+        Vi vil finde prisen pr. <b>enkelt kilometer</b> (ikke pr. 100 km).</div>`,
+      q:'Hvad koster det at køre 1 km på el? (i kr., afrund til 4 decimaler)',
+      hint:'Pris pr. 100 km = 8,50 × 2,10. Divider med 100 for at få pris pr. km.',
+      label:'1 km koster:', unit:'kr.',
+      correct:r2(8.50*2.10/100*10000)/10000, tol:0.0005,
+      fb:{v:`Korrekt! ≈ ${r2(8.50*2.10/100*10000)/10000} kr./km ✓`,
+        e:`Pris/100km = 8,50 × 2,10 = ${r2(8.50*2.10)} kr. → pr. km: ${r2(8.50*2.10)} ÷ 100 = <b>${r2(8.50*2.10/100*10000)/10000} kr./km</b>`,
+        w:'<b>Pris pr. km — den vigtige sammenligningsenhed:</b><br>Når vi vil sammenligne to køretøjer er prisen pr. km den nøgletal vi bruger. Det giver os mulighed for at gange med <b>det faktiske antal km</b> vi kører om året og få den samlede driftsudgift. Husk at km-prisen er meget lille (brøkdel af en krone) — brug gerne 4 decimaler for præcision, og vis den i øre (× 100) for at gøre den overskuelig.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🔢 Sammenlign pr. km</div>
+        <div class="ctx-body">Beregnet pr. km (ved normal hastighed):<br>
+        Benzin: <code>${r2(4.20*14.50)} kr./100km = ${r2(4.20*14.50/100*100)/100} kr./km</code><br>
+        El: <code>${r2(8.50*2.10)} kr./100km = ${r2(8.50*2.10/100*100)/100} kr./km</code></div>`,
+      q:'Hvad er den korrekte konklusion?',
+      opts:[
+        'El er dyrere pr. km end benzin',
+        `El er billigere pr. km — ${r2(8.50*2.10/100*100)/100} kr. mod ${r2(4.20*14.50/100*100)/100} kr.`,
+        'De er præcis lige dyre pr. km',
+        'Man kan ikke sammenligne de to'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! El er billigere pr. km ✓',
+        e:`El: ${r2(8.50*2.10/100*100)/100} kr./km · Benzin: ${r2(4.20*14.50/100*100)/100} kr./km → El er ${r2((4.20*14.50-8.50*2.10)/100*100)/100} kr./km billigere.`,
+        w:'<b>Pris pr. km er udgangspunktet — men ikke hele billedet:</b><br>At el er billigere pr. km er kun ét aspekt. For at finde ud af om det <b>samlet set</b> kan betale sig at skifte til el, skal vi også medregne anskaffelsespris, forsikring, service og eventuelle lånomkostninger. Det er det samlede budget over fx 5 år der er afgørende — ikke kun drivmiddelomkostningen.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📈 Forbruget stiger ved høj hastighed</div>
+        <div class="ctx-body">Ved høj hastighed stiger forbruget:<br>
+        <b>Benzinforbruget stiger 18%</b> fra lav til høj hastighed.<br>
+        Normal benzinforbrug ved lav hastighed: <b>4,20 liter/100km</b></div>`,
+      q:'Hvad er benzinforbruget pr. 100 km ved høj hastighed? (1 decimal)',
+      hint:'Nyt forbrug = gammelt forbrug × (1 + 0,18) = 4,20 × 1,18',
+      label:'Forbrug:', unit:'liter/100km',
+      correct:r2(4.20*1.18*10)/10, tol:0.05,
+      fb:{v:`Korrekt! 4,20 × 1,18 = ${r2(4.20*1.18*10)/10} liter/100km ✓`,
+        e:`Nyt forbrug = 4,20 × 1,18 = <b>${r2(4.20*1.18*10)/10} liter/100km</b><br>Meromkostning pr. 100 km: ${r2((4.20*1.18-4.20)*14.50*100)/100} kr. ekstra`,
+        w:'<b>Procentvis stigning i forbrug:</b><br>Formlen for en procentvis stigning er: <code>nyt = gammelt × (1 + p/100)</code>. En stigning på 18% giver faktoren 1,18. Dette er den samme formel som bruges til renteberegning og vækst! Til eksamen er det vigtigt at <b>argumentere for hvornår den høje hastighed er relevant</b> — kører man primært på motorvej eller landevej? Det ændrer konklusionen.'}
+    },
+  ]
+},
+
+/* ── MISSION 2: Sammensatte ruteomkostninger ── */
+{
+  id:1, icon:'🗺️', title:'Ruter & Samlede Transportudgifter', xp:200,
+  desc:'Beregn og sammenlign den samlede årlige udgift for to forskellige ruter',
+  tags:['Årsudgift','Rute','Km-pris','Antal dage'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🗺️ To ruter til arbejde</div>
+        <div class="ctx-body">En medarbejder kører til arbejde <b>210 dage om året</b>.<br><br>
+        <table class="dtbl">
+          <tr><th>Rute</th><th>Distance</th><th>Primær hastighed</th></tr>
+          <tr><td><b>Rute A — Motorvej</b></td><td><b>62 km</b></td><td>110 km/t</td></tr>
+          <tr><td><b>Rute B — Landevej</b></td><td><b>54 km</b></td><td>80 km/t</td></tr>
+        </table><br>
+        Benzinpris: <b>16,20 kr./liter</b> · Forbrug ved 80 km/t: <b>5,00 liter/100km</b><br>
+        <b>Benzinforbruget stiger 22%</b> fra 80 til 110 km/t.<br><br>
+        Hvad koster en enkelt tur på <b>Rute A</b> i brændstof?</div>`,
+      q:'Hvad koster én tur på Rute A (motorvej, 62 km) i benzin? (1 decimal)',
+      hint:'Forbrug 110 km/t = 5,00 × 1,22. Pris = (forbrug/100) × 62 × 16,20',
+      label:'Én tur:', unit:'kr.',
+      correct:r2(5.00*1.22/100*62*16.20*10)/10, tol:0.2,
+      fb:{v:`Korrekt! ≈ ${r2(5.00*1.22/100*62*16.20*10)/10} kr. ✓`,
+        e:`Forbrug 110 km/t: 5,00 × 1,22 = ${r2(5.00*1.22)} L/100km<br>Forbrug 62 km: ${r2(5.00*1.22)} ÷ 100 × 62 = ${r2(5.00*1.22*62/100)} L<br>Pris: ${r2(5.00*1.22*62/100)} × 16,20 = <b>${r2(5.00*1.22/100*62*16.20*10)/10} kr.</b>`,
+        w:'<b>Trin-for-trin beregning af turudgift:</b><br>1. Find forbruget ved den aktuelle hastighed (juster med procentfaktor).<br>2. Beregn det faktiske forbrug for turen (L/100km ÷ 100 × km).<br>3. Gang med prisen pr. liter.<br><br>Dette trin-for-trin mønster er <b>universelt</b> — det virker for benzin, el, og ethvert andet brændstof. Vis altid alle trin til eksamen.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📅 Årsudgift for de to ruter</div>
+        <div class="ctx-body">Én tur Rute A (62 km, 110 km/t): <code>≈ ${r2(5.00*1.22/100*62*16.20*10)/10} kr.</code><br><br>
+        Rute B (54 km, 80 km/t, forbrug 5,00 L/100km):<br>
+        Forbrug: 5,00 ÷ 100 × 54 = ${r2(5.00*54/100)} L · Pris: ${r2(5.00*54/100)} × 16,20 = <code>${r2(5.00*54/100*16.20*10)/10} kr./tur</code><br><br>
+        Antal arbejdsdage: <b>210</b>. De kører <b>tur-retur</b> (× 2).</div>`,
+      q:'Hvad er den samlede ÅRSUDGIFT til benzin for Rute B? (afrund til nærmeste 100 kr.)',
+      hint:'Årsudgift = pris pr. tur × 2 (tur-retur) × 210 arbejdsdage',
+      label:'Årsudgift B:', unit:'kr.',
+      correct:Math.round(r2(5.00*54/100*16.20*10)/10*2*210/100)*100, tol:50,
+      fb:{v:`Korrekt! ≈ ${Math.round(r2(5.00*54/100*16.20*10)/10*2*210/100)*100} kr./år ✓`,
+        e:`${r2(5.00*54/100*16.20*10)/10} kr./tur × 2 × 210 = <b>${r2(5.00*54/100*16.20*10)/10*2*210} kr./år</b> ≈ ${Math.round(r2(5.00*54/100*16.20*10)/10*2*210/100)*100} kr.`,
+        w:'<b>Fra pris pr. tur til årsudgift:</b><br>Årsudgift = pris pr. tur × antal ture pr. dag (normalt 2 = tur-retur) × antal arbejdsdage. Dette er et <b>lineært budget</b> — udgiften vokser proportionalt med antal km. Til eksamen er det vigtigt at <b>specificere dine antagelser</b>: "Jeg antager tur-retur og 210 arbejdsdage." Det viser matematisk modenhed.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">⚖️ Sammenlign de to ruter</div>
+        <div class="ctx-body">Årsudgift benzin (tur-retur, 210 dage):<br>
+        Rute A (motorvej, 62 km): <code>${r0(r2(5.00*1.22/100*62*16.20*10)/10*2*210)} kr./år</code><br>
+        Rute B (landevej, 54 km): <code>${r0(r2(5.00*54/100*16.20*10)/10*2*210)} kr./år</code><br><br>
+        Difference: <code>${r0(Math.abs(r2(5.00*1.22/100*62*16.20*10)/10*2*210 - r2(5.00*54/100*16.20*10)/10*2*210))} kr./år</code></div>`,
+      q:'Hvilken rute er billigst i brændstof — og hvad er det vigtigste forbehold?',
+      opts:[
+        'Rute A er billigst — man sparer tid og det er det vigtigste',
+        'Rute B er billigst i brændstof, men man skal også vurdere tidsværdien af den ekstra køretid på motorvejen',
+        'De er præcis lige dyre når man medregner tidsforbrug',
+        'Rute B er altid det rigtige valg — landevejen er altid billigst'
+      ],
+      correct:1,
+      fb:{v:'Korrekt og nuanceret svar! ✓',
+        e:'Rute B er billigst i brændstof. Men motorvejen er hurtigere — man skal vurdere om tidsbesparelsen er den ekstra udgift værd.',
+        w:'<b>Tidsværdi vs brændstofomkostning:</b><br>I en fuld analyse skal man overveje: Hvor meget er den sparede tid værd? Motorvejen kan spare 5-10 minutter pr. tur — det er 35+ timer om året. Har man en godt betalt stilling, kan denne tid have høj "tidsværdi". Til eksamen er det en <b>stærk pointe</b> at nævne at den billigste rute i brændstof ikke nødvendigvis er den bedste valg samlet set, og at man skal definere hvad man optimerer på.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔄 Ekstra km-forbrug om året</div>
+        <div class="ctx-body">Ud over arbejdskørslen kører familien <b>yderligere 8.000 km om året</b> til fx indkøb, fritid mv.<br><br>
+        El-km-pris ved 80 km/t: forbrug 9,20 kWh/100km · pris 1,95 kr./kWh<br>
+        <code>El-km-pris = 9,20 × 1,95 ÷ 100 = ? kr./km</code></div>`,
+      q:'Hvad koster de 8.000 ekstra km pr. år i el? (afrund til nærmeste 10 kr.)',
+      hint:'El km-pris = 9,20 × 1,95 ÷ 100. Årsudgift = km-pris × 8.000',
+      label:'8.000 km koster:', unit:'kr.',
+      correct:Math.round(9.20*1.95/100*8000/10)*10, tol:5,
+      fb:{v:`Korrekt! ≈ ${Math.round(9.20*1.95/100*8000/10)*10} kr. ✓`,
+        e:`El km-pris = 9,20 × 1,95 ÷ 100 = ${r2(9.20*1.95/100)} kr./km<br>${r2(9.20*1.95/100)} × 8.000 = <b>${r2(9.20*1.95/100*8000)} kr.</b> ≈ ${Math.round(9.20*1.95/100*8000/10)*10} kr.`,
+        w:'<b>Variable omkostninger — afhænger af antal km:</b><br>Drivmiddelomkostningen er en <b>variabel udgift</b> — den afhænger direkte af antal km. I et samlet budget inddeler man udgifter i faste (betales uanset km: forsikring, renter) og variable (afhænger af km: brændstof). Denne opdeling er central til eksamen, fordi den viser hvornår breakeven-punktet er nået.'}
+    },
+  ]
+},
+
+/* ── MISSION 3: Låneberegning og rentes rente ── */
+{
+  id:2, icon:'🏦', title:'Lån, Renter & Rentes Rente', xp:200,
+  desc:'Beregn låneomkostninger med rentes rente og oprettelsesgebyr',
+  tags:['Rentes rente','Låneberegning','Gebyr','Samlet tilbagebetaling'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🏦 Lånescenario</div>
+        <div class="ctx-body">En person låner <b>80.000 kr.</b> i banken.<br>
+        Rente: <b>4% pr. år (p.a.)</b> · Oprettelsesgebyr: <b>3.500 kr.</b> (betales ved oprettelse)<br><br>
+        Formlen for rentes rente (slutbeløb efter n år):<br>
+        <code>K_n = K_0 × (1 + r)^n</code><br>
+        hvor K_0 = startbeløb, r = rente (decimal), n = antal år.<br><br>
+        Hvad skylder man efter <b>1 år</b> (før afdrag), ekskl. gebyr?</div>`,
+      q:'Hvad skylder man efter 1 år med 4% rente? (afrund til nærmeste krone)',
+      hint:'K_1 = 80.000 × (1 + 0,04)¹ = 80.000 × 1,04',
+      label:'Gæld efter 1 år:', unit:'kr.',
+      correct:r0(80000*1.04), tol:1,
+      fb:{v:`Korrekt! 80.000 × 1,04 = ${r0(80000*1.04)} kr. ✓`,
+        e:`K_1 = 80.000 × 1,04 = <b>${r0(80000*1.04)} kr.</b><br>Heraf renter: ${r0(80000*1.04)} − 80.000 = <b>${r0(80000*0.04)} kr.</b> første år.`,
+        w:'<b>Rentes rente — eksponentiel vækst:</b><br>Formlen <code>K_n = K_0 × (1+r)^n</code> er fundamentet for al renteberegning. Det afgørende ved rentes rente er at renten i år 2 beregnes af det nye (større) beløb — ikke af det oprindelige. Derfor vokser gælden eksponentielt hvis man ikke betaler af. Til eksamen skal du kunne opstille formlen og beregne for et givent antal år.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📊 Gæld efter 3 år uden afdrag</div>
+        <div class="ctx-body">Lån: <b>80.000 kr.</b> · Rente: <b>4% p.a.</b><br>
+        Formlen: <code>K_n = K_0 × (1 + r)^n</code><br><br>
+        K_1 = 80.000 × 1,04 = ${r0(80000*1.04)} kr.<br>
+        K_2 = ${r0(80000*1.04)} × 1,04 = ${r0(80000*1.04*1.04)} kr.<br>
+        K_3 = ${r0(80000*1.04*1.04)} × 1,04 = ?</div>`,
+      q:'Hvad skylder man efter 3 år uden afdrag? (afrund til nærmeste krone)',
+      hint:'K_3 = 80.000 × 1,04³',
+      label:'Gæld efter 3 år:', unit:'kr.',
+      correct:r0(80000*Math.pow(1.04,3)), tol:1,
+      fb:{v:`Korrekt! ${r0(80000*Math.pow(1.04,3))} kr. ✓`,
+        e:`K_3 = 80.000 × 1,04³ = 80.000 × ${r2(Math.pow(1.04,3))} = <b>${r0(80000*Math.pow(1.04,3))} kr.</b><br>Samlede renter over 3 år: ${r0(80000*Math.pow(1.04,3)-80000)} kr.`,
+        w:'<b>Rentes rente over flere år:</b><br>I stedet for at gange tre gange kan man skrive <code>K_3 = K_0 × (1,04)³</code>. Eksponenten angiver antal år. Det er effektivt til eksamen. Husk at renter-på-renter betyder at rentebeløbet vokser for hvert år — i år 1 betaler du ${r0(80000*0.04)} kr. i renter, i år 3 betaler du ${r0(80000*Math.pow(1.04,2)*0.04)} kr.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">💳 Samlet tilbagebetaling inkl. gebyr</div>
+        <div class="ctx-body">Lån: 80.000 kr. · Rente: 4% p.a. · Oprettelsesgebyr: 3.500 kr.<br><br>
+        Lånet afbetales over <b>4 år</b> med ens beløb hvert år (annuitetslån forenklet).<br>
+        Vi antager at gælden betales fuldt ud efter 4 år:<br>
+        <code>K_4 = 80.000 × 1,04⁴ = ${r0(80000*Math.pow(1.04,4))} kr.</code></div>`,
+      q:'Hvad er den SAMLEDE tilbagebetaling inkl. oprettelsesgebyr på 3.500 kr.?',
+      hint:'Samlet = K_4 + gebyr = ' + r0(80000*Math.pow(1.04,4)) + ' + 3.500',
+      label:'Samlet betalt:', unit:'kr.',
+      correct:r0(80000*Math.pow(1.04,4))+3500, tol:1,
+      fb:{v:`Korrekt! ${r0(80000*Math.pow(1.04,4))+3500} kr. i alt ✓`,
+        e:`${r0(80000*Math.pow(1.04,4))} + 3.500 = <b>${r0(80000*Math.pow(1.04,4))+3500} kr.</b><br>Lånet koster: ${r0(80000*Math.pow(1.04,4))+3500-80000} kr. mere end det lånte beløb.`,
+        w:'<b>Samlede låneomkostninger:</b><br>Det man betaler ud over lånebeløbet (80.000 kr.) er de samlede renteomkostninger plus gebyrer. Her: ${r0(80000*Math.pow(1.04,4))+3500-80000} kr. ud over de 80.000. Til eksamen er dette et vigtigt tal at beregne — det viser den reelle pris for lånet og indgår i sammenligning af om investeringen er pengene værd.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📈 Månedlig ydelse</div>
+        <div class="ctx-body">Lån: 80.000 kr. · 4% p.a. · Løbetid: 4 år (48 måneder)<br><br>
+        En simpel tilnærmelse til månedlig ydelse (uden præcis annuitetsformel):<br>
+        <code>Ca. månedlig ydelse = (lån + samlede renter) ÷ antal måneder</code><br>
+        Samlede renter over 4 år ≈ ${r0(80000*Math.pow(1.04,4)-80000)} kr.<br>
+        Samlet tilbagebetaling (excl. gebyr): ${r0(80000*Math.pow(1.04,4))} kr. ÷ 48 måneder = ?</div>`,
+      q:'Hvad er den approksimative månedlige ydelse (excl. gebyr)?',
+      hint:'Ca. månedlig ydelse = ' + r0(80000*Math.pow(1.04,4)) + ' ÷ 48',
+      opts:[
+        `Ca. ${r0(80000*Math.pow(1.04,4)/48/100)*100-100} kr./md.`,
+        `Ca. ${r0(r0(80000*Math.pow(1.04,4)/48)/100)*100} kr./md.`,
+        `Ca. ${r0(80000/48/100)*100} kr./md.`,
+        `Ca. ${r0(80000*Math.pow(1.04,4)/48/100)*100+400} kr./md.`
+      ],
+      correct:1,
+      fb:{v:`Korrekt! ≈ ${r0(r0(80000*Math.pow(1.04,4)/48)/100)*100} kr./md. ✓`,
+        e:`${r0(80000*Math.pow(1.04,4))} ÷ 48 = ${r2(80000*Math.pow(1.04,4)/48)} ≈ <b>${r0(r0(80000*Math.pow(1.04,4)/48)/100)*100} kr./md.</b>`,
+        w:'<b>Månedlig ydelse i et budget:</b><br>Den månedlige ydelse er en <b>fast udgift</b> der skal med i budgettet for de næste 4 år. Til eksamen opstiller man typisk et budget der viser alle faste udgifter (lån, forsikring, abonnementer) og variable (brændstof afhænger af km). Den månedlige ydelse er et centralt tal for at vurdere om familien <b>har råd</b> til den nye investering.'}
+    },
+  ]
+},
+
+/* ── MISSION 4: Budget — fast vs variabel ── */
+{
+  id:3, icon:'📋', title:'Budget — Sammenlign To Scenarier', xp:250,
+  desc:'Opstil og sammenlign et fuldt årsbudget for to alternativer',
+  tags:['Budget','Faste udgifter','Variable udgifter','Årsomkostning'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📋 Udgiftstyper</div>
+        <div class="ctx-body">Når man sammenligner to alternativer (fx to køretøjer eller to abonnementer) opdeles udgifterne i:<br><br>
+        <table class="dtbl">
+          <tr><th>Udgiftstype</th><th>Definition</th><th>Eksempel</th></tr>
+          <tr><td class="hi">Fast udgift</td><td class="hi">Betales uanset forbrug</td><td class="hi">Forsikring, renter, abonnement</td></tr>
+          <tr><td>Variabel udgift</td><td>Afhænger af brug/km</td><td>Brændstof</td></tr>
+          <tr><td>Engangsudgift</td><td>Betales kun én gang</td><td>Anskaffelsespris, installationsgebyr</td></tr>
+        </table></div>`,
+      q:'En ladestation til et hus koster 4.500 kr. at installere. Hvad slags udgift er det?',
+      opts:[
+        'Fast udgift — den betales hvert år',
+        'Variabel udgift — afhænger af strømforbrug',
+        'Engangsudgift — betales kun én gang',
+        'Det er en løbende driftsudgift'
+      ],
+      correct:2,
+      fb:{v:'Korrekt! Det er en engangsudgift ✓',
+        e:'Installationen betales én gang og giver glæde i mange år. Den fordeles ofte over bilens levetid (amortisering) for at sammenligne fair.',
+        w:'<b>Amortisering af engangsudgifter:</b><br>En engangsudgift på 4.500 kr. over fx 5 år = 900 kr./år. Denne teknik hedder <b>amortisering</b> og bruges til at fordele en stor engangsudgift ligeligt over levetiden. Det giver et mere retvisende billede i et årsbudget. Til eksamen: vær præcis om hvornår en udgift er fast, variabel eller engangsbeløb — det viser matematisk systematik.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📊 Årsbudget — Option A vs B</div>
+        <div class="ctx-body">To scenarier for transport (pr. år):<br><br>
+        <table class="dtbl">
+          <tr><th>Udgift</th><th>Option A</th><th>Option B</th></tr>
+          <tr><td>Forsikring</td><td>6.200 kr.</td><td>4.800 kr.</td></tr>
+          <tr><td>Service/vedligehold</td><td>1.800 kr./år</td><td>3.200 kr./år</td></tr>
+          <tr><td>Månedlig ydelse (lån)</td><td>2.150 kr./md.</td><td>0 kr./md.</td></tr>
+          <tr><td>Brændstof (18.000 km)</td><td>beregn →</td><td>beregn →</td></tr>
+        </table><br>
+        Option A: El, 9,20 kWh/100km, 1,95 kr./kWh<br>
+        Option B: Benzin, 5,00 L/100km, 16,20 kr./L</div>`,
+      q:'Hvad er den samlede FASTE årsomkostning for Option A (excl. brændstof)? Husk: ydelse er pr. måned!',
+      hint:'Faste = forsikring + service + (månedlig ydelse × 12)',
+      label:'Faste udg. A:', unit:'kr./år',
+      correct:6200+1800+2150*12, tol:1,
+      fb:{v:`Korrekt! ${6200+1800+2150*12} kr./år ✓`,
+        e:`6.200 + 1.800 + 2.150×12 = 6.200 + 1.800 + 25.800 = <b>${6200+1800+2150*12} kr./år</b>`,
+        w:'<b>Husk at konvertere månedlige til årsbeløb:</b><br>En klassisk fejl er at glemme at gange månedlige ydelser med 12. I et årsbudget skal <b>alle beløb være i samme enhed</b> — enten alt pr. måned eller alt pr. år. Det er god matematisk praksis at notere enheden tydeligt: "2.150 kr./md. × 12 = 25.800 kr./år".'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">⛽ Brændstofudgift — 18.000 km</div>
+        <div class="ctx-body">Option A (El): 9,20 kWh/100km · 1,95 kr./kWh<br>
+        Option B (Benzin): 5,00 L/100km · 16,20 kr./L<br><br>
+        Samlede faste udgifter:<br>
+        Option A: ${6200+1800+2150*12} kr./år<br>
+        Option B: 4.800 + 3.200 + 0 = 8.000 kr./år<br><br>
+        Beregn brændstofudgift for <b>18.000 km</b> for Option A og B, og find den <b>samlede forskel</b> i årsudgift.</div>`,
+      q:'Hvad er den samlede årsudgift for Option B (benzin, inkl. brændstof til 18.000 km)?',
+      hint:'Benzin/år = 5,00/100 × 18.000 × 16,20. Samlet = faste + benzin',
+      label:'Samlet B pr. år:', unit:'kr.',
+      correct:r0(8000+5.00/100*18000*16.20), tol:50,
+      fb:{v:`Korrekt! ≈ ${r0(8000+5.00/100*18000*16.20)} kr./år ✓`,
+        e:`Benzin: 5,00/100 × 18.000 × 16,20 = ${r0(5.00/100*18000*16.20)} kr.<br>Samlet B = 8.000 + ${r0(5.00/100*18000*16.20)} = <b>${r0(8000+5.00/100*18000*16.20)} kr./år</b>`,
+        w:'<b>Det fulde budget:</b><br>Samlet årsudgift = faste udgifter + variable udgifter. Nu kan vi sammenligne de to scenarier direkte. Option A total = ${6200+1800+2150*12+r0(9.20/100*18000*1.95)} kr./år. Hvilken er billigst? Og hvornår skifter det (breakeven) — det er næste mission!'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📈 Sammenlign de to scenarier</div>
+        <div class="ctx-body">Samlede årsudgifter:<br>
+        <table class="dtbl">
+          <tr><th></th><th>Option A (El + lån)</th><th>Option B (Benzin, gældfri)</th></tr>
+          <tr><td>Faste udgifter</td><td>${6200+1800+2150*12} kr.</td><td>8.000 kr.</td></tr>
+          <tr><td>Brændstof 18.000 km</td><td>${r0(9.20/100*18000*1.95)} kr.</td><td>${r0(5.00/100*18000*16.20)} kr.</td></tr>
+          <tr class="hi"><td><b>SAMLET</b></td><td>${6200+1800+2150*12+r0(9.20/100*18000*1.95)} kr.</td><td>${r0(8000+5.00/100*18000*16.20)} kr.</td></tr>
+        </table></div>`,
+      q:'Hvad er den vigtigste konklusion?',
+      opts:[
+        'Option A er altid billigst fordi el er billigere pr. km',
+        'Option B er billigst dette år — men lånet i A afsluttes og billeder ændres over tid',
+        'De to er identiske og kan ikke sammenlignes',
+        'Forsikringen er den afgørende faktor'
+      ],
+      correct:1,
+      fb:{v:'Korrekt og nuanceret! ✓',
+        e:`Option B er billigst år 1: ${r0(8000+5.00/100*18000*16.20)} kr. mod ${6200+1800+2150*12+r0(9.20/100*18000*1.95)} kr. Men når lånet i A er afbetalt, ændres billedet radikalt.`,
+        w:'<b>Tidshorisontens betydning:</b><br>En analyse over ét år kan give et misvisende billede. Option A har høje faste udgifter pga. lånet — men disse falder væk efter 4 år. Over 5-10 år kan billedet se helt anderledes ud. Til eksamen forventes det at du <b>kommenterer tidshorisonten</b> og diskuterer hvornår det ene alternativ begynder at betale sig. Det er præcis det breakeven-analysen i næste mission viser.'}
+    },
+  ]
+},
+
+/* ── MISSION 5: Breakeven-analyse ── */
+{
+  id:4, icon:'📐', title:'Breakeven — Hvornår kan det betale sig?', xp:300,
+  desc:'Find det punkt hvor to alternativer er lige dyre, og hvornår det ene begynder at betale sig',
+  tags:['Breakeven','Ligningsløsning','Graf','Samlet omkostning'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📐 Hvad er et breakeven-punkt?</div>
+        <div class="ctx-body">Du vil finde det antal km pr. år, hvor to transportvalg koster <b>præcis det samme</b>.<br><br>
+        Option A (dyr at anskaffe, billig pr. km): <b>Fastudgift: 12.000 kr./år · Km-pris: 0,18 kr./km</b><br>
+        Option B (billig at anskaffe, dyr pr. km): <b>Fastudgift: 5.000 kr./år · Km-pris: 0,82 kr./km</b><br><br>
+        Sæt de to lig hinanden og løs for km: <code>12.000 + 0,18·km = 5.000 + 0,82·km</code></div>`,
+      q:'Hvad er breakeven-punktet? (antal km/år hvor de to er ens)',
+      hint:'12.000 + 0,18·km = 5.000 + 0,82·km → træk 0,18·km fra begge sider → 7.000 = 0,64·km → km = ?',
+      opts:[
+        `${r0(7000/0.64-2000)} km/år`,
+        `${r0(7000/0.64)} km/år`,
+        `${r0(7000/0.64+1500)} km/år`,
+        `${r0(5000/0.64)} km/år`
+      ],
+      correct:1,
+      fb:{v:`Korrekt! Breakeven ved ${r0(7000/0.64)} km/år ✓`,
+        e:`12.000 − 5.000 = (0,82 − 0,18) · km → 7.000 = 0,64 · km → km = 7.000 ÷ 0,64 = <b>${r0(7000/0.64)} km/år</b>`,
+        w:'<b>Breakeven-analyse — ligningsløsning:</b><br>Opstil en ligning hvor de to samlede udgifter sættes lig hinanden: <code>Fast_A + km-pris_A × km = Fast_B + km-pris_B × km</code>. Isolér km-leddet ved at samle km på én side. Dette er en lineær ligning med én ubekendt — præcis som i algebraundervisningen! Til eksamen skal du <b>vise alle mellemregninger</b> og konkludere: "Kører man mere end ${r0(7000/0.64)} km/år, er Option A billigst."'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔢 Breakeven — egen beregning</div>
+        <div class="ctx-body">Nu prøver du selv:<br><br>
+        Option X: <b>Fastudgift: 18.000 kr./år · Km-pris: 0,22 kr./km</b><br>
+        Option Y: <b>Fastudgift: 8.000 kr./år · Km-pris: 0,95 kr./km</b><br><br>
+        Sæt lig hinanden og løs:<br>
+        <code>18.000 + 0,22·km = 8.000 + 0,95·km</code></div>`,
+      q:'Ved hvor mange km/år er de to optioner lige dyre? (afrund til nærmeste 100 km)',
+      hint:'18.000 − 8.000 = (0,95 − 0,22) · km → 10.000 = 0,73 · km → km = ?',
+      label:'Breakeven:', unit:'km/år',
+      correct:Math.round(10000/0.73/100)*100, tol:50,
+      fb:{v:`Korrekt! ≈ ${Math.round(10000/0.73/100)*100} km/år ✓`,
+        e:`10.000 = 0,73 · km → km = 10.000 ÷ 0,73 = ${r2(10000/0.73)} ≈ <b>${Math.round(10000/0.73/100)*100} km/år</b>`,
+        w:'<b>Fortolkning af breakeven:</b><br>"Kører man under ${Math.round(10000/0.73/100)*100} km/år, er Option Y billigst (lavere faste udgifter). Kører man mere end ${Math.round(10000/0.73/100)*100} km/år, er Option X billigst (lavere km-pris dominerer)." Denne formulering viser at du kan <b>fortolke dit matematiske resultat</b> i kontekst — det er højt vurderet til eksamen.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📊 Grafisk fortolkning</div>
+        <div class="ctx-body">To lineære funktioner (samlede udgifter):<br>
+        f(km) = 18.000 + 0,22·km  (Option X — stejl linje starter højt)<br>
+        g(km) = 8.000 + 0,95·km   (Option Y — stiger hurtigere)<br><br>
+        Linjerne skærer hinanden ved breakeven-punktet ≈ ${Math.round(10000/0.73/100)*100} km/år.</div>`,
+      q:'Hvad viser det grafisk når Option Y\'s linje er stejlere end Option X\'s?',
+      opts:[
+        'Option Y er altid billigst',
+        'Option Y har højere km-pris (hældningskoefficient) — udgiften stiger hurtigere pr. ekstra km',
+        'Option X skærer y-aksen lavest og er altid billigst',
+        'De to linjer løber parallelt og skærer aldrig hinanden'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Hældningen er km-prisen ✓',
+        e:'En stejlere linje = højere hældningskoefficient = højere km-pris. Jo flere km man kører, jo mere slår det ud.',
+        w:'<b>Lineære funktioner i en transportanalyse:</b><br>Samlede udgifter = <b>skæring med y-aksen</b> (faste udgifter) + <b>hældning</b> × km (variable udgifter pr. km). Den lineære model er nyttig fordi vi kan tegne grafen, aflæse skæringspunktet (breakeven) og se tydeligt hvornår en option er billigst. Til eksamen: tegn de to linjer og marker breakeven-punktet — det er en stærk visuel argumentation.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎓 Samlet analyse — hvad skal man med i overvejelsen?</div>
+        <div class="ctx-body">Du skal nu sammenfatte en analyse af hvornår Option X (høj fast udgift, billig pr. km) kan betale sig frem for Option Y.<br><br>
+        Breakeven: <b>${Math.round(10000/0.73/100)*100} km/år</b><br>
+        Familien kører aktuelt <b>16.000 km/år</b></div>`,
+      q:'Hvilke faktorer BØR med i den samlede vurdering? (vælg det mest fyldestgørende svar)',
+      opts:[
+        'Kun breakeven-punktet er relevant',
+        'Breakeven, fremtidig kørselsmønster, om antal km kan ændre sig, og tidshorisont for investering',
+        'Kun det første år er relevant — derefter er alt uvist',
+        'Kun forsikring og service — brændstof er uvæsentligt'
+      ],
+      correct:1,
+      fb:{v:'Excellent helhedsforståelse! 🏆',
+        e:`16.000 km > ${Math.round(10000/0.73/100)*100} km breakeven → Option X er billigst ved dette kørselsniveau. Men hvad nu hvis kørselsmønstret ændrer sig?`,
+        w:'<b>Den komplette eksamenssvar-struktur for en sammenligningsanalyse:</b><br>1. <b>Beregn km-priser</b> for begge alternativer<br>2. <b>Opstil fulde årsbudgetter</b> (faste + variable)<br>3. <b>Find breakeven-punkt</b> (sæt lig hinanden, løs for km)<br>4. <b>Sammenlign</b> med det faktiske kørselsmønster<br>5. <b>Diskutér usikkerheder:</b> Priser på brændstof kan ændre sig. Kørselsmønstret kan ændre sig. Tidshorisonten for lånet udløber. Ferie og ekstraordinær kørsel.<br><br>En elev der inddrager alle disse punkter viser modellerings- og ræsonnementskompetence på højt niveau.'}
+    },
+  ]
+},
+];
+
+/* ═══════════════════════════════════════════
+   SAVE / XP
+═══════════════════════════════════════════ */
+const SKEY='transoek_v2';
+function ldSD(){try{return JSON.parse(localStorage.getItem(SKEY)||'{}')}catch{return{};}}
+function svSD(){localStorage.setItem(SKEY,JSON.stringify(SD));}
+let SD=ldSD();
+if(!SD.xp)SD.xp=0;if(!SD.done)SD.done=[];
+
+function xpLv(){
+  const x=SD.xp;
+  if(x<150)return{l:'Begynder',n:150};if(x<350)return{l:'Studerende',n:350};
+  if(x<700)return{l:'Analytiker',n:700};if(x<1200)return{l:'Ekspert',n:1200};
+  return{l:'Økonomi-Mester',n:null};
+}
+
+/* HOME */
+function buildHome(){
+  const lv=xpLv();
+  const tot=MISSIONS.reduce((s,m)=>s+m.xp,0);
+  const pct=Math.min(100,Math.round(SD.xp/tot*100));
+  document.getElementById('xp-fill').style.width=pct+'%';
+  document.getElementById('xp-lbl').textContent=`${SD.xp} XP — ${lv.l}`;
+  const g=document.getElementById('mgrid');g.innerHTML='';
+  MISSIONS.forEach((m,i)=>{
+    const done=SD.done.includes(m.id);
+    const locked=i>0&&!SD.done.includes(MISSIONS[i-1].id);
+    const d=document.createElement('div');
+    d.className=`mcard${done?' done':locked?' locked':''}`;
+    d.innerHTML=`<div class="mc-icon">${m.icon}</div>
+      <div class="mc-info">
+        <div class="mc-num">Mission ${i+1} · ${m.steps.length} opgaver</div>
+        <div class="mc-title">${m.title}</div>
+        <div class="mc-desc">${m.desc}</div>
+        <div class="mc-tags">${m.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="mc-right"><div class="mc-xp">+${m.xp} XP</div><div class="mc-status">${done?'✅':locked?'🔒':''}</div></div>`;
+    if(!locked)d.onclick=()=>startMission(m.id);
+    g.appendChild(d);
+  });
+}
+function goHome(){curStep=0;show('s-home');buildHome();}
+
+/* MISSION ENGINE */
+let curMId=null,curStep=0,stepRes=[];
+function startMission(id){
+  curMId=id;curStep=0;stepRes=[];
+  const m=MISSIONS.find(x=>x.id===id);
+  document.getElementById('mtop-title').textContent=`${m.icon} ${m.title}`;
+  buildProg(m);renderStep();show('s-mission');
+}
+function buildProg(m){
+  const p=document.getElementById('sprog');p.innerHTML='';
+  m.steps.forEach((_,i)=>{const d=document.createElement('div');d.className='sp';d.id=`sp${i}`;p.appendChild(d);});
+  updProg();
+}
+function updProg(){
+  const m=MISSIONS.find(x=>x.id===curMId);
+  m.steps.forEach((_,i)=>{
+    const d=document.getElementById(`sp${i}`);if(!d)return;
+    d.className='sp';
+    if(i<curStep)d.classList.add('ok');
+    if(i===curStep)d.classList.add('cur');
+  });
+}
+function renderStep(){
+  selMC=null;
+  const m=MISSIONS.find(x=>x.id===curMId);
+  const s=m.steps[curStep];
+  const total=m.steps.length;
+  document.getElementById('mtop-ctr').textContent=`${curStep+1}/${total}`;
+  const area=document.getElementById('qarea');area.innerHTML='';
+  const ctxEl=document.createElement('div');ctxEl.className='ctx-card';ctxEl.innerHTML=s.ctx;area.appendChild(ctxEl);
+  const qqEl=document.createElement('div');qqEl.className='qq-card';
+  let inp='';
+  if(s.type==='mc'){
+    inp=`<div class="mc-opts">${s.opts.map((o,i)=>`<button class="mco" id="mco${i}" onclick="pickMC(${i})"><span class="mco-k">${String.fromCharCode(65+i)}.</span><span>${o}</span></button>`).join('')}</div>`;
+  } else {
+    inp=`<div class="nrow"><span class="nlbl">${s.label||'Svar ='}</span><input class="ninp" id="ninp" type="number" step="any" inputmode="decimal" placeholder="?" autocomplete="off"><span class="nlbl">${s.unit||''}</span></div>`;
+  }
+  qqEl.innerHTML=`<div class="qq-num">Opgave ${curStep+1} af ${total}</div>
+    <div class="qq-text">${s.q}</div>
+    ${s.hint?`<div class="qq-hint">💡 ${s.hint}</div>`:''}${inp}`;
+  area.appendChild(qqEl);
+  const fbEl=document.createElement('div');fbEl.className='fb';fbEl.id='fbel';area.appendChild(fbEl);
+  const br=document.createElement('div');br.className='btn-row';
+  br.innerHTML=`<button class="chkbtn" id="chkbtn" onclick="checkStep()">Tjek svar ✓</button>
+    <button class="nxtbtn" id="nxtbtn" onclick="nextStep()">${curStep<total-1?'Næste opgave →':'Afslut mission →'}</button>`;
+  area.appendChild(br);
+  updProg();
+  if(s.type==='num'){
+    const ni=document.getElementById('ninp');
+    setTimeout(()=>ni?.focus(),80);
+    ni?.addEventListener('keydown',e=>{if(e.key==='Enter')checkStep();});
+  }
+}
+let selMC=null;
+function pickMC(i){
+  if(document.getElementById('mco0')?.disabled)return;
+  selMC=i;
+  document.querySelectorAll('.mco').forEach((b,j)=>{
+    b.style.background=j===i?'rgba(0,230,118,.1)':'';
+    b.style.borderColor=j===i?'rgba(0,230,118,.4)':'';
+  });
+}
+function checkStep(){
+  const m=MISSIONS.find(x=>x.id===curMId);
+  const s=m.steps[curStep];
+  let ok=false;
+  if(s.type==='mc'){
+    if(selMC===null)return;
+    ok=selMC===s.correct;
+    document.querySelectorAll('.mco').forEach((b,i)=>{
+      b.disabled=true;b.style.background='';b.style.borderColor='';
+      if(i===s.correct)b.classList.add('ok');
+      else if(i===selMC&&!ok)b.classList.add('no');
+    });
+    selMC=null;
+  } else {
+    const ni=document.getElementById('ninp');
+    const v=parseFloat(ni?.value?.replace(',','.'));
+    if(isNaN(v)){ni?.classList.add('no');setTimeout(()=>ni?.classList.remove('no'),400);return;}
+    ok=Math.abs(v-s.correct)<=s.tol;
+    ni.disabled=true;
+    ni.classList.add(ok?'ok':'no');
+  }
+  stepRes.push(ok);
+  renderFB(s,ok);
+  document.getElementById('chkbtn').disabled=true;
+  document.getElementById('nxtbtn').classList.add('on');
+}
+function renderFB(s,ok){
+  const fb=document.getElementById('fbel');if(!fb)return;
+  fb.className='fb '+(ok?'ok':'no');
+  fb.innerHTML=`
+    <div class="fb-verdict ${ok?'ok':'no'}">${ok?'✅ '+s.fb.v:'❌ Ikke helt — men her er forklaringen:'}</div>
+    <div class="fb-exp">${s.fb.e}</div>
+    <div class="why">
+      <div class="why-h">🎓 Hvorfor gør man det sådan?</div>
+      <div class="why-b">${s.fb.w}</div>
+    </div>`;
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function nextStep(){
+  const m=MISSIONS.find(x=>x.id===curMId);
+  curStep++;
+  if(curStep>=m.steps.length){endMission();}
+  else{selMC=null;renderStep();document.querySelector('.qscroll')?.scrollTo(0,0);}
+}
+function endMission(){
+  const m=MISSIONS.find(x=>x.id===curMId);
+  const ok=stepRes.filter(Boolean).length,tot=stepRes.length;
+  const earned=Math.round(m.xp*(ok/tot));
+  SD.xp+=earned;
+  if(!SD.done.includes(m.id)&&ok>=Math.ceil(tot*.6))SD.done.push(m.id);
+  svSD();
+  document.getElementById('done-sc').textContent=`${ok}/${tot} korrekte · +${earned} XP`;
+  document.getElementById('done-msg').textContent=ok===tot?'Perfekt score! Du behersker dette emne fuldt ud.':ok>=Math.ceil(tot*.6)?'Godt klaret! Kig forklaringerne igennem igen.':'Bliv ved — prøv igen og læs forklaringerne grundigt.';
+  show('s-done');
+}
+function retryMission(){if(curMId!==null)startMission(curMId);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+buildHome();
+</script>
+</body>
+</html>

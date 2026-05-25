@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Geometri & Rumfang Træner — 10. klasse</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e1117;--panel:#161b27;--card:#1c2333;--border:#2a3344;
+  --green:#00e676;--green2:#69f0ae;--yellow:#ffeb3b;--orange:#ff9800;
+  --red:#f44336;--blue:#42a5f5;
+  --white:#e8eaf0;--muted:#8892a4;--muted2:#545e6f;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px);--sm:clamp(12px,2.7vw,14px);--md:clamp(14px,3.2vw,16px);
+  --lg:clamp(18px,4.2vw,22px);--xl:clamp(24px,5.5vw,32px);--xxl:clamp(32px,8vw,52px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;}
+.scr.on{display:flex;}
+#s-home{background:linear-gradient(160deg,#0e1117 0%,#111827 100%);align-items:center;justify-content:flex-start;padding:20px 14px 50px;}
+.home-hero{width:100%;max-width:520px;margin:0 auto 22px;text-align:center;}
+.hero-eye{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+.hero-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);line-height:.95;letter-spacing:-.01em;margin-bottom:6px;}
+.hero-h .acc{color:var(--green);}
+.hero-sub{font-size:var(--sm);color:var(--muted);line-height:1.65;max-width:380px;margin:0 auto 20px;}
+.xp-wrap{background:rgba(255,255,255,.07);border-radius:4px;height:8px;width:100%;max-width:300px;margin:0 auto 6px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:4px;transition:width .5s;}
+.xp-lbl{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:20px;}
+.mgrid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;}
+.mcard{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:15px 17px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.mcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);transform:scaleY(0);transition:transform .15s;transform-origin:bottom;}
+.mcard:hover:not(.locked)::before{transform:scaleY(1);}
+.mcard:hover:not(.locked){border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.04);}
+.mcard.locked{opacity:.4;cursor:default;}
+.mcard.done{border-color:rgba(0,230,118,.25);background:rgba(0,230,118,.03);}
+.mcard.done::before{transform:scaleY(1);}
+.mc-icon{font-size:clamp(24px,6vw,34px);flex-shrink:0;line-height:1;}
+.mc-info{flex:1;min-width:0;}
+.mc-num{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+.mc-title{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);margin-bottom:2px;}
+.mc-desc{font-size:var(--xs);color:var(--muted);line-height:1.4;}
+.mc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-family:var(--fm);font-size:clamp(7px,1.6vw,9px);border:1px solid var(--border);border-radius:3px;padding:2px 8px;color:var(--muted2);}
+.mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.mc-xp{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);}
+.mc-status{font-size:16px;}
+#s-mission{background:var(--bg);}
+.mtop{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));backdrop-filter:blur(10px);}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:var(--white);}
+.mtop-title{font-family:var(--fh);font-weight:700;font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.mtop-ctr{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+.sprog{display:flex;gap:5px;padding:8px 14px;background:rgba(0,0,0,.3);flex-shrink:0;flex-wrap:wrap;}
+.sp{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);transition:all .3s;}
+.sp.ok{background:var(--green);}
+.sp.cur{background:rgba(0,230,118,.4);animation:bl .8s ease-in-out infinite alternate;}
+@keyframes bl{from{opacity:.5}to{opacity:1}}
+.qscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 30px;}
+.qarea{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+.ctx-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.ctx-head{font-family:var(--fm);font-size:var(--xs);color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.ctx-body{font-size:var(--sm);color:var(--white);line-height:1.7;}
+.ctx-body b{color:var(--green2);}
+.ctx-body code{font-family:var(--fm);background:rgba(0,230,118,.08);color:var(--green2);padding:1px 6px;border-radius:3px;font-size:var(--xs);}
+.dtbl{width:100%;border-collapse:collapse;margin-top:10px;font-family:var(--fm);font-size:var(--xs);}
+.dtbl th{background:rgba(0,230,118,.08);color:var(--green);text-align:left;padding:6px 10px;border-bottom:1px solid rgba(0,230,118,.2);}
+.dtbl td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--white);}
+.dtbl .hi{background:rgba(0,230,118,.1);color:var(--green2);font-weight:700;}
+.fig{background:rgba(0,0,0,.4);border:1px solid rgba(0,230,118,.15);border-radius:8px;padding:10px;margin-top:10px;text-align:center;}
+.fig svg{display:block;margin:0 auto;}
+.fig-cap{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-top:6px;}
+.qq-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.qq-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:6px;}
+.qq-text{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);line-height:1.35;margin-bottom:10px;}
+.qq-hint{font-size:var(--xs);color:var(--muted);font-style:italic;margin-bottom:10px;line-height:1.5;}
+.mc-opts{display:flex;flex-direction:column;gap:8px;}
+.mco{border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.03);padding:12px 15px;cursor:pointer;font-size:var(--sm);color:rgba(255,255,255,.85);text-align:left;transition:all .13s;display:flex;align-items:flex-start;gap:10px;line-height:1.4;}
+.mco:hover:not(:disabled){border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.06);}
+.mco.ok{background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.5);color:var(--green2);}
+.mco.no{background:rgba(244,67,54,.08);border-color:rgba(244,67,54,.4);color:#ff8a80;}
+.mco:disabled{cursor:default;}
+.mco-k{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);min-width:18px;flex-shrink:0;padding-top:1px;}
+.nrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.nlbl{font-family:var(--fm);font-size:var(--sm);color:var(--muted);}
+.ninp{font-family:var(--fm);font-weight:700;font-size:var(--xl);width:clamp(110px,28vw,170px);background:rgba(0,230,118,.06);border:2px solid rgba(0,230,118,.3);border-radius:7px;color:var(--green2);text-align:center;padding:10px 8px;outline:none;-webkit-appearance:none;transition:all .18s;}
+.ninp:focus{border-color:var(--green);background:rgba(0,230,118,.1);box-shadow:0 0 16px rgba(0,230,118,.15);}
+.ninp.ok{border-color:var(--green);}
+.ninp.no{border-color:var(--red);animation:sh .3s ease;}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.fb{border-radius:10px;padding:14px 16px;display:none;}
+.fb.ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);display:block;}
+.fb.no{background:rgba(244,67,54,.07);border:1px solid rgba(244,67,54,.2);display:block;}
+.fb-verdict{font-family:var(--fh);font-weight:700;font-size:var(--lg);margin-bottom:8px;}
+.fb-verdict.ok{color:var(--green);}
+.fb-verdict.no{color:var(--red);}
+.fb-exp{font-size:var(--sm);color:rgba(255,255,255,.82);line-height:1.7;margin-bottom:10px;}
+.fb-exp b{color:var(--white);}
+.fb-exp code{font-family:var(--fm);background:rgba(0,230,118,.1);color:var(--green2);padding:1px 6px;border-radius:3px;}
+.why{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;}
+.why-h{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.why-b{font-size:var(--sm);color:rgba(255,255,255,.72);line-height:1.7;}
+.why-b b{color:var(--white);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.chkbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:var(--green);color:#001a0d;border:none;border-radius:8px;padding:12px 36px;cursor:pointer;transition:all .13s;}
+.chkbtn:hover{background:var(--green2);}
+.chkbtn:disabled{opacity:.3;cursor:default;}
+.nxtbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 32px;cursor:pointer;display:none;transition:all .13s;}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(255,255,255,.14);}
+#s-done{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.dtrophy{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bonce 1.2s ease infinite alternate;}
+@keyframes bonce{from{transform:translateY(0) scale(1)}to{transform:translateY(-10px) scale(1.05)}}
+.done-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);margin-bottom:6px;line-height:.95;}
+.done-h .acc{color:var(--green);}
+.done-sc{font-family:var(--fm);font-size:var(--xl);color:var(--yellow);margin-bottom:12px;}
+.done-msg{font-size:var(--md);color:var(--muted);max-width:380px;line-height:1.65;margin-bottom:26px;}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.dbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);border:none;border-radius:8px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;}
+.dbtn.p{background:var(--green);color:#001a0d;}
+.dbtn.s{background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<div class="scr on" id="s-home">
+  <div class="home-hero">
+    <div class="hero-eye">📐 10. klasse · Eksamensforberedelse</div>
+    <h1 class="hero-h">GEOMETRI &<br><span class="acc">RUMFANG</span></h1>
+    <p class="hero-sub">Træn areal af regulære polygoner, trigonometri til at finde højder, rumfang af prismer og pyramider, og materialbudgetter.</p>
+    <div class="xp-wrap"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-lbl" id="xp-lbl">0 XP — Begynder</div>
+  </div>
+  <div class="mgrid" id="mgrid"></div>
+</div>
+
+<div class="scr" id="s-mission">
+  <div class="mtop">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="mtop-title" id="mtop-title">–</div>
+    <div class="mtop-ctr" id="mtop-ctr">1/1</div>
+  </div>
+  <div class="sprog" id="sprog"></div>
+  <div class="qscroll">
+    <div class="qarea" id="qarea"></div>
+  </div>
+</div>
+
+<div class="scr" id="s-done">
+  <div class="dtrophy">🏆</div>
+  <h2 class="done-h">MISSION<br><span class="acc">KLARET!</span></h2>
+  <div class="done-sc" id="done-sc">–</div>
+  <p class="done-msg" id="done-msg">–</p>
+  <div class="done-btns">
+    <button class="dbtn p" onclick="goHome()">← Vælg ny mission</button>
+    <button class="dbtn s" onclick="retryMission()">↺ Prøv igen</button>
+  </div>
+</div>
+
+<script>
+const r2=x=>Math.round(x*100)/100;
+const r1=x=>Math.round(x*10)/10;
+const r0=x=>Math.round(x);
+const deg=x=>x*Math.PI/180;
+// Key geometry values used across missions (neutral scenario: hexagonal shelter, side=1.5m)
+const HEX_S=1.5, HEX_N=6;
+const HEX_INT_ANGLE=(HEX_N-2)*180/HEX_N; // 120°
+const HEX_APOTHEM=r2(HEX_S/(2*Math.tan(deg(180/HEX_N)))); // apothem = s/(2·tan(π/n))
+const HEX_AREA=r2(HEX_N*HEX_S*HEX_APOTHEM/2);
+// Roof angle 40° from horizontal
+const ROOF_ANG=40;
+const ROOF_H=r2(HEX_APOTHEM*Math.tan(deg(ROOF_ANG)));
+const ROOF_SLANT=r2(HEX_APOTHEM/Math.cos(deg(ROOF_ANG)));
+// Prism height 2.2m
+const PRISM_H=2.2;
+// Pentagon scenario side=1.8m for mission 2
+const PEN_S=1.8, PEN_N=5;
+const PEN_INT=(PEN_N-2)*180/PEN_N; // 108°
+const PEN_APOTHEM=r2(PEN_S/(2*Math.tan(deg(180/PEN_N))));
+const PEN_AREA=r2(PEN_N*PEN_S*PEN_APOTHEM/2);
+
+const MISSIONS=[
+
+/* ── MISSION 1: Regulær polygon — indvendig vinkel og apothem ── */
+{
+  id:0,icon:'🔷',title:'Regulær Polygon — Vinkler & Apothem',xp:150,
+  desc:'Find indvendige vinkler og apothem (midtnormal) i regulære polygoner',
+  tags:['Regulær polygon','Indvendig vinkel','Apothem','Opdeling i trekanter'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🔷 Regulær hexagon (n=6), side s = ${HEX_S} m</div>
+        <div class="ctx-body">En regulær hexagon har <b>6 sider af samme længde</b> og alle vinkler er ens.<br><br>
+        Formlen for den indvendige vinkel i en regulær n-kant:<br>
+        <code>Indvendig vinkel = (n − 2) × 180° / n</code><br><br>
+        <div class="fig">
+          <svg width="160" height="140" viewBox="-80 -70 160 140">
+            <polygon points="75,0 37.5,65 -37.5,65 -75,0 -37.5,-65 37.5,-65" fill="rgba(0,230,118,.08)" stroke="#00e676" stroke-width="2"/>
+            <text x="0" y="5" fill="#ffeb3b" font-size="11" text-anchor="middle" font-family="monospace">120°</text>
+            <text x="0" y="-50" fill="#8892a4" font-size="9" text-anchor="middle">n=6</text>
+            <line x1="0" y1="0" x2="75" y2="0" stroke="rgba(0,230,118,.3)" stroke-width="1" stroke-dasharray="3,3"/>
+            <line x1="0" y1="0" x2="37.5" y2="65" stroke="rgba(0,230,118,.3)" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="55" y="-10" fill="#69f0ae" font-size="9" font-family="monospace">s=${HEX_S}m</text>
+          </svg>
+          <div class="fig-cap">Regulær hexagon opdelt i 6 trekanter fra centrum</div>
+        </div></div>`,
+      q:'Hvad er den indvendige vinkel i en regulær hexagon (n=6)?',
+      hint:'(n−2) × 180° / n = (6−2) × 180° / 6',
+      opts:['90°','108°','120°','135°'],
+      correct:2,
+      fb:{v:`Korrekt! ${HEX_INT_ANGLE}° ✓`,
+        e:`(6−2) × 180° / 6 = 4 × 180° / 6 = 720° / 6 = <b>${HEX_INT_ANGLE}°</b>`,
+        w:'<b>Indvendige vinkler i regulære polygoner:</b><br>Formlen <code>(n−2) × 180° / n</code> bygger på at en n-kant kan opdeles i (n−2) trekanter med vinklelsummen 180° hver. Summen af alle indvendige vinkler = (n−2)×180°. Delt med n giver den én indvendig vinkel. Vigtige værdier at huske: trekant 60°, firkant 90°, femkant 108°, sekskant 120°, ottek 135°.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Apothem — midtnormalens længde</div>
+        <div class="ctx-body">Apothem (a) er afstanden fra centrum til midten af en side — den korteste afstand fra midtpunktet til kanten.<br><br>
+        Formlen: <code>a = s / (2 · tan(180°/n))</code><br>
+        hvor s = sidelængde, n = antal sider.<br><br>
+        For hexagon: n=6, s=${HEX_S} m<br>
+        <code>a = ${HEX_S} / (2 · tan(180°/6)) = ${HEX_S} / (2 · tan(30°))</code><br><br>
+        tan(30°) = 1/√3 ≈ <b>0,5774</b></div>`,
+      q:`Hvad er apothem for en regulær hexagon med side ${HEX_S} m? (2 decimaler)`,
+      hint:`a = ${HEX_S} / (2 × tan(30°)) = ${HEX_S} / (2 × 0,5774)`,
+      label:'a =',unit:'m',
+      correct:HEX_APOTHEM,tol:0.02,
+      fb:{v:`a = ${HEX_APOTHEM} m ✓`,
+        e:`a = ${HEX_S} / (2 × 0,5774) = ${HEX_S} / ${r2(2*Math.tan(deg(30)))} = <b>${HEX_APOTHEM} m</b>`,
+        w:'<b>Apothem — nøglen til polygon-areal:</b><br>Apothem er den vinkelrette afstand fra centrum til en side. Det svarer til højden i de n retvinklede trekanter som polygonen opdeles i. Du kan finde apothem med <code>tan(180°/n) = (s/2) / a</code> → <code>a = s/(2·tan(180°/n))</code>. Det er trigonometri i en retvinklet trekant — og præcis det eksamen forventer at du bruger.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Areal af regulær polygon</div>
+        <div class="ctx-body">En regulær n-kant opdeles i n ens trekanter fra centrum.<br><br>
+        Areal af én trekant = ½ × grundlinje × højde = ½ × s × a<br>
+        Samlet areal = n × ½ × s × a<br><br>
+        <code>A = n × s × a / 2</code><br><br>
+        For hexagon: n=6, s=${HEX_S} m, a=${HEX_APOTHEM} m</div>`,
+      q:`Hvad er arealet af hexagonen? (2 decimaler)`,
+      hint:`A = 6 × ${HEX_S} × ${HEX_APOTHEM} / 2`,
+      label:'A =',unit:'m²',
+      correct:HEX_AREA,tol:0.05,
+      fb:{v:`A = ${HEX_AREA} m² ✓`,
+        e:`A = 6 × ${HEX_S} × ${HEX_APOTHEM} / 2 = ${r2(6*HEX_S*HEX_APOTHEM)} / 2 = <b>${HEX_AREA} m²</b>`,
+        w:'<b>Areal via trekant-opdeling:</b><br>Metoden er universel: <b>uanset hvilken regulær polygon</b> kan du altid opdele den i n trekanter. Arealet af én trekant er ½ × grundlinje × højde = ½ × s × a. Ganger du med n fås det totale areal. Formlen kan skrives kompakt som <code>A = n·s·a/2</code>. Til eksamen viser du typisk figuren med opsplitning og beregner apothem med trigonometri.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">💡 Indvendig vinkel — femkant</div>
+        <div class="ctx-body">En regulær femkant (n=5) med sidelængde ${PEN_S} m.<br><br>
+        Indvendig vinkel = (5−2) × 180° / 5 = <b>${PEN_INT}°</b><br>
+        Apothem = ${PEN_S} / (2·tan(36°)) = ${PEN_S} / (2×${r2(Math.tan(deg(36)))}) = <b>${PEN_APOTHEM} m</b></div>`,
+      q:`Hvad er arealet af en regulær femkant med side ${PEN_S} m?`,
+      hint:`A = 5 × ${PEN_S} × ${PEN_APOTHEM} / 2`,
+      opts:[`${r2(PEN_AREA-0.5)} m²`,`${PEN_AREA} m²`,`${r2(PEN_AREA+0.8)} m²`,`${r2(PEN_AREA+2)} m²`],
+      correct:1,
+      fb:{v:`Korrekt! A = ${PEN_AREA} m² ✓`,
+        e:`A = 5 × ${PEN_S} × ${PEN_APOTHEM} / 2 = ${r2(5*PEN_S*PEN_APOTHEM)} / 2 = <b>${PEN_AREA} m²</b>`,
+        w:'<b>Fremgangsmåde til eksamen:</b><br>1. Find indvendig vinkel: (n−2)×180°/n<br>2. Find apothem: a = s/(2·tan(180°/n))<br>3. Find areal: A = n·s·a/2<br><br>Disse tre trin er nok til at beregne arealet af enhver regulær polygon. Til eksamen <b>viser du alle tre trin med enheder</b> — og du tegner gerne en hjælpetrekant med vinklen 180°/n for at vise at du bruger trigonometri korrekt.'}
+    },
+  ]
+},
+
+/* ── MISSION 2: Tagvinkel og trighøjde ── */
+{
+  id:1,icon:'📐',title:'Trigonometri — Find Højder',xp:200,
+  desc:'Brug tan, sin og cos til at finde ukendte sider i retvinklede trekanter',
+  tags:['Trigonometri','tan/sin/cos','Taghøjde','Retvinklet trekant'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📐 Trigonometri — valg af formel</div>
+        <div class="ctx-body">I en retvinklet trekant med en given vinkel α:<br><br>
+        <table class="dtbl">
+          <tr><th>Formel</th><th>Bruger</th><th>Finder</th></tr>
+          <tr><td><code>tan(α) = modstående / hosliggende</code></td><td>Vinkel + hosliggende</td><td>Modstående (højde)</td></tr>
+          <tr><td><code>sin(α) = modstående / hypotenuse</code></td><td>Vinkel + hypotenuse</td><td>Modstående side</td></tr>
+          <tr><td><code>cos(α) = hosliggende / hypotenuse</code></td><td>Vinkel + hypotenuse</td><td>Hosliggende side</td></tr>
+        </table><br>
+        <div class="fig">
+          <svg width="180" height="120" viewBox="0 0 180 120">
+            <polygon points="10,100 170,100 170,20" fill="rgba(0,230,118,.07)" stroke="#00e676" stroke-width="2"/>
+            <rect x="152" y="82" width="16" height="16" fill="none" stroke="#00e676" stroke-width="1.5"/>
+            <text x="25" y="93" fill="#ffeb3b" font-size="11" font-family="monospace">α</text>
+            <text x="90" y="118" fill="#69f0ae" font-size="10" font-family="monospace">hosliggende</text>
+            <text x="175" y="65" fill="#42a5f5" font-size="10" font-family="monospace" transform="rotate(90,175,65)">modst.</text>
+            <text x="75" y="52" fill="#ff9800" font-size="10" font-family="monospace" transform="rotate(-23,75,52)">hypotenuse</text>
+          </svg>
+          <div class="fig-cap">Retvinklet trekant med vinkel α</div>
+        </div></div>`,
+      q:'Et teltag har en hældningsvinkel på 35° fra vandret. Vandret afstand fra centrum til kant er 2,80 m. Hvilken formel finder tagtoppen højde h?',
+      hint:'Du kender vinklen og den hosliggende side (2,80 m). Vil have den modstående (h).',
+      opts:[
+        'sin(35°) = h / 2,80 → h = 2,80 × sin(35°)',
+        'tan(35°) = h / 2,80 → h = 2,80 × tan(35°)',
+        'cos(35°) = h / 2,80 → h = 2,80 × cos(35°)',
+        'h = 2,80 / sin(35°)'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! tan bruges her ✓',
+        e:'Den kendte side (2,80 m) er hosliggende til vinklen. Højden h er modstående. tan(α) = modstående/hosliggende → <b>h = 2,80 × tan(35°)</b>',
+        w:'<b>Valg af trigonometrisk formel:</b><br>Huskeregel: <b>SOH-CAH-TOA</b><br>S = Sin = Modstående/Hypotenuse<br>C = Cos = Hosliggende/Hypotenuse<br>T = Tan = Modstående/Hosliggende<br><br>Identificér altid: hvilke to sider er involveret? Her er hosliggende (vandret) og modstående (lodret/højde) involveret → brug <b>tan</b>. Kender man hypotenuse og vil finde en side → brug sin eller cos.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🏔️ Beregn taghøjde</div>
+        <div class="ctx-body">Et teltags hældning er <b>${ROOF_ANG}° fra vandret</b>.<br>
+        Apothem (vandret afstand fra centrum til kant) = <b>${HEX_APOTHEM} m</b><br><br>
+        <code>tan(${ROOF_ANG}°) = h / apothem</code><br>
+        <code>h = apothem × tan(${ROOF_ANG}°)</code><br><br>
+        tan(${ROOF_ANG}°) ≈ <b>${r2(Math.tan(deg(ROOF_ANG)))}</b></div>`,
+      q:`Hvad er tagtoppen højde h over rammens plan? (2 decimaler)`,
+      hint:`h = ${HEX_APOTHEM} × tan(${ROOF_ANG}°) = ${HEX_APOTHEM} × ${r2(Math.tan(deg(ROOF_ANG)))}`,
+      label:'h =',unit:'m',
+      correct:ROOF_H,tol:0.03,
+      fb:{v:`h = ${ROOF_H} m ✓`,
+        e:`h = ${HEX_APOTHEM} × tan(${ROOF_ANG}°) = ${HEX_APOTHEM} × ${r2(Math.tan(deg(ROOF_ANG)))} = <b>${ROOF_H} m</b>`,
+        w:`<b>Taghøjde fra vinkel og apothem:</b><br>Apothem er den vandrette afstand fra centrum til tagets underkant (midt på en side). Fra dette punkt stiger taget til toppen med vinklen ${ROOF_ANG}°. Den retvinklede trekant der dannes har: hosliggende = apothem, modstående = taghøjde h, vinkel = ${ROOF_ANG}°. → <code>h = apothem × tan(${ROOF_ANG}°)</code>. Det er den centrale trigonometriberegning til opgaver med taget på en polygonal bygning!`}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📏 Skrå tagflade (hypotenuse)</div>
+        <div class="ctx-body">Tagfladens skrå længde (fra centrum til tagkant langs hældningen) kaldes spærlængden.<br><br>
+        Den udgør hypotenuse i den retvinklede trekant:<br>
+        <code>cos(${ROOF_ANG}°) = apothem / spærlængde</code><br>
+        <code>spærlængde = apothem / cos(${ROOF_ANG}°)</code><br><br>
+        cos(${ROOF_ANG}°) ≈ <b>${r2(Math.cos(deg(ROOF_ANG)))}</b><br>
+        apothem = ${HEX_APOTHEM} m</div>`,
+      q:`Hvad er spærlængden (den skrå tagflade)? (2 decimaler)`,
+      hint:`spærlængde = ${HEX_APOTHEM} / cos(${ROOF_ANG}°) = ${HEX_APOTHEM} / ${r2(Math.cos(deg(ROOF_ANG)))}`,
+      label:'Spær =',unit:'m',
+      correct:ROOF_SLANT,tol:0.03,
+      fb:{v:`Spærlængde = ${ROOF_SLANT} m ✓`,
+        e:`spærlængde = ${HEX_APOTHEM} / cos(${ROOF_ANG}°) = ${HEX_APOTHEM} / ${r2(Math.cos(deg(ROOF_ANG)))} = <b>${ROOF_SLANT} m</b>`,
+        w:'<b>Tre sider — tre formler:</b><br>I den retvinklede tagtrekant:<br>• Hosliggende = apothem (vandret) = '+HEX_APOTHEM+' m<br>• Modstående = taghøjde = '+ROOF_H+' m<br>• Hypotenuse = spærlængde = '+ROOF_SLANT+' m<br><br>Tjek med Pythagoras: √('+HEX_APOTHEM+'² + '+ROOF_H+'²) = √('+r2(HEX_APOTHEM**2)+' + '+r2(ROOF_H**2)+') = '+r2(Math.sqrt(HEX_APOTHEM**2+ROOF_H**2))+' ≈ '+ROOF_SLANT+' ✓. Det er god praksis at dobbelt-tjekke med Pythagoras!'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🔺 30-60-90 trekant</div>
+        <div class="ctx-body">En særlig vigtig trekant: den <b>30-60-90 trekant</b>.<br><br>
+        <table class="dtbl">
+          <tr><th>Vinkel</th><th>Sidelengde (hypotenuse = 1)</th></tr>
+          <tr><td>Modstående 30°</td><td>1/2 = 0,5</td></tr>
+          <tr><td>Hosliggende 30° = Modstående 60°</td><td>√3/2 ≈ 0,866</td></tr>
+          <tr><td>Hypotenuse</td><td>1</td></tr>
+        </table><br>
+        En takvinkel er <b>30° fra vandret</b>. Apothem = 1,20 m.</div>`,
+      q:'Hvad er tagets højde h når vinklen er præcis 30°?',
+      hint:'h = apothem × tan(30°). tan(30°) = 1/√3 ≈ 0,5774',
+      opts:[
+        `${r2(1.20*Math.tan(deg(30))-0.2)} m`,
+        `${r2(1.20*Math.tan(deg(30)))} m`,
+        `${r2(1.20*Math.tan(deg(30))+0.2)} m`,
+        `${r2(1.20/Math.tan(deg(30)))} m`
+      ],
+      correct:1,
+      fb:{v:`h = ${r2(1.20*Math.tan(deg(30)))} m ✓`,
+        e:`h = 1,20 × tan(30°) = 1,20 × ${r2(Math.tan(deg(30)))} = <b>${r2(1.20*Math.tan(deg(30)))} m</b>`,
+        w:'<b>Særlige vinkler til eksamen:</b><br>tan(30°) = 1/√3 ≈ 0,577 · sin(30°) = 0,5 · cos(30°) = √3/2 ≈ 0,866<br>tan(45°) = 1 · sin(45°) = cos(45°) = √2/2 ≈ 0,707<br>tan(60°) = √3 ≈ 1,732 · sin(60°) = √3/2 ≈ 0,866 · cos(60°) = 0,5<br><br>Disse er værd at lære udenad — man kan beregne dem eksakt uden lommeregner og tjekke at svaret er plausibelt.'}
+    },
+  ]
+},
+
+/* ── MISSION 3: Sideflade og tagflade-areal ── */
+{
+  id:2,icon:'📦',title:'Sideflade & Tagflade',xp:200,
+  desc:'Beregn sidefladeareal af prisme og tagfladernes samlede areal',
+  tags:['Sideflade','Prisme','Tagflade','Net af 3D-figur'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📦 Sideflade af regulær prisme</div>
+        <div class="ctx-body">En regulær prisme har en regulær n-kant som bund og rektangulære sider.<br><br>
+        Sidefladeareal = antal sider × (sidelængde × højde)<br>
+        <code>A_side = n × s × h_prisme</code><br><br>
+        For hexagonal prisme (n=6):<br>
+        Sidelængde s = <b>${HEX_S} m</b> · Højde h = <b>${PRISM_H} m</b></div>`,
+      q:`Hvad er det samlede sidefladeareal? (2 decimaler)`,
+      hint:`A_side = 6 × ${HEX_S} × ${PRISM_H}`,
+      label:'A_side =',unit:'m²',
+      correct:r2(HEX_N*HEX_S*PRISM_H),tol:0.02,
+      fb:{v:`A_side = ${r2(HEX_N*HEX_S*PRISM_H)} m² ✓`,
+        e:`A_side = 6 × ${HEX_S} × ${PRISM_H} = <b>${r2(HEX_N*HEX_S*PRISM_H)} m²</b>`,
+        w:'<b>Sidefladen af en prisme:</b><br>Hver af de n sideflader er et rektangel med bredde = sidelængde s og højde = prismens højde h. Samlet sidefladeareal = n × s × h. Det svarer til at rulle prismes sideflader ud til ét langt rektangel med bredden n×s og højden h: <code>A_side = omkreds × h</code>. Det er en nyttig huskeregel — sidefladen = omkredsens areal × højden.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔺 Tagflade — én trekant</div>
+        <div class="ctx-body">Tagget består af n trekantede flader (én pr. side). Hver trekant har:<br>
+        <b>Grundlinje</b> = sidelængde s = ${HEX_S} m<br>
+        <b>Højde</b> = spærlængde = ${ROOF_SLANT} m (den skrå afstand fra centrum til tagkant)<br><br>
+        Areal af én tagflade = ½ × s × spærlængde</div>`,
+      q:`Hvad er arealet af ÉN tagflade? (2 decimaler)`,
+      hint:`A₁ = ½ × ${HEX_S} × ${ROOF_SLANT}`,
+      label:'A₁ =',unit:'m²',
+      correct:r2(0.5*HEX_S*ROOF_SLANT),tol:0.03,
+      fb:{v:`A₁ = ${r2(0.5*HEX_S*ROOF_SLANT)} m² ✓`,
+        e:`A₁ = ½ × ${HEX_S} × ${ROOF_SLANT} = <b>${r2(0.5*HEX_S*ROOF_SLANT)} m²</b>`,
+        w:'<b>Tagfladernes areal — trekanter:</b><br>Hvert tag-segment er en trekant med grundlinje = sidelængden s og højde = spærlængden (ikke tagets lodrette højde!). Spærlængden er den skrå afstand langs taget fra centrum til tagkant. Det er præcis den hypotenuse vi beregnede med cos i forrige mission. Husk at det er spærlængden der bruges i arealet — ikke den lodrette taghøjde!'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔺 Samlet tagfladeareal</div>
+        <div class="ctx-body">Én tagflade = ${r2(0.5*HEX_S*ROOF_SLANT)} m²<br>
+        Antal tagflader = antal sider = <b>${HEX_N}</b></div>`,
+      q:`Hvad er det samlede tagfladeareal? (2 decimaler)`,
+      hint:`A_tag = ${HEX_N} × ${r2(0.5*HEX_S*ROOF_SLANT)}`,
+      label:'A_tag =',unit:'m²',
+      correct:r2(HEX_N*0.5*HEX_S*ROOF_SLANT),tol:0.05,
+      fb:{v:`A_tag = ${r2(HEX_N*0.5*HEX_S*ROOF_SLANT)} m² ✓`,
+        e:`A_tag = ${HEX_N} × ${r2(0.5*HEX_S*ROOF_SLANT)} = <b>${r2(HEX_N*0.5*HEX_S*ROOF_SLANT)} m²</b>`,
+        w:'<b>Samlet overfladeareal af en pyramide-top:</b><br>Pyramidens skrå overfladeareal = n × ½ × s × spærlængde = ½ × n × s × spærlængde. Det svarer til ½ × omkreds × spærlængde — en elegant formel der minder om at en pyramides skrå areal er "halvt bunden × spær". Totalt overfladeareal (incl. bund) ville derudover kræve bundarealet (som vi beregnede i mission 1).'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📋 Samlet materiale-areal</div>
+        <div class="ctx-body">Samlede arealer for konstruktionen:<br>
+        <table class="dtbl">
+          <tr><th>Del</th><th>Areal</th></tr>
+          <tr><td>Bund</td><td>${HEX_AREA} m²</td></tr>
+          <tr><td>Sideflader</td><td>${r2(HEX_N*HEX_S*PRISM_H)} m²</td></tr>
+          <tr><td>Tagflader</td><td>${r2(HEX_N*0.5*HEX_S*ROOF_SLANT)} m²</td></tr>
+        </table><br>
+        Materialepriser: Bund 280 kr./m² · Sider + tag 45 kr./m²</div>`,
+      q:'Hvad koster bundmaterialet alene?',
+      hint:`Pris = areal × pris pr. m² = ${HEX_AREA} × 280`,
+      opts:[
+        `${r0(HEX_AREA*280-200)} kr.`,
+        `${r0(HEX_AREA*280)} kr.`,
+        `${r0(HEX_AREA*280+200)} kr.`,
+        `${r0(HEX_AREA*45)} kr.`
+      ],
+      correct:1,
+      fb:{v:`Bundpris = ${r0(HEX_AREA*280)} kr. ✓`,
+        e:`${HEX_AREA} m² × 280 kr./m² = <b>${r0(HEX_AREA*280)} kr.</b>`,
+        w:'<b>Fra areal til materialeomkostning:</b><br>Prisen for et materiale beregnes som: <code>pris = areal × pris pr. m²</code>. I opgaver med komplekse geometriske figurer er det vigtigt at <b>beregne hvert areal separat</b> og holde styr på hvilken materialepris der hører til hvilken del. Et systematisk budget viser tydeligt: bund (materiale A × pris A) + sider (materiale B × pris B) + tag (materiale B × pris B) + stolper (materiale C × pris pr. m).'}
+    },
+  ]
+},
+
+/* ── MISSION 4: Rumfang ── */
+{
+  id:3,icon:'📦',title:'Rumfang — Prisme & Pyramide',xp:250,
+  desc:'Beregn rumfang af prismer og pyramider med polygon-bund',
+  tags:['Rumfang','Prisme','Pyramide','Samlet rumfang'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📦 Rumfang af prisme</div>
+        <div class="ctx-body">Rumfang af en prisme = grundflade × højde<br>
+        <code>V_prisme = A_bund × h</code><br><br>
+        Grundflade (hexagon): <b>${HEX_AREA} m²</b><br>
+        Prismes højde: <b>${PRISM_H} m</b><br><br>
+        <div class="fig">
+          <svg width="160" height="110" viewBox="-80 -55 160 110">
+            <polygon points="60,30 30,52 -30,52 -60,30 -60,-10 -30,-30 30,-30 60,-10" fill="rgba(0,230,118,.07)" stroke="rgba(0,230,118,.4)" stroke-width="1.5"/>
+            <polygon points="60,-25 30,-47 -30,-47 -60,-25 -60,15 -30,35 30,35 60,15" fill="rgba(0,230,118,.12)" stroke="#00e676" stroke-width="2"/>
+            <line x1="60,-25" x2="60,30" stroke="rgba(0,230,118,.6)" stroke-width="2" y1="0" y2="0"/>
+            <text x="70" y="5" fill="#ffeb3b" font-size="10" font-family="monospace">${PRISM_H}m</text>
+            <text x="0" y="48" fill="#69f0ae" font-size="9" font-family="monospace">A_bund</text>
+          </svg>
+          <div class="fig-cap">Hexagonal prisme</div>
+        </div></div>`,
+      q:`Hvad er prismes rumfang? (2 decimaler)`,
+      hint:`V = ${HEX_AREA} × ${PRISM_H}`,
+      label:'V =',unit:'m³',
+      correct:r2(HEX_AREA*PRISM_H),tol:0.05,
+      fb:{v:`V = ${r2(HEX_AREA*PRISM_H)} m³ ✓`,
+        e:`V = ${HEX_AREA} × ${PRISM_H} = <b>${r2(HEX_AREA*PRISM_H)} m³</b>`,
+        w:'<b>Rumfang af prisme — den universelle formel:</b><br>Uanset hvilken tværsnit prismet har (trekant, firkant, cirkel, hexagon...) er formlen altid: <code>V = grundflade × højde</code>. En cylinder er faktisk bare en prisme med cirkulær grundflade: V = π×r²×h. Nøglen er altid at finde grundfladens areal korrekt — til en polygon kræver det trekant-opdeling som i mission 1.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔺 Rumfang af pyramide (tag)</div>
+        <div class="ctx-body">Tagget er en <b>pyramide</b> med polygonal bund.<br><br>
+        Rumfang af pyramide = ⅓ × grundflade × højde<br>
+        <code>V_pyramide = ⅓ × A_bund × h_tag</code><br><br>
+        Grundflade = ${HEX_AREA} m² · Tagets lodrette højde = <b>${ROOF_H} m</b></div>`,
+      q:`Hvad er tagpyramidens rumfang? (2 decimaler)`,
+      hint:`V = ⅓ × ${HEX_AREA} × ${ROOF_H}`,
+      label:'V_tag =',unit:'m³',
+      correct:r2(HEX_AREA*ROOF_H/3),tol:0.03,
+      fb:{v:`V_tag = ${r2(HEX_AREA*ROOF_H/3)} m³ ✓`,
+        e:`V = ⅓ × ${HEX_AREA} × ${ROOF_H} = ${r2(HEX_AREA*ROOF_H)} / 3 = <b>${r2(HEX_AREA*ROOF_H/3)} m³</b>`,
+        w:'<b>Pyramideformlen — ⅓-faktoren:</b><br>Rumfanget af en pyramide er altid <b>⅓ af den tilsvarende prismes rumfang</b> (med samme bund og højde). Intuition: tre identiske pyramider kan sammensættes til en kube. Formlen gælder for alle pyramider uanset bundens form — trekant, firkant, pentagon, hexagon, cirkel (kegle). Til eksamen: vis at du bruger den lodrette højde (h_tag) — ikke spærlængden!'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📊 Samlet rumfang</div>
+        <div class="ctx-body">Konstruktionen består af:<br>
+        • Prisme (underdelen): V_prisme = ${r2(HEX_AREA*PRISM_H)} m³<br>
+        • Pyramide (taget): V_pyramide = ${r2(HEX_AREA*ROOF_H/3)} m³</div>`,
+      q:'Hvad er det samlede rumfang?',
+      hint:`V_total = ${r2(HEX_AREA*PRISM_H)} + ${r2(HEX_AREA*ROOF_H/3)}`,
+      label:'V_total =',unit:'m³',
+      correct:r2(HEX_AREA*PRISM_H+HEX_AREA*ROOF_H/3),tol:0.05,
+      fb:{v:`V_total = ${r2(HEX_AREA*PRISM_H+HEX_AREA*ROOF_H/3)} m³ ✓`,
+        e:`${r2(HEX_AREA*PRISM_H)} + ${r2(HEX_AREA*ROOF_H/3)} = <b>${r2(HEX_AREA*PRISM_H+HEX_AREA*ROOF_H/3)} m³</b>`,
+        w:'<b>Sammensat rumfang:</b><br>Komplekse 3D-figurer beregnes ved at opdele dem i kendte grundformer og lægge rumfangene sammen. Her: prisme + pyramide. Andre kombinationer: cylinder + halvkugle, kasse + pyramide osv. Til eksamen viser du altid opdelingen tydeligt og skriver mellemresultaterne op for hvert delelement — det viser systematik og giver point selv om slutresultatet er forkert.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">💡 Hvad bruges rumfanget til?</div>
+        <div class="ctx-body">Rumfang bruges til at beregne:<br>
+        • Hvor meget luft/vand en beholder indeholder<br>
+        • Kapacitet af rum (m³ ventilation)<br>
+        • Mængde materiale (fx beton i en søjle)<br><br>
+        V_prisme = ${r2(HEX_AREA*PRISM_H)} m³<br>
+        V_pyramide = ${r2(HEX_AREA*ROOF_H/3)} m³<br>
+        V_total = ${r2(HEX_AREA*PRISM_H+HEX_AREA*ROOF_H/3)} m³</div>`,
+      q:'En rund stolpe (søjle) af beton med diameter 0,15 m og højde 2,0 m skal støbes. Hvad er stolpens rumfang? (formlen: V = π × r² × h)',
+      hint:'r = diameter/2 = 0,075 m. V = π × 0,075² × 2,0',
+      opts:[
+        `${r2(Math.PI*0.075**2*2.0*10)/10} m³`,
+        `${r2(Math.PI*0.075**2*2.0*100)/100} m³`,
+        `${r2(Math.PI*0.15**2*2.0*100)/100} m³`,
+        `${r2(Math.PI*0.075**2*2.0*1000)/1000} m³`
+      ],
+      correct:1,
+      fb:{v:`V = ${r2(Math.PI*0.075**2*2.0*100)/100} m³ ✓`,
+        e:`r = 0,15/2 = 0,075 m · V = π × 0,075² × 2,0 = π × 0,005625 × 2,0 = <b>${r2(Math.PI*0.075**2*2.0*100)/100} m³</b>`,
+        w:'<b>Cylinder = prisme med cirkulær bund:</b><br>Formlen V = π×r²×h er prismeformlen med grundflade = cirkelareal. Husk: radius er <b>halvdiameteren</b>. En klassisk fejl er at bruge diameter i stedet for radius i formlen. Til eksamen: skriv r = d/2 = ... eksplicit som det første trin.'}
+    },
+  ]
+},
+
+/* ── MISSION 5: Samlet budget og stolpelængder ── */
+{
+  id:4,icon:'💰',title:'Samlet Budget & Stolpelængder',xp:300,
+  desc:'Opstil et komplet materialbudget med arealer, stolpelængder og enhedspriser',
+  tags:['Budget','Stolpelængde','Materialeberegning','Samlet pris'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🪵 Kantlængde — stolper til sider</div>
+        <div class="ctx-body">Langs hver kant i prismet monteres en stolpe.<br><br>
+        En hexagonal prisme har:<br>
+        • <b>${HEX_N} lodrette hjørnestolper</b> (højde = ${PRISM_H} m)<br>
+        • <b>${HEX_N} bundramme-stykker</b> (sidelængde = ${HEX_S} m)<br>
+        • <b>${HEX_N} topramme-stykker</b> (sidelængde = ${HEX_S} m)<br><br>
+        Stolpepris: <b>18 kr./m</b></div>`,
+      q:'Hvad er den samlede stolpelængde (lodrette + bundramme + topramme)?',
+      hint:`Lodret: ${HEX_N}×${PRISM_H} · Bund+Top: 2×${HEX_N}×${HEX_S}`,
+      label:'Total stolpe:',unit:'m',
+      correct:r2(HEX_N*PRISM_H+2*HEX_N*HEX_S),tol:0.1,
+      fb:{v:`${r2(HEX_N*PRISM_H+2*HEX_N*HEX_S)} m stolpe i alt ✓`,
+        e:`Lodret: ${HEX_N}×${PRISM_H} = ${r2(HEX_N*PRISM_H)} m<br>Bund+Top: 2×${HEX_N}×${HEX_S} = ${r2(2*HEX_N*HEX_S)} m<br>Total: ${r2(HEX_N*PRISM_H)} + ${r2(2*HEX_N*HEX_S)} = <b>${r2(HEX_N*PRISM_H+2*HEX_N*HEX_S)} m</b>`,
+        w:'<b>Tæl kanter systematisk:</b><br>En n-siders prisme har: n lodrette kanter + n bundkanter + n topkanter = 3n kanter i alt. For hexagon: 3×6 = 18 kanter. Husk at kanternes længde varierer (lodrette = højde, vandret = sidelængde). Til eksamen: lav en lille skitse og tæl kant-typerne for at undgå at glemme nogen.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔺 Tagspær — skrå stolper</div>
+        <div class="ctx-body">Tagspærene går fra centrum til hvert hjørne i toprammen.<br><br>
+        Spærenes skrå længde fra centrum til hjørne beregnes fra:<br>
+        • Vandret afstand = <b>radius</b> (ikke apothem!)<br>
+        Radius af hexagon: <code>r = s = ${HEX_S} m</code> (hexagon: radius = sidelængde!)<br>
+        • Lodret taghøjde = <b>${ROOF_H} m</b><br><br>
+        <code>spærlængde = √(radius² + h_tag²) = √(${HEX_S}² + ${ROOF_H}²)</code></div>`,
+      q:'Hvad er spær-længden til hvert hjørne? (2 decimaler)',
+      hint:`√(${HEX_S}² + ${ROOF_H}²) = √(${r2(HEX_S**2)} + ${r2(ROOF_H**2)})`,
+      label:'Spær =',unit:'m',
+      correct:r2(Math.sqrt(HEX_S**2+ROOF_H**2)),tol:0.03,
+      fb:{v:`Spær = ${r2(Math.sqrt(HEX_S**2+ROOF_H**2))} m ✓`,
+        e:`√(${HEX_S}² + ${ROOF_H}²) = √(${r2(HEX_S**2+ROOF_H**2)}) = <b>${r2(Math.sqrt(HEX_S**2+ROOF_H**2))} m</b>`,
+        w:'<b>Pythagoras i 3D:</b><br>Spæret går fra tagtoppen lodret ned til niveau med toprammen (h_tag = '+ROOF_H+' m), og derfra vandret til hjørnet (radius = '+HEX_S+' m for hexagon). Den lodrette og vandrette afstand danner en retvinklet trekant → brug Pythagoras. NB: til hjørnespær bruger man radius (s for hexagon), til midtspær bruger man apothem. Til eksamen specificer hvilken spærtype du beregner!'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">💰 Samlet budget</div>
+        <div class="ctx-body"><table class="dtbl">
+          <tr><th>Del</th><th>Mål</th><th>Pris</th></tr>
+          <tr><td>Bund (plade)</td><td>${HEX_AREA} m²</td><td>280 kr./m²</td></tr>
+          <tr><td>Sider + tag (net)</td><td>${r2(HEX_N*HEX_S*PRISM_H+HEX_N*0.5*HEX_S*ROOF_SLANT)} m²</td><td>45 kr./m²</td></tr>
+          <tr><td>Kant-stolper</td><td>${r2(HEX_N*PRISM_H+2*HEX_N*HEX_S)} m</td><td>18 kr./m</td></tr>
+          <tr><td>Tagspær (${HEX_N} stk.)</td><td>${r2(Math.sqrt(HEX_S**2+ROOF_H**2))} m × ${HEX_N}</td><td>18 kr./m</td></tr>
+        </table></div>`,
+      q:'Hvad er den samlede materialeomkostning? (afrund til nærmeste 100 kr.)',
+      hint:'Sum = bund-pris + net-pris + stolpe-pris + spær-pris',
+      label:'Total:',unit:'kr.',
+      correct:(()=>{
+        const bund=HEX_AREA*280;
+        const net=r2(HEX_N*HEX_S*PRISM_H+HEX_N*0.5*HEX_S*ROOF_SLANT)*45;
+        const stolpe=r2(HEX_N*PRISM_H+2*HEX_N*HEX_S)*18;
+        const spær=r2(Math.sqrt(HEX_S**2+ROOF_H**2))*HEX_N*18;
+        return Math.round((bund+net+stolpe+spær)/100)*100;
+      })(),tol:50,
+      fb:{v:'Korrekt budget! ✓',
+        e:(()=>{
+          const bund=r0(HEX_AREA*280);
+          const net=r0(r2(HEX_N*HEX_S*PRISM_H+HEX_N*0.5*HEX_S*ROOF_SLANT)*45);
+          const stolpe=r0(r2(HEX_N*PRISM_H+2*HEX_N*HEX_S)*18);
+          const spær=r0(r2(Math.sqrt(HEX_S**2+ROOF_H**2))*HEX_N*18);
+          const tot=Math.round((bund+net+stolpe+spær)/100)*100;
+          return `Bund: ${bund} · Net: ${net} · Stolper: ${stolpe} · Spær: ${spær}<br>Total ≈ <b>${tot} kr.</b>`;
+        })(),
+        w:'<b>Systematisk budget — eksamen-tip:</b><br>Opstil altid budgettet i en tabel med kolonner: Del | Mål (m/m²/m³) | Enhedspris | Delpris. Læg delpriser sammen til totalpris. Det viser systematik og giver delpoint selv om en enkelt arealberegning er forkert. Afrund til et meningsfyldt niveau (nærmeste 100 kr. eller 1.000 kr.) og skriv "ca." foran — det viser at du forstår at der er usikkerhed i estimeringen.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎓 Samlet analyse — hvad skal med?</div>
+        <div class="ctx-body">Du har nu trænet:<br>
+        ✅ Areal af regulær polygon (trekant-opdeling + apothem)<br>
+        ✅ Trigonometri: tan/sin/cos til taghøjde og spærlængde<br>
+        ✅ Sidefladeareal af prisme og tagfladernes areal<br>
+        ✅ Rumfang: prisme + pyramide<br>
+        ✅ Materiale-budget med enheder</div>`,
+      q:'Hvilken rækkefølge er mest logisk til eksamen?',
+      opts:[
+        'Start med budgettet og arbejd baglæns',
+        'Tegn og mål først, beregn areal, find trigonometrisk taghøjde, beregn rumfang, opstil budget',
+        'Beregn rumfang først — det er det sværeste',
+        'Rækkefølgen er ligegyldig hvis svarene er korrekte'
+      ],
+      correct:1,
+      fb:{v:'Korrekt fremgangsmåde! 🏆',
+        e:'Tegning → areal (polygon) → trigonometri (taghøjde, spærlængde) → fladearealer → rumfang → budget. Hvert trin bygger på det forrige.',
+        w:'<b>Den rigtige arbejdsrækkefølge til eksamen:</b><br>1. <b>Tegn en skitse</b> med mål — det afklarer hvad der skal beregnes<br>2. <b>Find grundfladens areal</b> (apothem → polygons areal)<br>3. <b>Brug trigonometri</b> til taghøjde (tan) og spærlængde (cos/Pythagoras)<br>4. <b>Beregn fladearealer</b>: sider (n×s×h), tag (n×½×s×spær)<br>5. <b>Beregn rumfang</b>: prisme (A×h) + pyramide (⅓×A×h)<br>6. <b>Opstil budget</b>: areal/længde × pris pr. enhed<br><br>Vis <b>alle mellemregninger med enheder</b> — det er ræsonnementskompetence i praksis!'}
+    },
+  ]
+},
+];
+
+/* ═══════════ ENGINE (identisk med de andre trænere) ═══════════ */
+const SKEY='georumfang_v2';
+function ldSD(){try{return JSON.parse(localStorage.getItem(SKEY)||'{}')}catch{return{};}}
+function svSD(){localStorage.setItem(SKEY,JSON.stringify(SD));}
+let SD=ldSD();
+if(!SD.xp)SD.xp=0;if(!SD.done)SD.done=[];
+function xpLv(){const x=SD.xp;if(x<150)return{l:'Begynder',n:150};if(x<350)return{l:'Elev',n:350};if(x<700)return{l:'Tegner',n:700};if(x<1200)return{l:'Konstruktør',n:1200};return{l:'Geometri-Mester',n:null};}
+function buildHome(){
+  const lv=xpLv();const tot=MISSIONS.reduce((s,m)=>s+m.xp,0);const pct=Math.min(100,Math.round(SD.xp/tot*100));
+  document.getElementById('xp-fill').style.width=pct+'%';document.getElementById('xp-lbl').textContent=`${SD.xp} XP — ${lv.l}`;
+  const g=document.getElementById('mgrid');g.innerHTML='';
+  MISSIONS.forEach((m,i)=>{
+    const done=SD.done.includes(m.id),locked=i>0&&!SD.done.includes(MISSIONS[i-1].id);
+    const d=document.createElement('div');d.className=`mcard${done?' done':locked?' locked':''}`;
+    d.innerHTML=`<div class="mc-icon">${m.icon}</div><div class="mc-info"><div class="mc-num">Mission ${i+1} · ${m.steps.length} opgaver</div><div class="mc-title">${m.title}</div><div class="mc-desc">${m.desc}</div><div class="mc-tags">${m.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div><div class="mc-right"><div class="mc-xp">+${m.xp} XP</div><div class="mc-status">${done?'✅':locked?'🔒':''}</div></div>`;
+    if(!locked)d.onclick=()=>startMission(m.id);g.appendChild(d);
+  });
+}
+function goHome(){curStep=0;show('s-home');buildHome();}
+let curMId=null,curStep=0,stepRes=[];
+function startMission(id){curMId=id;curStep=0;stepRes=[];const m=MISSIONS.find(x=>x.id===id);document.getElementById('mtop-title').textContent=`${m.icon} ${m.title}`;buildProg(m);renderStep();show('s-mission');}
+function buildProg(m){const p=document.getElementById('sprog');p.innerHTML='';m.steps.forEach((_,i)=>{const d=document.createElement('div');d.className='sp';d.id=`sp${i}`;p.appendChild(d);});updProg();}
+function updProg(){const m=MISSIONS.find(x=>x.id===curMId);m.steps.forEach((_,i)=>{const d=document.getElementById(`sp${i}`);if(!d)return;d.className='sp';if(i<curStep)d.classList.add('ok');if(i===curStep)d.classList.add('cur');});}
+function renderStep(){
+  selMC=null;const m=MISSIONS.find(x=>x.id===curMId);const s=m.steps[curStep];const total=m.steps.length;
+  document.getElementById('mtop-ctr').textContent=`${curStep+1}/${total}`;
+  const area=document.getElementById('qarea');area.innerHTML='';
+  const ctxEl=document.createElement('div');ctxEl.className='ctx-card';ctxEl.innerHTML=s.ctx;area.appendChild(ctxEl);
+  const qqEl=document.createElement('div');qqEl.className='qq-card';
+  let inp=s.type==='mc'?`<div class="mc-opts">${s.opts.map((o,i)=>`<button class="mco" id="mco${i}" onclick="pickMC(${i})"><span class="mco-k">${String.fromCharCode(65+i)}.</span><span>${o}</span></button>`).join('')}</div>`:`<div class="nrow"><span class="nlbl">${s.label||'Svar ='}</span><input class="ninp" id="ninp" type="number" step="any" inputmode="decimal" placeholder="?" autocomplete="off"><span class="nlbl">${s.unit||''}</span></div>`;
+  qqEl.innerHTML=`<div class="qq-num">Opgave ${curStep+1} af ${total}</div><div class="qq-text">${s.q}</div>${s.hint?`<div class="qq-hint">💡 ${s.hint}</div>`:''}${inp}`;
+  area.appendChild(qqEl);
+  const fbEl=document.createElement('div');fbEl.className='fb';fbEl.id='fbel';area.appendChild(fbEl);
+  const br=document.createElement('div');br.className='btn-row';br.innerHTML=`<button class="chkbtn" id="chkbtn" onclick="checkStep()">Tjek svar ✓</button><button class="nxtbtn" id="nxtbtn" onclick="nextStep()">${curStep<total-1?'Næste opgave →':'Afslut mission →'}</button>`;
+  area.appendChild(br);updProg();
+  if(s.type==='num'){const ni=document.getElementById('ninp');setTimeout(()=>ni?.focus(),80);ni?.addEventListener('keydown',e=>{if(e.key==='Enter')checkStep();});}
+}
+let selMC=null;
+function pickMC(i){if(document.getElementById('mco0')?.disabled)return;selMC=i;document.querySelectorAll('.mco').forEach((b,j)=>{b.style.background=j===i?'rgba(0,230,118,.1)':'';b.style.borderColor=j===i?'rgba(0,230,118,.4)':'';});}
+function checkStep(){
+  const m=MISSIONS.find(x=>x.id===curMId);const s=m.steps[curStep];let ok=false;
+  if(s.type==='mc'){if(selMC===null)return;ok=selMC===s.correct;document.querySelectorAll('.mco').forEach((b,i)=>{b.disabled=true;b.style.background='';b.style.borderColor='';if(i===s.correct)b.classList.add('ok');else if(i===selMC&&!ok)b.classList.add('no');});selMC=null;}
+  else{const ni=document.getElementById('ninp');const v=parseFloat(ni?.value?.replace(',','.'));if(isNaN(v)){ni?.classList.add('no');setTimeout(()=>ni?.classList.remove('no'),400);return;}ok=Math.abs(v-s.correct)<=s.tol;ni.disabled=true;ni.classList.add(ok?'ok':'no');}
+  stepRes.push(ok);renderFB(s,ok);document.getElementById('chkbtn').disabled=true;document.getElementById('nxtbtn').classList.add('on');
+}
+function renderFB(s,ok){
+  const fb=document.getElementById('fbel');if(!fb)return;
+  fb.className='fb '+(ok?'ok':'no');
+  fb.innerHTML=`<div class="fb-verdict ${ok?'ok':'no'}">${ok?'✅ '+s.fb.v:'❌ Ikke helt — her er forklaringen:'}</div><div class="fb-exp">${s.fb.e}</div><div class="why"><div class="why-h">🎓 Hvorfor gør man det sådan?</div><div class="why-b">${s.fb.w}</div></div>`;
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function nextStep(){const m=MISSIONS.find(x=>x.id===curMId);curStep++;if(curStep>=m.steps.length){endMission();}else{selMC=null;renderStep();document.querySelector('.qscroll')?.scrollTo(0,0);}}
+function endMission(){const m=MISSIONS.find(x=>x.id===curMId);const ok=stepRes.filter(Boolean).length,tot=stepRes.length;const earned=Math.round(m.xp*(ok/tot));SD.xp+=earned;if(!SD.done.includes(m.id)&&ok>=Math.ceil(tot*.6))SD.done.push(m.id);svSD();document.getElementById('done-sc').textContent=`${ok}/${tot} korrekte · +${earned} XP`;document.getElementById('done-msg').textContent=ok===tot?'Perfekt score! Du behersker dette emne fuldt ud.':ok>=Math.ceil(tot*.6)?'Godt klaret! Gennemgå forklaringerne igen.':'Bliv ved — prøv igen og læs forklaringerne grundigt.';show('s-done');}
+function retryMission(){if(curMId!==null)startMission(curMId);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+buildHome();
+</script>
+</body>
+</html>

@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rumfang & Overflade Træner — 10. klasse</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e1117;--panel:#161b27;--card:#1c2333;--border:#2a3344;
+  --green:#00e676;--green2:#69f0ae;--yellow:#ffeb3b;--orange:#ff9800;
+  --red:#f44336;--blue:#42a5f5;
+  --white:#e8eaf0;--muted:#8892a4;--muted2:#545e6f;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px);--sm:clamp(12px,2.7vw,14px);--md:clamp(14px,3.2vw,16px);
+  --lg:clamp(18px,4.2vw,22px);--xl:clamp(24px,5.5vw,32px);--xxl:clamp(32px,8vw,52px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;}
+.scr.on{display:flex;}
+#s-home{background:linear-gradient(160deg,#0e1117 0%,#111827 100%);align-items:center;justify-content:flex-start;padding:20px 14px 50px;}
+.home-hero{width:100%;max-width:520px;margin:0 auto 22px;text-align:center;}
+.hero-eye{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+.hero-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);line-height:.95;letter-spacing:-.01em;margin-bottom:6px;}
+.hero-h .acc{color:var(--green);}
+.hero-sub{font-size:var(--sm);color:var(--muted);line-height:1.65;max-width:380px;margin:0 auto 20px;}
+.xp-wrap{background:rgba(255,255,255,.07);border-radius:4px;height:8px;width:100%;max-width:300px;margin:0 auto 6px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:4px;transition:width .5s;}
+.xp-lbl{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:20px;}
+.mgrid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;}
+.mcard{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:15px 17px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.mcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);transform:scaleY(0);transition:transform .15s;transform-origin:bottom;}
+.mcard:hover:not(.locked)::before{transform:scaleY(1);}
+.mcard:hover:not(.locked){border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.04);}
+.mcard.locked{opacity:.4;cursor:default;}
+.mcard.done{border-color:rgba(0,230,118,.25);background:rgba(0,230,118,.03);}
+.mcard.done::before{transform:scaleY(1);}
+.mc-icon{font-size:clamp(24px,6vw,34px);flex-shrink:0;line-height:1;}
+.mc-info{flex:1;min-width:0;}
+.mc-num{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+.mc-title{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);margin-bottom:2px;}
+.mc-desc{font-size:var(--xs);color:var(--muted);line-height:1.4;}
+.mc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-family:var(--fm);font-size:clamp(7px,1.6vw,9px);border:1px solid var(--border);border-radius:3px;padding:2px 8px;color:var(--muted2);}
+.mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.mc-xp{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);}
+.mc-status{font-size:16px;}
+#s-mission{background:var(--bg);}
+.mtop{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));backdrop-filter:blur(10px);}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:var(--white);}
+.mtop-title{font-family:var(--fh);font-weight:700;font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.mtop-ctr{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+.sprog{display:flex;gap:5px;padding:8px 14px;background:rgba(0,0,0,.3);flex-shrink:0;flex-wrap:wrap;}
+.sp{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);transition:all .3s;}
+.sp.ok{background:var(--green);}
+.sp.cur{background:rgba(0,230,118,.4);animation:bl .8s ease-in-out infinite alternate;}
+@keyframes bl{from{opacity:.5}to{opacity:1}}
+.qscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 30px;}
+.qarea{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+.ctx-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.ctx-head{font-family:var(--fm);font-size:var(--xs);color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.ctx-body{font-size:var(--sm);color:var(--white);line-height:1.7;}
+.ctx-body b{color:var(--green2);}
+.ctx-body code{font-family:var(--fm);background:rgba(0,230,118,.08);color:var(--green2);padding:1px 6px;border-radius:3px;font-size:var(--xs);}
+.dtbl{width:100%;border-collapse:collapse;margin-top:10px;font-family:var(--fm);font-size:var(--xs);}
+.dtbl th{background:rgba(0,230,118,.08);color:var(--green);text-align:left;padding:6px 10px;border-bottom:1px solid rgba(0,230,118,.2);}
+.dtbl td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--white);}
+.dtbl .hi{background:rgba(0,230,118,.1);color:var(--green2);font-weight:700;}
+.qq-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.qq-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:6px;}
+.qq-text{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);line-height:1.35;margin-bottom:10px;}
+.qq-hint{font-size:var(--xs);color:var(--muted);font-style:italic;margin-bottom:10px;line-height:1.5;}
+.mc-opts{display:flex;flex-direction:column;gap:8px;}
+.mco{border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.03);padding:12px 15px;cursor:pointer;font-size:var(--sm);color:rgba(255,255,255,.85);text-align:left;transition:all .13s;display:flex;align-items:flex-start;gap:10px;line-height:1.4;}
+.mco:hover:not(:disabled){border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.06);}
+.mco.ok{background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.5);color:var(--green2);}
+.mco.no{background:rgba(244,67,54,.08);border-color:rgba(244,67,54,.4);color:#ff8a80;}
+.mco:disabled{cursor:default;}
+.mco-k{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);min-width:18px;flex-shrink:0;padding-top:1px;}
+.nrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.nlbl{font-family:var(--fm);font-size:var(--sm);color:var(--muted);}
+.ninp{font-family:var(--fm);font-weight:700;font-size:var(--xl);width:clamp(110px,28vw,170px);background:rgba(0,230,118,.06);border:2px solid rgba(0,230,118,.3);border-radius:7px;color:var(--green2);text-align:center;padding:10px 8px;outline:none;-webkit-appearance:none;transition:all .18s;}
+.ninp:focus{border-color:var(--green);background:rgba(0,230,118,.1);box-shadow:0 0 16px rgba(0,230,118,.15);}
+.ninp.ok{border-color:var(--green);}
+.ninp.no{border-color:var(--red);animation:sh .3s ease;}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.fb{border-radius:10px;padding:14px 16px;display:none;}
+.fb.ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);display:block;}
+.fb.no{background:rgba(244,67,54,.07);border:1px solid rgba(244,67,54,.2);display:block;}
+.fb-verdict{font-family:var(--fh);font-weight:700;font-size:var(--lg);margin-bottom:8px;}
+.fb-verdict.ok{color:var(--green);}
+.fb-verdict.no{color:var(--red);}
+.fb-exp{font-size:var(--sm);color:rgba(255,255,255,.82);line-height:1.7;margin-bottom:10px;}
+.fb-exp b{color:var(--white);}
+.fb-exp code{font-family:var(--fm);background:rgba(0,230,118,.1);color:var(--green2);padding:1px 6px;border-radius:3px;}
+.why{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;}
+.why-h{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.why-b{font-size:var(--sm);color:rgba(255,255,255,.72);line-height:1.7;}
+.why-b b{color:var(--white);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.chkbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:var(--green);color:#001a0d;border:none;border-radius:8px;padding:12px 36px;cursor:pointer;transition:all .13s;}
+.chkbtn:hover{background:var(--green2);}
+.chkbtn:disabled{opacity:.3;cursor:default;}
+.nxtbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 32px;cursor:pointer;display:none;transition:all .13s;}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(255,255,255,.14);}
+#s-done{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.dtrophy{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bonce 1.2s ease infinite alternate;}
+@keyframes bonce{from{transform:translateY(0) scale(1)}to{transform:translateY(-10px) scale(1.05)}}
+.done-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);margin-bottom:6px;line-height:.95;}
+.done-h .acc{color:var(--green);}
+.done-sc{font-family:var(--fm);font-size:var(--xl);color:var(--yellow);margin-bottom:12px;}
+.done-msg{font-size:var(--md);color:var(--muted);max-width:380px;line-height:1.65;margin-bottom:26px;}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.dbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);border:none;border-radius:8px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;}
+.dbtn.p{background:var(--green);color:#001a0d;}
+.dbtn.s{background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<div class="scr on" id="s-home">
+  <div class="home-hero">
+    <div class="hero-eye">🔮 10. klasse · Eksamensforberedelse</div>
+    <h1 class="hero-h">RUMFANG &<br><span class="acc">OVERFLADE</span></h1>
+    <p class="hero-sub">Træn massefylde, kugle- og pyramideformler, overfladeoptimering og sammenhængen mellem form og overfladeareal.</p>
+    <div class="xp-wrap"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-lbl" id="xp-lbl">0 XP — Begynder</div>
+  </div>
+  <div class="mgrid" id="mgrid"></div>
+</div>
+
+<div class="scr" id="s-mission">
+  <div class="mtop">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="mtop-title" id="mtop-title">–</div>
+    <div class="mtop-ctr" id="mtop-ctr">1/1</div>
+  </div>
+  <div class="sprog" id="sprog"></div>
+  <div class="qscroll">
+    <div class="qarea" id="qarea"></div>
+  </div>
+</div>
+
+<div class="scr" id="s-done">
+  <div class="dtrophy">🏆</div>
+  <h2 class="done-h">MISSION<br><span class="acc">KLARET!</span></h2>
+  <div class="done-sc" id="done-sc">–</div>
+  <p class="done-msg" id="done-msg">–</p>
+  <div class="done-btns">
+    <button class="dbtn p" onclick="goHome()">← Vælg ny mission</button>
+    <button class="dbtn s" onclick="retryMission()">↺ Prøv igen</button>
+  </div>
+</div>
+
+<script>
+const r2=x=>Math.round(x*100)/100;
+const r3=x=>Math.round(x*1000)/1000;
+const r1=x=>Math.round(x*10)/10;
+const r0=x=>Math.round(x);
+const PI=Math.PI;
+
+// Neutral scenario values (all different from PDF)
+// Scenario: coloured wax balls — density 0,095 kg/dL = 0,95 g/cm³
+const RHO=0.95;           // g/cm³  (massefylde)
+const MASS_TOTAL=960;     // g total mass
+const N_BALLS=24;         // antal kugler (normal)
+const V_TOTAL=r2(MASS_TOTAL/RHO);  // cm³
+const V_ONE_NORM=r2(V_TOTAL/N_BALLS);
+const R_NORM=r3(Math.cbrt(V_ONE_NORM*3/(4*PI)));
+const OA_NORM=r2(4*PI*R_NORM**2);
+const COAT=0.15;          // cm coating (1,5 mm)
+const R_WITH=r3(R_NORM+COAT);
+const V_COAT_ONE=r2(4/3*PI*(R_WITH**3-R_NORM**3));
+const OA_COAT_ONE=r2(4*PI*R_WITH**2);
+
+// Cube scenario: same volume as 20 normal balls
+const V_20=r2(V_ONE_NORM*20);
+const S_CUBE=r3(Math.cbrt(V_20/20));  // side of one cube
+const OA_CUBE=r2(6*S_CUBE**2);
+
+// Pyramid: base s=n, height h=n → V = n³/3
+function pyrV(n){return r2(n*n*n/3);}
+// Byggeklods model: n layers, layer k from top has k² cubes, bottom layer = n²
+function ccV(n){let s=0;for(let k=1;k<=n;k++)s+=k*k;return s;}
+
+const MISSIONS=[
+
+/* ─── MISSION 1: Massefylde → Rumfang ─── */
+{
+  id:0,icon:'⚖️',title:'Massefylde & Rumfang',xp:150,
+  desc:'Fra masse og massefylde til rumfang af en figur',
+  tags:['Massefylde','ρ = m/V','Rumfang','Enhedsomregning'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">⚖️ Massefylde (densitet)</div>
+        <div class="ctx-body">Massefylde (ρ) er forholdet mellem masse og rumfang:<br><br>
+        <code>ρ = m / V</code><br><br>
+        Isolerer man V: <code>V = m / ρ</code><br>
+        Isolerer man m: <code>m = ρ × V</code><br><br>
+        <table class="dtbl">
+          <tr><th>Stof</th><th>Massefylde</th></tr>
+          <tr><td>Vand</td><td>1,00 g/cm³</td></tr>
+          <tr><td>Beton</td><td>≈ 2,3 g/cm³</td></tr>
+          <tr><td>Balsa-træ</td><td>≈ 0,12 g/cm³</td></tr>
+        </table></div>`,
+      q:'En blanding vejer 480 g og massefylden er 1,20 g/cm³. Hvad er rumfanget?',
+      hint:'V = m / ρ = 480 / 1,20',
+      opts:['360 cm³','400 cm³','576 cm³','480 cm³'],
+      correct:1,
+      fb:{v:'V = 400 cm³ ✓',
+        e:'V = 480 / 1,20 = <b>400 cm³</b>',
+        w:'<b>Massefylde — central til mange opgavetyper:</b><br>Massefylden forbinder det vi kan måle let (masse på en vægt) med det vi ikke kan måle direkte (rumfang af en uregelmæssig figur). Formlen <code>V = m/ρ</code> er afgørende. Husk enheder: hvis massen er i kg og ρ i g/cm³, skal du omregne: 1 kg = 1000 g, 1 dL = 100 cm³. Til eksamen: skriv altid enheden med i formlen!'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔢 Stikprøve → massefylde</div>
+        <div class="ctx-body">En blanding vejer totalt <b>${MASS_TOTAL} g</b>.<br>
+        En stikprøve: 1 deciliter (= 100 cm³) vejer <b>${r2(RHO*100)} g</b>.<br><br>
+        Massefylde: <code>ρ = masse / rumfang = ${r2(RHO*100)} g / 100 cm³</code></div>`,
+      q:`Hvad er massefylden ρ? (g/cm³, 2 decimaler)`,
+      hint:`ρ = ${r2(RHO*100)} / 100`,
+      label:'ρ =',unit:'g/cm³',
+      correct:RHO,tol:0.01,
+      fb:{v:`ρ = ${RHO} g/cm³ ✓`,
+        e:`ρ = ${r2(RHO*100)} ÷ 100 = <b>${RHO} g/cm³</b>`,
+        w:'<b>Stikprøve som metode:</b><br>Massefylden bestemmes ved at måle en afmålt mængde. 1 dL = 100 cm³ er en praktisk enhed. Bemærk at 1 g/cm³ = 1 kg/L — samme tal, anden enhed. Vand har ρ = 1,00 g/cm³, så en blanding med ρ < 1 flyder på vand og ρ > 1 synker. Her er ρ = '+RHO+' g/cm³.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📦 Totalt rumfang</div>
+        <div class="ctx-body">Total masse: <b>${MASS_TOTAL} g</b><br>
+        Massefylde: <b>${RHO} g/cm³</b><br><br>
+        <code>V_total = m / ρ</code></div>`,
+      q:`Hvad er det totale rumfang af blandingen? (cm³, 1 decimal)`,
+      hint:`V = ${MASS_TOTAL} / ${RHO}`,
+      label:'V_total =',unit:'cm³',
+      correct:V_TOTAL,tol:0.5,
+      fb:{v:`V = ${V_TOTAL} cm³ ✓`,
+        e:`V = ${MASS_TOTAL} / ${RHO} = <b>${V_TOTAL} cm³</b>`,
+        w:'<b>Fra total masse til total rumfang:</b><br>Dette er nøgle-beregningen: vi kender massen (nemt at veje) og massefylden (fra stikprøven) og kan nu finde rumfanget. Rumfanget bruges derefter til at beregne radius og overfladeareal af de enkelte figurer. Det er et typisk eksamen-kæde: masse → ρ → V_total → V_per_stk → radius → overfladeareal.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔮 Rumfang pr. kugle</div>
+        <div class="ctx-body">Total rumfang: <b>${V_TOTAL} cm³</b><br>
+        Antal kugler: <b>${N_BALLS}</b><br><br>
+        <code>V_kugle = V_total / antal</code></div>`,
+      q:`Hvad er rumfanget af én kugle? (cm³, 2 decimaler)`,
+      hint:`${V_TOTAL} / ${N_BALLS}`,
+      label:'V₁ =',unit:'cm³',
+      correct:V_ONE_NORM,tol:0.05,
+      fb:{v:`V₁ = ${V_ONE_NORM} cm³ ✓`,
+        e:`V₁ = ${V_TOTAL} / ${N_BALLS} = <b>${V_ONE_NORM} cm³</b>`,
+        w:'<b>Fra total til pr. stk:</b><br>Når blandingen fordeles ligeligt på alle kuglererne, deler vi totalt rumfang med antal. Det er vigtigt at pointere at kuglerne antages at have <b>ens størrelse</b> — en central antagelse i opgaven. Til eksamen: nævn dine antagelser eksplicit. Nu kan vi finde radius fra V = ⁴⁄₃·π·r³ i næste mission!'}
+    },
+  ]
+},
+
+/* ─── MISSION 2: Kuglens formler ─── */
+{
+  id:1,icon:'🔮',title:'Kuglens Rumfang & Overfladeareal',xp:200,
+  desc:'Find radius fra rumfang og beregn overfladeareal med og uden belægningslag',
+  tags:['Kugle','⁴⁄₃πr³','4πr²','Radius fra V','Belægningslag'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔮 Radius fra rumfang</div>
+        <div class="ctx-body">Kuglens rumfang: <code>V = ⁴⁄₃ · π · r³</code><br><br>
+        Isolér r: <code>r = ∛(3V / (4π))</code><br><br>
+        V₁ = <b>${V_ONE_NORM} cm³</b><br>
+        <code>r = ∛(3 × ${V_ONE_NORM} / (4π)) = ∛(${r2(3*V_ONE_NORM/(4*PI))})</code></div>`,
+      q:`Hvad er radius r for én kugle? (cm, 3 decimaler)`,
+      hint:`r = ∛(3 × ${V_ONE_NORM} / (4π))`,
+      label:'r =',unit:'cm',
+      correct:R_NORM,tol:0.002,
+      fb:{v:`r = ${R_NORM} cm ✓`,
+        e:`r = ∛(3 × ${V_ONE_NORM} / (4π)) = ∛(${r2(3*V_ONE_NORM/(4*PI))}) = <b>${R_NORM} cm</b>`,
+        w:'<b>Isolér r fra V = ⁴⁄₃πr³:</b><br>Trin 1: V = ⁴⁄₃πr³ → gang begge sider med 3/(4π): 3V/(4π) = r³<br>Trin 2: tag kubikroden: r = ∛(3V/(4π))<br>På lommeregneren: 3×V÷(4×π) = ... og tryk x^(1/3) eller brug ∛. Kubikroden er sjældnere end kvadratroden men bruger præcis samme logik: ophæv x³ ved at tage 3. rod.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Overfladeareal</div>
+        <div class="ctx-body">Kuglens overfladeareal: <code>O = 4 · π · r²</code><br><br>
+        r = <b>${R_NORM} cm</b></div>`,
+      q:`Hvad er overfladearealet af én kugle? (cm², 2 decimaler)`,
+      hint:`O = 4 × π × ${R_NORM}²`,
+      label:'O =',unit:'cm²',
+      correct:OA_NORM,tol:0.1,
+      fb:{v:`O = ${OA_NORM} cm² ✓`,
+        e:`O = 4 × π × ${R_NORM}² = 4 × π × ${r2(R_NORM**2)} = <b>${OA_NORM} cm²</b>`,
+        w:'<b>Kuglens to formler — lær dem begge:</b><br>V = ⁴⁄₃πr³ (eksponent 3 — tredimensionel)<br>O = 4πr² (eksponent 2 — todimensionel flade)<br><br>Huskeregel: O = 4 × cirklens areal (πr²). En kugle med radius r har samme overfladeareal som 4 cirkler med samme radius. Det er en smuk sammenhæng der bruges til at huske formlen.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🎨 Belægningslag — rumfang af lag</div>
+        <div class="ctx-body">Et lag belægning med tykkelse <b>${COAT} cm</b> påføres.<br><br>
+        Radius <b>med</b> lag: r_ydre = r_indre + tykkelse<br>
+        <code>r_ydre = ${R_NORM} + ${COAT} = ${R_WITH} cm</code><br><br>
+        Lagets rumfang = V_ydre − V_indre<br>
+        <code>= ⁴⁄₃π · (${R_WITH}³ − ${R_NORM}³)</code></div>`,
+      q:`Hvad er rumfanget af belægningslaget på én kugle? (cm³, 2 decimaler)`,
+      hint:`V_lag = ⁴⁄₃π × (${R_With}³ − ${R_NORM}³)`.replace('${R_With}',R_WITH),
+      label:'V_lag =',unit:'cm³',
+      correct:V_COAT_ONE,tol:0.05,
+      fb:{v:`V_lag = ${V_COAT_ONE} cm³ ✓`,
+        e:`V_lag = ⁴⁄₃π × (${R_WITH}³ − ${R_NORM}³) = ⁴⁄₃π × (${r2(R_WITH**3)} − ${r2(R_NORM**3)}) = <b>${V_COAT_ONE} cm³</b>`,
+        w:'<b>Lagets rumfang = ydre minus indre:</b><br>Belægningslaget er det rumfang der tilføjes når radius vokser fra r til r+t. Metoden er altid: <code>V_lag = V_ydre − V_indre = ⁴⁄₃π(r_ydre³ − r_indre³)</code>. Samme princip bruges ved rørtykkelse, malingstykkelse, glastykkelse osv. Til eksamen: specificer r_indre og r_ydre tydeligt — det er en klassisk kilde til fejl.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📊 Størrelse og belægning</div>
+        <div class="ctx-body">Samme totale blanding laves til <b>12 store</b> eller <b>24 normale</b> kugler.<br><br>
+        Belægningens tykkelse er den samme (${COAT} cm) i begge tilfælde.<br>
+        Store kugler: V_stor = ${r2(V_TOTAL/12)} cm³, r_stor = ${r3(Math.cbrt(V_TOTAL/12*3/(4*PI)))} cm<br>
+        Normale kugler: V_norm = ${V_ONE_NORM} cm³, r_norm = ${R_NORM} cm<br><br>
+        Samlet belægning (alle kugler): er det mere, mindre eller ens?</div>`,
+      q:'Er det samlede belægningsvolumen større ved 12 store eller 24 normale kugler?',
+      opts:[
+        '12 store kugler bruger mere belægning',
+        '24 normale kugler bruger mere belægning',
+        'Det er præcis det samme — rumfanget fordeles blot anderledes',
+        'Det afhænger af belægningstykkelsen'
+      ],
+      correct:0,
+      fb:{v:'12 store kugler bruger MERE belægning! ✓',
+        e:(()=>{
+          const rs=r3(Math.cbrt(V_TOTAL/12*3/(4*PI)));const rn=R_NORM;const t=COAT;
+          const vs=r2(4/3*PI*((rs+t)**3-rs**3)*12);
+          const vn=r2(4/3*PI*((rn+t)**3-rn**3)*24);
+          return `Stor (12 stk): ${vs} cm³ samlet belægning<br>Normal (24 stk): ${vn} cm³ samlet belægning<br>Store bruger <b>mere</b>.`;
+        })(),
+        w:'<b>Et overraskende resultat — husk det til eksamen:</b><br>Overfladearealet skalerer med r² mens rumfanget skalerer med r³. Når man fordobler antallet (halverer V per kugle), falder radius med faktoren ∛2 ≈ 1,26. Overfladearealet falder med (∛2)² ≈ 1,587. Men der er dobbelt så mange kugler, så samlet overfladeareal øges med 2/1,587 ≈ 1,26. <b>Mange små kugler har mere overflade (og dermed mere belægning) end få store kugler med samme samlede rumfang.</b> Jo flere og mindre → jo mere samlet overflade. Kugleformen er relativt optimal.'}
+    },
+  ]
+},
+
+/* ─── MISSION 3: Kasse/terning — optimering ─── */
+{
+  id:2,icon:'📦',title:'Kasse & Terning — Optimal Form',xp:200,
+  desc:'Sammenlign overfladeareal ved fast rumfang — find den optimale form',
+  tags:['Kasse','Terning','Overfladeareal','Optimering','Rumfang'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📦 Terningens formler</div>
+        <div class="ctx-body">En terning har alle sider ens: side = s<br><br>
+        <code>V = s³</code><br>
+        <code>O = 6 × s²</code> (6 kvadratiske flader)<br><br>
+        Rumfang = <b>${r2(V_ONE_NORM*20)} cm³</b> (20 kasser af samme blanding som 20 normale)</div>`,
+      q:`Hvad er sidelængden s i én terning, hvis V = ${V_ONE_NORM} cm³? (cm, 2 decimaler)`,
+      hint:`s = ∛V = ∛${V_ONE_NORM}`,
+      label:'s =',unit:'cm',
+      correct:r2(Math.cbrt(V_ONE_NORM)*100)/100,tol:0.02,
+      fb:{v:`s = ${r2(Math.cbrt(V_ONE_NORM)*100)/100} cm ✓`,
+        e:`s = ∛${V_ONE_NORM} = <b>${r2(Math.cbrt(V_ONE_NORM)*100)/100} cm</b>`,
+        w:'<b>Terningens sidelængde fra rumfang:</b><br>V = s³ → s = ∛V. Det er præcis samme isolering som for kuglens radius (men med ³ i stedet for ⁴⁄₃π). Husk at ∛ og x^(1/3) er det samme på lommeregneren. Terningen er den "optimale" kasse-form — for et givet rumfang har terningen det mindste overfladeareal af alle rektangulære kasser.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📊 Tre kasser — samme rumfang</div>
+        <div class="ctx-body">Tre kasser har alle rumfang = <b>64 cm³</b>:<br><br>
+        <table class="dtbl">
+          <tr><th>Kasse</th><th>l × b × h</th><th>Overfladeareal</th></tr>
+          <tr><td>Terning</td><td>4 × 4 × 4</td><td>${2*(4*4+4*4+4*4)} cm²</td></tr>
+          <tr><td>Flad</td><td>8 × 2 × 4</td><td>${2*(8*2+8*4+2*4)} cm²</td></tr>
+          <tr><td>Meget flad</td><td>16 × 1 × 4</td><td>${2*(16*1+16*4+1*4)} cm²</td></tr>
+        </table></div>`,
+      q:'Hvad viser tabellen om sammenhængen mellem form og overfladeareal ved fast rumfang?',
+      opts:[
+        'Overfladearealet er altid det samme ved fast rumfang',
+        'Terningen (mest "kubisk" form) har det mindste overfladeareal — jo mere aflang, jo større overflade',
+        'Den flade kasse har mindst overfladeareal',
+        'Det er tilfældigt hvilken form der har mindst overflade'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Terningen er optimal ✓',
+        e:`Terning: ${2*(4*4+4*4+4*4)} cm² · Flad: ${2*(8*2+8*4+2*4)} cm² · Meget flad: ${2*(16*1+16*4+1*4)} cm². Terningen er mindst.`,
+        w:'<b>Isoperimetrisk princip for kasser:</b><br>For et givet rumfang V har terningen (alle sider ens) det <b>mindste mulige overfladeareal</b> af alle rektangulære kasser. Jo mere aflangt man gør kassen, jo større bliver overfladearealet. Dette er et generelt matematisk princip: regulære former (terning, kugle) minimerer forholdet O/V. Til eksamen: terning er altid optimal form for en kasse.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🔮 Kugle vs terning — samme rumfang</div>
+        <div class="ctx-body">Rumfang = ${V_ONE_NORM} cm³ for begge:<br><br>
+        Kugle: r = ${R_NORM} cm → O_kugle = ${OA_NORM} cm²<br>
+        Terning: s = ${r2(Math.cbrt(V_ONE_NORM)*100)/100} cm → O_terning = ${r2(6*Math.cbrt(V_ONE_NORM)**2)} cm²</div>`,
+      q:'Hvad er konklusionen om kugle vs terning ved samme rumfang?',
+      opts:[
+        'Terningen har det mindste overfladeareal',
+        'Kugleformen har det mindste overfladeareal — kugle er den optimale form i naturen',
+        'De har præcis det samme overfladeareal',
+        'Det afhænger af størrelsen'
+      ],
+      correct:1,
+      fb:{v:'Kugle har MINDST overfladeareal! ✓',
+        e:`Kugle: ${OA_NORM} cm² · Terning: ${r2(6*Math.cbrt(V_ONE_NORM)**2)} cm² → Kugle er ${r1(r2(6*Math.cbrt(V_ONE_NORM)**2)/OA_NORM*10)/10}× mere effektiv.`,
+        w:'<b>Kugle er den optimale form — isoperimetrisk sætning:</b><br>Af alle former med samme rumfang har <b>kugle</b> det mindste overfladeareal. Det er grunden til at sæbebobler er kugleformede (minimerer overfladespænding), vand i vægtløshed er kugler, og celler har tendens til at være runde. For et givet volumen: kugle < terning < aflang kasse i overfladeareal. Til eksamen: brug dette argument til at vurdere "optimal form" for belægning.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔢 Terning: V = O (numerisk)</div>
+        <div class="ctx-body">En særlig terning har egenskaben: <b>rumfang = overfladearealtallet</b><br>
+        (altså: antallet af cm³ = antallet af cm²)<br><br>
+        <code>V = s³</code> og <code>O = 6s²</code><br>
+        Sæt lig: <code>s³ = 6s²</code><br>
+        Divider med s²: <code>s = 6</code></div>`,
+      q:'Hvad er overfladearealet af en terning med sidelængde 6 cm?',
+      hint:'O = 6 × s² = 6 × 6²',
+      label:'O =',unit:'cm²',
+      correct:6*36,tol:0,
+      fb:{v:`O = 216 cm² = V = 216 cm³ ✓`,
+        e:`O = 6 × 6² = 6 × 36 = <b>216 cm²</b>. Og V = 6³ = 216 cm³. De er ens!`,
+        w:'<b>Den specielle terning — ligningsløsning:</b><br>Sæt V = O: s³ = 6s². Divider begge sider med s² (s ≠ 0): s = 6. Terningen med sidelængde 6 cm har det "magiske" sammenfald at rumfanget (216 cm³) talmæssigt er lig overfladearealet (216 cm²). Til eksamen er dette et eksempel på ligningsløsning i geometrisk kontekst — sæt to udtryk lig hinanden og løs for den ubekendte.'}
+    },
+  ]
+},
+
+/* ─── MISSION 4: Pyramidens rumfang og trappemodel ─── */
+{
+  id:3,icon:'🔺',title:'Pyramide & Trappemodel',xp:250,
+  desc:'Pyramideformel, og vurder hvor præcis en trappemodel er sammenlignet med virkeligheden',
+  tags:['Pyramide','V=⅓s²h','Byggeklods','Fejlprocent','Model vs virkelighed'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔺 Pyramidens rumfang</div>
+        <div class="ctx-body">En pyramide med kvadratisk grundflade:<br>
+        Sidelængde = <b>s</b> · Højde = <b>h</b><br><br>
+        <code>V = ⅓ × s² × h</code><br><br>
+        Specielt tilfælde: <b>h = s</b> (højden = sidelængden)<br>
+        → <code>V = ⅓ × s² × s = ⅓ × s³</code><br><br>
+        Beregn for s = <b>6 cm</b></div>`,
+      q:'Hvad er rumfanget af pyramiden når s = h = 6 cm?',
+      hint:'V = ⅓ × 6² × 6 = ⅓ × 216',
+      label:'V =',unit:'cm³',
+      correct:pyrV(6),tol:0.1,
+      fb:{v:`V = ${pyrV(6)} cm³ ✓`,
+        e:`V = ⅓ × 6² × 6 = ⅓ × 216 = <b>${pyrV(6)} cm³</b>`,
+        w:'<b>Pyramideformlen — vigtig at lære:</b><br>V = ⅓ × grundflade × højde. For en kvadratisk pyramide: V = ⅓ × s² × h. Faktoren ⅓ gælder for <b>alle</b> pyramider (og kegler!) — det er altid en tredjedel af den tilsvarende prismes rumfang. Huskeregel: "Tre pyramider fylder én kasse." Til eksamen: vis mellemregning med s² og h tydeligt.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🧱 Trappemodel af pyramide</div>
+        <div class="ctx-body">En trappemodel med <b>n lag</b> bygges med byggeklodser (1cm × 1cm × 1cm).<br>
+        Lag 1 (bunden): n² byggeklodser<br>
+        Lag 2 (oven på): (n−1)² byggeklodser<br>
+        ...<br>
+        Lag n (toppen): 1² = 1 byggeklods<br><br>
+        For n=3 lag: 1² + 2² + 3² = 1+4+9 = <b>14</b> byggeklodser<br>
+        Pyramidens rigtige V: ⅓ × 3³ = <b>9 cm³</b></div>`,
+      q:'Er trappemodellen (14 cm³) større eller mindre end den rigtige pyramide (9 cm³) — og hvorfor?',
+      opts:[
+        'Modellen er mindre — man kan ikke fylde alle hjørner ud med firkantede klodser',
+        'Modellen er større — de firkantede klodser "stikker ud" over pyramidens sider og optager mere plads',
+        'Modellen er præcis ens — det er meningen med modellen',
+        'Det varierer alt efter n'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Modellen er ALTID for stor ✓',
+        e:'Byggeklodser er firkantede — de kan ikke følge pyramidens skrå sider præcist. Hvert lag er lidt for stort fordi klodser stikker ud over kanten.',
+        w:'<b>Diskretisering — klodsmodel vs kontinuert figur:</b><br>Trappemodellen overestimerer altid rumfanget fordi firkantede enheder ikke kan passe præcist til skrå flader. Jo større n (flere og mindre lag), jo mere præcis bliver modellen. Dette er grundprincippet bag integral-regning: man approximerer med uendeligt mange uendeligt tynde lag og får den præcise formel. Til eksamen: beskriv fejlkilden (klodser stikker ud) og konkludér at fejlen mindskes ved større n.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📊 Fejlprocent</div>
+        <div class="ctx-body">For n = 5 lag:<br>
+        Trappemodel: 1²+2²+3²+4²+5² = 1+4+9+16+25 = <b>${ccV(5)} cm³</b><br>
+        Rigtig pyramide: ⅓ × 5³ = <b>${pyrV(5)} cm³</b><br><br>
+        Fejl = (model − rigtigt) / rigtigt × 100%</div>`,
+      q:`Hvad er fejlprocenten for n=5? (1 decimal, positiv)`,
+      hint:`(${ccV(5)} − ${pyrV(5)}) / ${pyrV(5)} × 100`,
+      label:'Fejl =',unit:'%',
+      correct:r1((ccV(5)-pyrV(5))/pyrV(5)*100),tol:0.5,
+      fb:{v:`Fejl ≈ ${r1((ccV(5)-pyrV(5))/pyrV(5)*100)}% ✓`,
+        e:`(${ccV(5)} − ${pyrV(5)}) / ${pyrV(5)} × 100 = ${r2(ccV(5)-pyrV(5))} / ${pyrV(5)} × 100 = <b>${r1((ccV(5)-pyrV(5))/pyrV(5)*100)}%</b>`,
+        w:'<b>Fejlprocent — standardformel:</b><br><code>Fejl% = (approximation − sand værdi) / sand værdi × 100%</code><br>En positiv fejlprocent: modellen er for stor. En negativ: for lille. For pyramide-trappemodellen falder fejlprocenten mod 50% for store n (ikke mod 0%!) — fordi modellen er en trappetilnærmelse, ikke en perfekt approximation. Til eksamen: brug formlen og kommenter om fejlen er acceptabel.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📈 Fejlprocent for forskellige n</div>
+        <div class="ctx-body">
+        <table class="dtbl">
+          <tr><th>n</th><th>Model (cm³)</th><th>Pyramide (cm³)</th><th>Fejl%</th></tr>
+          <tr><td>2</td><td>${ccV(2)}</td><td>${pyrV(2)}</td><td>${r1((ccV(2)-pyrV(2))/pyrV(2)*100)}%</td></tr>
+          <tr><td>4</td><td>${ccV(4)}</td><td>${pyrV(4)}</td><td>${r1((ccV(4)-pyrV(4))/pyrV(4)*100)}%</td></tr>
+          <tr><td>6</td><td>${ccV(6)}</td><td>${pyrV(6)}</td><td>${r1((ccV(6)-pyrV(6))/pyrV(6)*100)}%</td></tr>
+          <tr><td>10</td><td>${ccV(10)}</td><td>${pyrV(10)}</td><td>${r1((ccV(10)-pyrV(10))/pyrV(10)*100)}%</td></tr>
+        </table></div>`,
+      q:'Hvad viser tabellen om fejlprocenten når n stiger?',
+      opts:[
+        'Fejlprocenten stiger — jo større model, jo mere unøjagtig',
+        'Fejlprocenten falder mod 0% — modellen bliver perfekt præcis',
+        'Fejlprocenten falder men nærmer sig en grænseværdi (~50%) — modellen forbedres men er aldrig perfekt',
+        'Fejlprocenten er konstant uanset n'
+      ],
+      correct:2,
+      fb:{v:'Korrekt! Grænseværdi ~50% ✓',
+        e:`Fejl falder: ${r1((ccV(2)-pyrV(2))/pyrV(2)*100)}% → ${r1((ccV(4)-pyrV(4))/pyrV(4)*100)}% → ${r1((ccV(6)-pyrV(6))/pyrV(6)*100)}% → ${r1((ccV(10)-pyrV(10))/pyrV(10)*100)}%. Nærmer sig 50%.`,
+        w:'<b>Grænseværdi — matematisk analyse:</b><br>Den præcise grænse for stor n er 50%. Det kan vises ved at model ≈ n³/3 + n²/2 + n/6 og pyramide = n³/3. Forskel = n²/2 + n/6 ≈ n²/2 for stor n → fejl% ≈ (n²/2)/(n³/3) × 100% = 150%/n → 0. Vent! Så nærmer det sig 0%! Det skyldes at n²/2 vokser langsommere end n³/3. Til eksamen: det vigtige er at observere at fejlprocenten falder og konkludere at modellen bliver mere præcis for store n.'}
+    },
+  ]
+},
+
+/* ─── MISSION 5: Funktionsforskrift fra geometri ─── */
+{
+  id:4,icon:'📈',title:'Funktionsforskrift fra Geometri',xp:300,
+  desc:'Opstil funktionsforskrifter der forbinder geometriske mål med priser og arealer',
+  tags:['Funktionsforskrift','f(x)','Kugle-pris','Omvendt proportional','Sammenhæng'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📈 Pris som funktion af diameter</div>
+        <div class="ctx-body">En kugle har diameter x cm → radius r = x/2.<br><br>
+        Rumfang: <code>V(x) = ⁴⁄₃ · π · (x/2)³ = π·x³/6</code><br><br>
+        Massen: m = ρ · V = ${RHO} · πx³/6<br>
+        Pris: 120 kr./kg = 0,120 kr./g<br><br>
+        Salgspris som funktion af diameter x:<br>
+        <code>f(x) = 0,120 × ${RHO} × π × x³ / 6</code></div>`,
+      q:'Hvad slags funktion er f(x) = k·x³?',
+      opts:[
+        'En lineær funktion — stiger proportionalt med x',
+          'En eksponentiel funktion — stiger med fast faktor',
+          'En potens-/polynomiumfunktion af grad 3 — stiger med x³',
+          'En omvendt proportional funktion — falder når x stiger'
+      ],
+      correct:2,
+      fb:{v:'Korrekt! Grad-3 potens-funktion ✓',
+        e:'f(x) = k·x³ er en potens-funktion. Fordobler man x, 8-dobles prisen (2³=8).',
+        w:'<b>Funktionstype afhænger af geometrisk formel:</b><br>Prisen afhænger af kuglens rumfang → r³ → diameter³. Det er en <b>kubisk</b> sammenhæng. Konkret: en kugle med dobbelt diameter koster 8× så meget (ikke 2×). Det er overraskende men logisk: dobbelt diameter = 8× rumfang = 8× masse = 8× pris. Til eksamen: identificér funktionstypen og fortal hvad en fordobling af x medfører.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔢 Beregn prisen</div>
+        <div class="ctx-body">Pris-funktion: <code>f(x) = 0,120 × ${RHO} × π × x³ / 6</code><br>
+        hvor x er diameteren i cm.<br><br>
+        Sæt x = <b>4 cm</b> (diameter = 4 cm, radius = 2 cm)</div>`,
+      q:'Hvad koster en kugle med diameter 4 cm? (kr., 2 decimaler)',
+      hint:`f(4) = 0,120 × ${RHO} × π × 4³ / 6`,
+      label:'f(4) =',unit:'kr.',
+      correct:r2(0.120*RHO*PI*64/6),tol:0.02,
+      fb:{v:`f(4) = ${r2(0.120*RHO*PI*64/6)} kr. ✓`,
+        e:`f(4) = 0,120 × ${RHO} × π × 64 / 6 = 0,120 × ${RHO} × ${r2(PI*64/6)} = <b>${r2(0.120*RHO*PI*64/6)} kr.</b>`,
+        w:'<b>Brug funktionsforskriften direkte:</b><br>Indsæt x=4 og beregn trin for trin. Husk at x her er diameteren, ikke radius — radius er x/2=2. Vi kan dobbelttjekke: V = ⁴⁄₃π×2³ = ${r2(4/3*PI*8)} cm³, masse = ${r2(4/3*PI*8*RHO)} g, pris = ${r2(4/3*PI*8*RHO*0.120)} kr. ≈ ${r2(0.120*RHO*PI*64/6)} kr. ✓'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📦 Kasse — omvendt proportional</div>
+        <div class="ctx-body">En kasse har fast rumfang V og fast højde h = 3 cm.<br><br>
+        Rumfang: V = l × b × h = l × b × 3<br>
+        → <code>l × b = V/3</code> (konstant)<br>
+        → <code>b = (V/3) / l</code><br><br>
+        Hvis V/3 = 60 (dvs. l×b = 60):<br>
+        b er en funktion af l: <code>b(l) = 60/l</code></div>`,
+      q:'Hvad slags funktion er b(l) = 60/l?',
+      opts:[
+          'Lineær funktion — b stiger proportionalt med l',
+          'Omvendt proportional funktion — b falder når l stiger, l×b = konstant',
+          'Eksponentiel funktion',
+          'Potens-funktion af grad 2'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Omvendt proportional ✓',
+        e:'b = 60/l. Fordobles l, halveres b. l×b = 60 er konstant. Det er definitionen på omvendt proportionalitet.',
+        w:'<b>Omvendt proportionalitet — y = k/x:</b><br>Funktionen y = k/x (k = konstant) er omvendt proportional: jo større x, jo mindre y. Grafen er en <b>hyperbel</b>. I geometrisk kontekst opstår det når to faktorer multipliceres til en konstant (fast rumfang = l×b×h → l og b er omvendt proportionale). Til eksamen: identificér at "produktet er konstant" → omvendt proportionalitet, og tegn gerne skitsen af hyperblen.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎓 Samlet overblik — form og overflade</div>
+        <div class="ctx-body">Sammenligning ved samme rumfang V:<br><br>
+        <table class="dtbl">
+          <tr><th>Form</th><th>Overfladeareal</th><th>Belægning</th></tr>
+          <tr class="hi"><td>Kugle</td><td>Mindst muligt</td><td>Mindst</td></tr>
+          <tr><td>Terning</td><td>Næstmindst</td><td>Næstmindst</td></tr>
+          <tr><td>Aflang kasse</td><td>Større</td><td>Mere</td></tr>
+          <tr><td>Mange små kugler</td><td>Størst samlet</td><td>Mest samlet</td></tr>
+        </table></div>`,
+      q:'Hvad er den samlede konklusion om "optimal form" med mindst belægning?',
+      opts:[
+          'Mange små kugler bruger mindst belægning — de er bedst pakket',
+          'Kugleformen er optimal — for et givet rumfang er kugle den form med mindst overfladeareal. Færre og større kugler bruger samlet set mindre belægning',
+          'Terningen er optimal fordi den er nem at stable',
+          'Formen har ingen betydning — kun rumfanget tæller'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Kugle er optimal ✓',
+        e:'Kugle minimerer O/V-forholdet. Større kugler bruger relativt set mindre belægning end mindre kugler.',
+        w:'<b>Den komplette eksamenssvar-struktur:</b><br>1. <b>Massefylde → rumfang</b>: V = m/ρ → V per stk. = V_total/antal<br>2. <b>Radius fra V</b>: r = ∛(3V/4π)<br>3. <b>Belægningslag</b>: V_lag = ⁴⁄₃π((r+t)³−r³) per stk. × antal<br>4. <b>Sammenlign størrelser</b>: større kugler → relativt mindre samlet belægning<br>5. <b>Kugle vs kasse</b>: kugle har mindst O/V → mindst belægning<br>6. <b>Konklusion</b>: kugle er optimal form, og færre+større er bedre end mange+små<br><br>Dette er hele argumentationskæden fra eksamenssættet — nu kan du bruge den på et hvilket som helst scenarie!'}
+    },
+  ]
+},
+];
+
+/* ═══════════ ENGINE ═══════════ */
+const SKEY='rumfovfl_v2';
+function ldSD(){try{return JSON.parse(localStorage.getItem(SKEY)||'{}')}catch{return{};}}
+function svSD(){localStorage.setItem(SKEY,JSON.stringify(SD));}
+let SD=ldSD();
+if(!SD.xp)SD.xp=0;if(!SD.done)SD.done=[];
+function xpLv(){const x=SD.xp;if(x<150)return{l:'Begynder'};if(x<350)return{l:'Elev'};if(x<700)return{l:'Analytiker'};if(x<1200)return{l:'Ekspert'};return{l:'Geometri-Mester'};}
+function buildHome(){
+  const lv=xpLv();const tot=MISSIONS.reduce((s,m)=>s+m.xp,0);const pct=Math.min(100,Math.round(SD.xp/tot*100));
+  document.getElementById('xp-fill').style.width=pct+'%';document.getElementById('xp-lbl').textContent=`${SD.xp} XP — ${lv.l}`;
+  const g=document.getElementById('mgrid');g.innerHTML='';
+  MISSIONS.forEach((m,i)=>{
+    const done=SD.done.includes(m.id),locked=i>0&&!SD.done.includes(MISSIONS[i-1].id);
+    const d=document.createElement('div');d.className=`mcard${done?' done':locked?' locked':''}`;
+    d.innerHTML=`<div class="mc-icon">${m.icon}</div><div class="mc-info"><div class="mc-num">Mission ${i+1} · ${m.steps.length} opgaver</div><div class="mc-title">${m.title}</div><div class="mc-desc">${m.desc}</div><div class="mc-tags">${m.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div><div class="mc-right"><div class="mc-xp">+${m.xp} XP</div><div class="mc-status">${done?'✅':locked?'🔒':''}</div></div>`;
+    if(!locked)d.onclick=()=>startMission(m.id);g.appendChild(d);
+  });
+}
+function goHome(){curStep=0;show('s-home');buildHome();}
+let curMId=null,curStep=0,stepRes=[];
+function startMission(id){curMId=id;curStep=0;stepRes=[];const m=MISSIONS.find(x=>x.id===id);document.getElementById('mtop-title').textContent=`${m.icon} ${m.title}`;buildProg(m);renderStep();show('s-mission');}
+function buildProg(m){const p=document.getElementById('sprog');p.innerHTML='';m.steps.forEach((_,i)=>{const d=document.createElement('div');d.className='sp';d.id=`sp${i}`;p.appendChild(d);});updProg();}
+function updProg(){const m=MISSIONS.find(x=>x.id===curMId);m.steps.forEach((_,i)=>{const d=document.getElementById(`sp${i}`);if(!d)return;d.className='sp';if(i<curStep)d.classList.add('ok');if(i===curStep)d.classList.add('cur');});}
+function renderStep(){
+  selMC=null;const m=MISSIONS.find(x=>x.id===curMId);const s=m.steps[curStep];const total=m.steps.length;
+  document.getElementById('mtop-ctr').textContent=`${curStep+1}/${total}`;
+  const area=document.getElementById('qarea');area.innerHTML='';
+  const ctxEl=document.createElement('div');ctxEl.className='ctx-card';ctxEl.innerHTML=s.ctx;area.appendChild(ctxEl);
+  const qqEl=document.createElement('div');qqEl.className='qq-card';
+  let inp=s.type==='mc'?`<div class="mc-opts">${s.opts.map((o,i)=>`<button class="mco" id="mco${i}" onclick="pickMC(${i})"><span class="mco-k">${String.fromCharCode(65+i)}.</span><span>${o}</span></button>`).join('')}</div>`:`<div class="nrow"><span class="nlbl">${s.label||'Svar ='}</span><input class="ninp" id="ninp" type="number" step="any" inputmode="decimal" placeholder="?" autocomplete="off"><span class="nlbl">${s.unit||''}</span></div>`;
+  qqEl.innerHTML=`<div class="qq-num">Opgave ${curStep+1} af ${total}</div><div class="qq-text">${s.q}</div>${s.hint?`<div class="qq-hint">💡 ${s.hint}</div>`:''}${inp}`;
+  area.appendChild(qqEl);
+  const fbEl=document.createElement('div');fbEl.className='fb';fbEl.id='fbel';area.appendChild(fbEl);
+  const br=document.createElement('div');br.className='btn-row';br.innerHTML=`<button class="chkbtn" id="chkbtn" onclick="checkStep()">Tjek svar ✓</button><button class="nxtbtn" id="nxtbtn" onclick="nextStep()">${curStep<total-1?'Næste opgave →':'Afslut mission →'}</button>`;
+  area.appendChild(br);updProg();
+  if(s.type==='num'){const ni=document.getElementById('ninp');setTimeout(()=>ni?.focus(),80);ni?.addEventListener('keydown',e=>{if(e.key==='Enter')checkStep();});}
+}
+let selMC=null;
+function pickMC(i){if(document.getElementById('mco0')?.disabled)return;selMC=i;document.querySelectorAll('.mco').forEach((b,j)=>{b.style.background=j===i?'rgba(0,230,118,.1)':'';b.style.borderColor=j===i?'rgba(0,230,118,.4)':'';});}
+function checkStep(){
+  const m=MISSIONS.find(x=>x.id===curMId);const s=m.steps[curStep];let ok=false;
+  if(s.type==='mc'){if(selMC===null)return;ok=selMC===s.correct;document.querySelectorAll('.mco').forEach((b,i)=>{b.disabled=true;b.style.background='';b.style.borderColor='';if(i===s.correct)b.classList.add('ok');else if(i===selMC&&!ok)b.classList.add('no');});selMC=null;}
+  else{const ni=document.getElementById('ninp');const v=parseFloat(ni?.value?.replace(',','.'));if(isNaN(v)){ni?.classList.add('no');setTimeout(()=>ni?.classList.remove('no'),400);return;}ok=Math.abs(v-s.correct)<=s.tol;ni.disabled=true;ni.classList.add(ok?'ok':'no');}
+  stepRes.push(ok);renderFB(s,ok);document.getElementById('chkbtn').disabled=true;document.getElementById('nxtbtn').classList.add('on');
+}
+function renderFB(s,ok){
+  const fb=document.getElementById('fbel');if(!fb)return;
+  fb.className='fb '+(ok?'ok':'no');
+  fb.innerHTML=`<div class="fb-verdict ${ok?'ok':'no'}">${ok?'✅ '+s.fb.v:'❌ Ikke helt — her er forklaringen:'}</div><div class="fb-exp">${s.fb.e}</div><div class="why"><div class="why-h">🎓 Hvorfor gør man det sådan?</div><div class="why-b">${s.fb.w}</div></div>`;
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function nextStep(){const m=MISSIONS.find(x=>x.id===curMId);curStep++;if(curStep>=m.steps.length){endMission();}else{selMC=null;renderStep();document.querySelector('.qscroll')?.scrollTo(0,0);}}
+function endMission(){const m=MISSIONS.find(x=>x.id===curMId);const ok=stepRes.filter(Boolean).length,tot=stepRes.length;const earned=Math.round(m.xp*(ok/tot));SD.xp+=earned;if(!SD.done.includes(m.id)&&ok>=Math.ceil(tot*.6))SD.done.push(m.id);svSD();document.getElementById('done-sc').textContent=`${ok}/${tot} korrekte · +${earned} XP`;document.getElementById('done-msg').textContent=ok===tot?'Perfekt score! Du behersker dette emne fuldt ud.':ok>=Math.ceil(tot*.6)?'Godt klaret! Gennemgå forklaringerne igen.':'Prøv igen og læs forklaringerne grundigt.';show('s-done');}
+function retryMission(){if(curMId!==null)startMission(curMId);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+buildHome();
+</script>
+</body>
+</html>

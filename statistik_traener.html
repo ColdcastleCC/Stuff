@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Statistik Træner — 10. klasse</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e1117;--panel:#161b27;--card:#1c2333;--border:#2a3344;
+  --green:#00e676;--green2:#69f0ae;--yellow:#ffeb3b;--orange:#ff9800;
+  --red:#f44336;--blue:#42a5f5;--purple:#ab47bc;
+  --white:#e8eaf0;--muted:#8892a4;--muted2:#545e6f;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px);--sm:clamp(12px,2.7vw,14px);--md:clamp(14px,3.2vw,16px);
+  --lg:clamp(18px,4.2vw,22px);--xl:clamp(24px,5.5vw,32px);--xxl:clamp(32px,8vw,52px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--fb);-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none;color:var(--white);}
+.scr{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;overflow-y:auto;}
+.scr.on{display:flex;}
+
+/* HOME */
+#s-home{background:linear-gradient(160deg,#0e1117 0%,#111827 100%);align-items:center;justify-content:flex-start;padding:20px 14px 50px;}
+.home-hero{width:100%;max-width:520px;margin:0 auto 22px;text-align:center;}
+.hero-eye{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+.hero-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);line-height:.95;letter-spacing:-.01em;margin-bottom:6px;}
+.hero-h .acc{color:var(--green);}
+.hero-sub{font-size:var(--sm);color:var(--muted);line-height:1.65;max-width:380px;margin:0 auto 20px;}
+.xp-wrap{background:rgba(255,255,255,.07);border-radius:4px;height:8px;width:100%;max-width:300px;margin:0 auto 6px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:4px;transition:width .5s;}
+.xp-lbl{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:20px;}
+.mgrid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;}
+.mcard{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:15px 17px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.mcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);transform:scaleY(0);transition:transform .15s;transform-origin:bottom;}
+.mcard:hover:not(.locked)::before{transform:scaleY(1);}
+.mcard:hover:not(.locked){border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.04);}
+.mcard.locked{opacity:.4;cursor:default;}
+.mcard.done{border-color:rgba(0,230,118,.25);background:rgba(0,230,118,.03);}
+.mcard.done::before{transform:scaleY(1);}
+.mc-icon{font-size:clamp(24px,6vw,34px);flex-shrink:0;line-height:1;}
+.mc-info{flex:1;min-width:0;}
+.mc-num{font-family:var(--fm);font-size:var(--xs);color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+.mc-title{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);margin-bottom:2px;}
+.mc-desc{font-size:var(--xs);color:var(--muted);line-height:1.4;}
+.mc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-family:var(--fm);font-size:clamp(7px,1.6vw,9px);border:1px solid var(--border);border-radius:3px;padding:2px 8px;color:var(--muted2);}
+.mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.mc-xp{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);}
+.mc-status{font-size:16px;}
+
+/* MISSION */
+#s-mission{background:var(--bg);}
+.mtop{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;padding-top:max(8px,env(safe-area-inset-top,8px));backdrop-filter:blur(10px);}
+.bk{font-family:var(--fm);font-size:var(--xs);color:var(--muted);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;padding:6px 12px;cursor:pointer;}
+.bk:hover{color:var(--white);}
+.mtop-title{font-family:var(--fh);font-weight:700;font-size:var(--md);color:var(--white);flex:1;text-align:center;}
+.mtop-ctr{font-family:var(--fm);font-size:var(--xs);color:var(--muted);}
+.sprog{display:flex;gap:5px;padding:8px 14px;background:rgba(0,0,0,.3);flex-shrink:0;flex-wrap:wrap;}
+.sp{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);transition:all .3s;}
+.sp.ok{background:var(--green);}
+.sp.cur{background:rgba(0,230,118,.4);animation:bl .8s ease-in-out infinite alternate;}
+@keyframes bl{from{opacity:.5}to{opacity:1}}
+.qscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 30px;}
+.qarea{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+
+/* Cards */
+.ctx-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.ctx-head{font-family:var(--fm);font-size:var(--xs);color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.ctx-body{font-size:var(--sm);color:var(--white);line-height:1.65;}
+.ctx-body b{color:var(--green2);}
+.ctx-body code{font-family:var(--fm);background:rgba(0,230,118,.08);color:var(--green2);padding:1px 6px;border-radius:3px;font-size:var(--xs);}
+.dtbl{width:100%;border-collapse:collapse;margin-top:10px;font-family:var(--fm);font-size:var(--xs);}
+.dtbl th{background:rgba(0,230,118,.08);color:var(--green);text-align:left;padding:6px 10px;border-bottom:1px solid rgba(0,230,118,.2);}
+.dtbl td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--white);}
+.dtbl .hi{background:rgba(0,230,118,.1);color:var(--green2);font-weight:700;}
+.qq-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.qq-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:6px;}
+.qq-text{font-family:var(--fh);font-weight:700;font-size:var(--lg);color:var(--white);line-height:1.35;margin-bottom:10px;}
+.qq-hint{font-size:var(--xs);color:var(--muted);font-style:italic;margin-bottom:10px;line-height:1.5;}
+
+/* MC */
+.mc-opts{display:flex;flex-direction:column;gap:8px;}
+.mco{border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.03);padding:12px 15px;cursor:pointer;font-size:var(--sm);color:rgba(255,255,255,.85);text-align:left;transition:all .13s;display:flex;align-items:flex-start;gap:10px;line-height:1.4;}
+.mco:hover:not(:disabled){border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.06);}
+.mco.ok{background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.5);color:var(--green2);}
+.mco.no{background:rgba(244,67,54,.08);border-color:rgba(244,67,54,.4);color:#ff8a80;}
+.mco:disabled{cursor:default;}
+.mco-k{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);min-width:18px;flex-shrink:0;padding-top:1px;}
+
+/* Num */
+.nrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.nlbl{font-family:var(--fm);font-size:var(--sm);color:var(--muted);}
+.ninp{font-family:var(--fm);font-weight:700;font-size:var(--xl);width:clamp(100px,25vw,150px);background:rgba(0,230,118,.06);border:2px solid rgba(0,230,118,.3);border-radius:7px;color:var(--green2);text-align:center;padding:10px 8px;outline:none;-webkit-appearance:none;transition:all .18s;}
+.ninp:focus{border-color:var(--green);background:rgba(0,230,118,.1);box-shadow:0 0 16px rgba(0,230,118,.15);}
+.ninp.ok{border-color:var(--green);}
+.ninp.no{border-color:var(--red);animation:sh .3s ease;}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* Feedback */
+.fb{border-radius:10px;padding:14px 16px;display:none;}
+.fb.ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);display:block;}
+.fb.no{background:rgba(244,67,54,.07);border:1px solid rgba(244,67,54,.2);display:block;}
+.fb-verdict{font-family:var(--fh);font-weight:700;font-size:var(--lg);margin-bottom:8px;}
+.fb-verdict.ok{color:var(--green);}
+.fb-verdict.no{color:var(--red);}
+.fb-exp{font-size:var(--sm);color:rgba(255,255,255,.82);line-height:1.7;margin-bottom:10px;}
+.fb-exp b{color:var(--white);}
+.fb-exp code{font-family:var(--fm);background:rgba(0,230,118,.1);color:var(--green2);padding:1px 6px;border-radius:3px;}
+.why{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;}
+.why-h{font-family:var(--fm);font-size:var(--xs);color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.why-b{font-size:var(--sm);color:rgba(255,255,255,.72);line-height:1.7;}
+.why-b b{color:var(--white);}
+
+/* Buttons */
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.chkbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:var(--green);color:#001a0d;border:none;border-radius:8px;padding:12px 36px;cursor:pointer;transition:all .13s;}
+.chkbtn:hover{background:var(--green2);}
+.chkbtn:disabled{opacity:.3;cursor:default;}
+.nxtbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);letter-spacing:.04em;background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 32px;cursor:pointer;display:none;transition:all .13s;}
+.nxtbtn.on{display:inline-block;}
+.nxtbtn:hover{background:rgba(255,255,255,.14);}
+
+/* DONE */
+#s-done{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px;}
+.dtrophy{font-size:clamp(60px,15vw,90px);margin-bottom:14px;animation:bonce 1.2s ease infinite alternate;}
+@keyframes bonce{from{transform:translateY(0) scale(1)}to{transform:translateY(-10px) scale(1.05)}}
+.done-h{font-family:var(--fh);font-weight:900;font-style:italic;font-size:var(--xxl);color:var(--white);margin-bottom:6px;line-height:.95;}
+.done-h .acc{color:var(--green);}
+.done-sc{font-family:var(--fm);font-size:var(--xl);color:var(--yellow);margin-bottom:12px;}
+.done-msg{font-size:var(--md);color:var(--muted);max-width:380px;line-height:1.65;margin-bottom:26px;}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.dbtn{font-family:var(--fh);font-weight:700;font-size:var(--md);border:none;border-radius:8px;padding:13px 36px;cursor:pointer;letter-spacing:.04em;}
+.dbtn.p{background:var(--green);color:#001a0d;}
+.dbtn.s{background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<div class="scr on" id="s-home">
+  <div class="home-hero">
+    <div class="hero-eye">📊 10. klasse · Eksamensforberedelse</div>
+    <h1 class="hero-h">STATISTIK<br><span class="acc">TRÆNER</span></h1>
+    <p class="hero-sub">Træn de statistiske færdigheder du skal bruge til eksamen — fra gennemsnit og median til boksplot og faglig argumentation.</p>
+    <div class="xp-wrap"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-lbl" id="xp-lbl">0 XP — Begynder</div>
+  </div>
+  <div class="mgrid" id="mgrid"></div>
+</div>
+
+<div class="scr" id="s-mission">
+  <div class="mtop">
+    <button class="bk" onclick="goHome()">← Hjem</button>
+    <div class="mtop-title" id="mtop-title">–</div>
+    <div class="mtop-ctr" id="mtop-ctr">1/1</div>
+  </div>
+  <div class="sprog" id="sprog"></div>
+  <div class="qscroll">
+    <div class="qarea" id="qarea"></div>
+  </div>
+</div>
+
+<div class="scr" id="s-done">
+  <div class="dtrophy">🏆</div>
+  <h2 class="done-h">MISSION<br><span class="acc">KLARET!</span></h2>
+  <div class="done-sc" id="done-sc">–</div>
+  <p class="done-msg" id="done-msg">–</p>
+  <div class="done-btns">
+    <button class="dbtn p" onclick="goHome()">← Vælg ny mission</button>
+    <button class="dbtn s" onclick="retryMission()">↺ Prøv igen</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   HJÆLPEFUNKTIONER
+═══════════════════════════════════════════ */
+const sorted = a => [...a].sort((x,y)=>x-y);
+const sum = a => a.reduce((s,x)=>s+x,0);
+const mean = a => sum(a)/a.length;
+const r1 = x => Math.round(x*10)/10;
+const r2 = x => Math.round(x*100)/100;
+
+function median(a){
+  const s=sorted(a),n=s.length;
+  return n%2===0?(s[n/2-1]+s[n/2])/2:s[Math.floor(n/2)];
+}
+function q1(a){
+  const s=sorted(a),h=Math.floor(s.length/2);
+  return median(s.slice(0,h));
+}
+function q3(a){
+  const s=sorted(a),n=s.length,h=Math.ceil(n/2);
+  return median(s.slice(h));
+}
+const vbredde = a => Math.max(...a)-Math.min(...a);
+
+/* ═══════════════════════════════════════════
+   MISSIONER — neutrale datasæt
+   (ingen referencer til eksamensopgaver)
+═══════════════════════════════════════════ */
+
+// Dataset A: Mål (antal mål per kamp) for et fodboldhold (n=20)
+const A = [0,1,1,2,2,2,3,3,3,3,4,4,4,4,4,5,5,6,7,9];
+// Dataset B: Antal bøger læst på et år af 20 elever
+const B = [1,1,2,2,3,3,3,4,4,4,5,5,5,5,6,6,7,8,10,12];
+// Dataset C: Samme som B men efter en læseklub (n=20)
+const C = [2,3,3,4,4,4,5,5,5,5,6,6,6,7,7,8,8,9,10,14];
+// Dataset D: Løbstider (minutter) for en klasse på 800m (n=16)
+const D = [180,185,190,192,195,198,200,203,205,208,212,215,220,225,235,260];
+// Dataset E: Antal point i et spil for hold 1 (n=12)
+const E = [8,10,11,12,12,13,13,14,15,16,18,20];
+// Dataset F: Antal point for hold 2 (n=12)
+const F = [5,7,9,11,13,13,14,14,15,17,19,23];
+
+const MISSIONS = [
+/* ─── MISSION 1: Hyppighed, frekvens, gennemsnit ─── */
+{
+  id:0, icon:'📊', title:'Hyppighed & Gennemsnit', xp:150,
+  desc:'Tæl, organiser data og beregn gennemsnit',
+  tags:['Hyppighed','Frekvens','Gennemsnit','Summeret frekvens'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📋 Datasæt — Antal mål pr. kamp (20 kampe)</div>
+        <div class="ctx-body">Et fodboldhold noterede antal mål i 20 kampe:<br><br>
+        <code>0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 6, 7, 9</code><br><br>
+        Hvad er <b>hyppigheden</b> af værdien "4 mål"?</div>`,
+      q:'Hvad er hyppigheden (H) for "4 mål pr. kamp"?',
+      hint:'Hyppighed = antal gange en bestemt værdi optræder i datasættet. Tæl alle 4-taller.',
+      opts:['3','4','5','6'],
+      correct:2,
+      fb:{v:'Korrekt! H(4) = 5 ✓',
+        e:'Tæl 4-tallerne i rækken: <b>4, 4, 4, 4, 4</b> — det optræder 5 gange.',
+        w:'<b>Hvad er hyppighed?</b><br>Hyppighed (H) er det simple antal gange en bestemt observation forekommer. I en <b>hyppighedstabel</b> lister man alle mulige værdier og deres hyppighed. Det er grundlaget for alt andet statistisk arbejde — og er det første skridt inden man laver søjlediagrammer eller beregner frekvenser.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📐 Frekvens</div>
+        <div class="ctx-body">Frekvens (f) er hyppighedens andel af det samlede antal observationer:<br>
+        <code>f = H / n</code><br><br>
+        I måldatasættet: H(4) = 5, n = 20</div>`,
+      q:'Hvad er frekvensen for "4 mål pr. kamp"?',
+      hint:'f = 5 / 20 = ?',
+      opts:['0,20','0,25','0,30','0,15'],
+      correct:1,
+      fb:{v:'Korrekt! f = 0,25 ✓',
+        e:'f = 5 ÷ 20 = <b>0,25</b> — altså scorer holdet 4 mål i 25% af kampene.',
+        w:'<b>Frekvens vs hyppighed:</b><br>Hyppighed er det rå tal. Frekvens er <b>andelen</b> (0–1 eller 0–100%). Frekvensen er vigtig fordi den giver mulighed for at <b>sammenligne datasæt af forskellig størrelse</b>. Den summerede frekvens (lægges sammen trin for trin) bruges til trappediagrammer — ved x kan man aflæse "hvor mange procent er under eller lig med x".'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🧮 Beregn gennemsnittet</div>
+        <div class="ctx-body">Datasæt (antal mål, n=20):<br>
+        <code>0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 6, 7, 9</code><br><br>
+        Sum = <b>${sum(A)}</b> · Antal = <b>20</b></div>`,
+      q:'Hvad er gennemsnittet x̄? (1 decimal)',
+      hint:'x̄ = sum ÷ antal = '+sum(A)+' ÷ 20',
+      label:'x̄ =', unit:'mål',
+      correct:r1(mean(A)), tol:0.15,
+      fb:{v:`Rigtigt! x̄ = ${r1(mean(A))} ✓`,
+        e:`x̄ = ${sum(A)} ÷ 20 = <b>${r2(mean(A))}</b> ≈ <b>${r1(mean(A))} mål pr. kamp</b>`,
+        w:'<b>Gennemsnittets styrke og svaghed:</b><br>Gennemsnittet (x̄) bruger <b>alle observationer</b> og giver et samlet "tyngdepunkt". Formlen er: <code>x̄ = Σx / n</code>.<br><br>Svagheden er at gennemsnittet er <b>følsomt over for ekstreme værdier (outliers)</b> — i dette datasæt trækker kampen med 9 mål gennemsnittet opad. Medianen er mere robust. Det er en central pointe til eksamen: <b>valg af deskriptor afhænger af datasættets form!</b>'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🔍 Typetallet</div>
+        <div class="ctx-body">Datasæt (antal mål, n=20):<br>
+        <code>0, 1, 1, 2, 2, 2, 3, 3, 3, 3, <b>4, 4, 4, 4, 4</b>, 5, 5, 6, 7, 9</code><br><br>
+        Typetallet (mode) er den værdi der optræder <b>flest gange</b>.</div>`,
+      q:'Hvad er typetallet for dette datasæt?',
+      hint:'Find den værdi der har den højeste hyppighed.',
+      opts:['3','4','5','3 og 4 — der er to'],
+      correct:1,
+      fb:{v:'Korrekt! Typetallet = 4 ✓',
+        e:'4-mål kampe optræder 5 gange — mere end nogen anden. Typetallet er <b>4</b>.',
+        w:'<b>Hvornår bruger man typetallet?</b><br>Typetallet (mode) er nyttigt når man vil vide "hvad sker oftest". Det er det <b>eneste mål der kan bruges på ikke-numeriske data</b> (fx yndlingsfarver). For numeriske data er det dog sjældent det bedste valg til sammenligning, fordi to datasæt kan have samme typetal men meget forskellig fordeling. Gennemsnit og median er normalt mere informative til at beskrive et datasæts "centrum".'}
+    },
+  ]
+},
+
+/* ─── MISSION 2: Median, kvartiler, variationsbredde ─── */
+{
+  id:1, icon:'📏', title:'Median, Kvartiler & Spredning', xp:200,
+  desc:'Find midterværdien og mål spredningen robust',
+  tags:['Median','Q1','Q3','IQR','Variationsbredde'],
+  steps:[
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔢 Sorteret datasæt</div>
+        <div class="ctx-body">Antal bøger læst på et år af 20 elever:<br>
+        <code>1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 8, 10, 12</code><br><br>
+        n = 20 (lige antal) → Median = gennemsnit af plads 10 og 11.<br>
+        Plads 10 = <b>${sorted(B)[9]}</b> · Plads 11 = <b>${sorted(B)[10]}</b></div>`,
+      q:'Hvad er medianen?',
+      hint:'Median = (plads 10 + plads 11) / 2',
+      label:'Median =', unit:'bøger',
+      correct:median(B), tol:0.1,
+      fb:{v:`Medianen = ${median(B)} ✓`,
+        e:`Median = (${sorted(B)[9]} + ${sorted(B)[10]}) / 2 = <b>${median(B)}</b>`,
+        w:'<b>Medianen — det robuste centrum:</b><br>Medianen er <b>midterværdien</b> i det sorterede datasæt. Med n=20 (lige antal) tager vi gennemsnittet af de to midterste. Medianen påvirkes <b>ikke</b> af ekstreme værdier: selv hvis den elev der læste 12 bøger havde læst 50, ville medianen være den samme. Det er medianen stærkeste egenskab — og grunden til at man foretrækker den til <b>skæve fordelinger</b>.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Variationsbredde</div>
+        <div class="ctx-body">Samme datasæt (n=20):<br>
+        <code><b>1</b>, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 8, 10, <b>12</b></code><br><br>
+        Minimum = <b>${Math.min(...B)}</b> · Maximum = <b>${Math.max(...B)}</b></div>`,
+      q:'Hvad er variationsbredden?',
+      hint:'V = max − min',
+      label:'V =', unit:'bøger',
+      correct:vbredde(B), tol:0,
+      fb:{v:`V = ${vbredde(B)} ✓`,
+        e:`Variationsbredde = ${Math.max(...B)} − ${Math.min(...B)} = <b>${vbredde(B)}</b>`,
+        w:'<b>Variationsbreddens begrænsning:</b><br>Variationsbredden (V = max − min) er simpel at beregne men har en stor svaghed: den bruger <b>kun de to ekstreme punkter</b>. En enkelt usædvanlig observation ændrer den radikalt. Til eksamen argumenterer man for at <b>IQR = Q3 − Q1 er et bedre spredningsm̊al</b> fordi det beskriver de midterste 50% og ikke påvirkes af outliers.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📊 Nedre kvartil Q1</div>
+        <div class="ctx-body">Sorteret datasæt delt i to halvdele (n=20):<br>
+        Nedre halvdel (plads 1–10): <code>${sorted(B).slice(0,10).join(', ')}</code><br><br>
+        Q1 = medianen af de 10 mindste → gennemsnit af plads 5 og 6.<br>
+        Plads 5 = <b>${sorted(B)[4]}</b> · Plads 6 = <b>${sorted(B)[5]}</b></div>`,
+      q:'Hvad er Q1?',
+      hint:'Q1 = (plads 5 + plads 6) / 2 af den nedre halvdel',
+      label:'Q1 =', unit:'',
+      correct:q1(B), tol:0.1,
+      fb:{v:`Q1 = ${q1(B)} ✓`,
+        e:`Q1 = (${sorted(B)[4]} + ${sorted(B)[5]}) / 2 = <b>${q1(B)}</b>`,
+        w:'<b>Kvartilerne deler datasættet i fire:</b><br>• Q1: 25% af observationerne er under denne værdi<br>• Medianen (Q2): 50% er under<br>• Q3: 75% er under<br><br>Til eksamen er det vigtigt at du kan forklare hvad kvartilerne fortæller: <b>"Q1 = 3 betyder at en fjerdedel af eleverne læste 3 eller færre bøger."</b> Brug altid konteksten i formuleringen!'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📐 IQR — Interkvartil spredning</div>
+        <div class="ctx-body">For dette datasæt (n=20):<br>
+        Q1 = <b>${q1(B)}</b> · Q3 = <b>${q3(B)}</b><br><br>
+        IQR = Q3 − Q1 beskriver spredningen af de <b>midterste 50%</b>.</div>`,
+      q:'Hvad er IQR?',
+      hint:'IQR = Q3 − Q1',
+      opts:[`${q3(B)-q1(B)-1}`,`${q3(B)-q1(B)}`,`${q3(B)-q1(B)+1}`,`${q3(B)-q1(B)+2}`],
+      correct:1,
+      fb:{v:`IQR = ${q3(B)-q1(B)} ✓`,
+        e:`IQR = ${q3(B)} − ${q1(B)} = <b>${q3(B)-q1(B)}</b>`,
+        w:'<b>Hvorfor er IQR bedre end variationsbredden?</b><br>IQR fokuserer på de <b>midterste 50%</b> og ignorerer de 25% laveste og 25% højeste. Det gør den <b>robust over for outliers</b>. Variationsbredden her er ${vbredde(B)} — men den siger intet om fordelingen imellem. IQR = ${q3(B)-q1(B)} fortæller at den typiske elev rykker sig ${q3(B)-q1(B)} bøger fra det lave kvartal til det høje. <b>IQR er nøglen til boksplottet!</b>'}
+    },
+  ]
+},
+
+/* ─── MISSION 3: Boksplot ─── */
+{
+  id:2, icon:'📦', title:'Boksplot — Forstå & Aflæs', xp:200,
+  desc:'5-talssummaryen og hvad boksplottet viser',
+  tags:['Boksplot','5-talssummary','Min/Max','IQR'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📦 5-talssummary</div>
+        <div class="ctx-body">Et boksplot bygger på <b>5 nøgleværdier</b>. For løbstider (sekunder) for 16 elever på 800 meter:<br>
+        <code>${sorted(D).join(', ')}</code><br><br>
+        <table class="dtbl">
+          <tr><th>Del af boksplot</th><th>Hvad er det?</th></tr>
+          <tr><td>Venstre stribe (whisker)</td><td>Minimum</td></tr>
+          <tr><td>Venstre kasse-kant</td><td>Q1</td></tr>
+          <tr><td class="hi">Streg inde i kassen</td><td class="hi">Medianen</td></tr>
+          <tr><td>Højre kasse-kant</td><td>Q3</td></tr>
+          <tr><td>Højre stribe</td><td>Maximum</td></tr>
+        </table></div>`,
+      q:'Hvad viser KASSEN (boxen) i et boksplot?',
+      hint:'Kassen strækker sig fra Q1 til Q3.',
+      opts:[
+        'Gennemsnittet og standardafvigelsen',
+        'De midterste 50% af observationerne — fra Q1 til Q3',
+        'Alle observationer fra minimum til maximum',
+        'De 25% laveste observationer'
+      ],
+      correct:1,
+      fb:{v:'Korrekt! Kassen = de midterste 50% ✓',
+        e:'Kassen strækker sig præcis fra Q1 til Q3 — den viser de midterste 50% af data. Bredden af kassen = IQR.',
+        w:'<b>Boksplottets tre elementer:</b><br>1. <b>Kassen:</b> Fra Q1 til Q3 (midterste 50%). Jo bredere kasse, jo mere spreder midtfeltet sig.<br>2. <b>Stripen inde i kassen:</b> Medianen.<br>3. <b>Whiskers (streger ud fra kassen):</b> Strækker sig til min og max (eller til 1,5×IQR fra kassen — outliers markeres som punkter).<br><br>Boksplottet er <b>perfekt til at sammenligne to datasæt</b> fordi man med ét blik kan sammenligne medianer, spredning og placering.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">🔢 Beregn medianen for løbstider</div>
+        <div class="ctx-body">Løbstider i sekunder (n=16, sorteret):<br>
+        <code>${sorted(D).join(', ')}</code><br><br>
+        n=16 (lige antal) → Median = gennemsnit af plads 8 og 9.<br>
+        Plads 8 = <b>${sorted(D)[7]}</b> · Plads 9 = <b>${sorted(D)[8]}</b></div>`,
+      q:'Hvad er medianen for løbstiderne?',
+      hint:'(plads 8 + plads 9) / 2',
+      label:'Median =', unit:'sek',
+      correct:median(D), tol:0.1,
+      fb:{v:`Medianen = ${median(D)} sek ✓`,
+        e:`Median = (${sorted(D)[7]} + ${sorted(D)[8]}) / 2 = <b>${median(D)} sekunder</b>`,
+        w:'<b>Medianens placering i boksplottet:</b><br>Medianen vises som en lodret streg inde i kassen. Sidder stregen midt i kassen er fordelingen symmetrisk. Sidder den <b>til venstre</b> er der mange høje værdier (højreskæv fordeling). Sidder den <b>til højre</b> er der mange lave værdier (venstreskæv). I dette datasæt: er medianen tæt på midten af kassen?'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Q1 for løbstiderne</div>
+        <div class="ctx-body">Løbstider sorteret (n=16):<br>
+        <code>${sorted(D).join(', ')}</code><br><br>
+        Nedre halvdel (plads 1-8): <code>${sorted(D).slice(0,8).join(', ')}</code><br>
+        Q1 = medianen af disse 8 → gennemsnit af plads 4 og 5.<br>
+        Plads 4 = <b>${sorted(D)[3]}</b> · Plads 5 = <b>${sorted(D)[4]}</b></div>`,
+      q:'Hvad er Q1 for løbstiderne?',
+      hint:'Q1 = (plads 4 + plads 5 af nedre halvdel) / 2',
+      label:'Q1 =', unit:'sek',
+      correct:q1(D), tol:0.5,
+      fb:{v:`Q1 = ${q1(D)} sek ✓`,
+        e:`Q1 = (${sorted(D)[3]} + ${sorted(D)[4]}) / 2 = <b>${q1(D)} sek</b>`,
+        w:'<b>5-talssummaryen i kontekst:</b><br>Q1 = ${q1(D)} sek betyder at 25% af eleverne løb 800m på under ${q1(D)} sekunder. Den komplette 5-talssummary er:<br>Min=${Math.min(...D)}, Q1=${q1(D)}, Median=${median(D)}, Q3=${q3(D)}, Max=${Math.max(...D)}<br>IQR = ${q3(D)}−${q1(D)} = ${q3(D)-q1(D)} sek<br><br>Med disse 5 tal kan du tegne et præcist boksplot — og sammenligne med en anden klasse!'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📊 Aflæsning af boksplot</div>
+        <div class="ctx-body">Et boksplot for datasæt X viser:<br>
+        Min = 10 · Q1 = 20 · Median = 30 · Q3 = 45 · Max = 60<br><br>
+        Brug disse værdier til at besvare spørgsmålet.</div>`,
+      q:'Hvad er IQR for datasæt X?',
+      hint:'IQR = Q3 − Q1',
+      opts:['25','30','35','50'],
+      correct:0,
+      fb:{v:'Korrekt! IQR = 25 ✓',
+        e:'IQR = 45 − 20 = <b>25</b>. Kassen i boksplottet er 25 enheder bred.',
+        w:'<b>Hvad fortæller IQR om fordelingen?</b><br>IQR = 25 viser at de midterste 50% af observationerne spænder over 25 enheder. Variationsbredden er 60−10 = 50 — altså dækker IQR halvt så bredt som den samlede spredning. Outliers defineres typisk som værdier der ligger mere end <b>1,5 × IQR</b> fra kassen: under Q1−1,5×IQR = 20−37,5 = −17,5 (ingen) eller over Q3+1,5×IQR = 45+37,5 = 82,5 (ingen).'}
+    },
+  ]
+},
+
+/* ─── MISSION 4: Sammenlign to datasæt ─── */
+{
+  id:3, icon:'⚖️', title:'Sammenlign To Datasæt', xp:250,
+  desc:'Brug deskriptorer til at sammenligne to grupper objektivt',
+  tags:['Sammenligning','Boksplot','Median','Gennemsnit','Argumentation'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📊 To elevers pointresultater (spil)</div>
+        <div class="ctx-body">Hold 1 (n=12): <code>${E.join(', ')}</code><br>
+        Hold 2 (n=12): <code>${F.join(', ')}</code><br><br>
+        <table class="dtbl">
+          <tr><th>Deskriptor</th><th>Hold 1</th><th>Hold 2</th></tr>
+          <tr><td>Gennemsnit</td><td>${r1(mean(E))}</td><td>${r1(mean(F))}</td></tr>
+          <tr><td>Median</td><td>${median(E)}</td><td>${median(F)}</td></tr>
+          <tr><td>Q1</td><td>${q1(E)}</td><td>${q1(F)}</td></tr>
+          <tr><td>Q3</td><td>${q3(E)}</td><td>${q3(F)}</td></tr>
+          <tr><td>Min</td><td>${Math.min(...E)}</td><td>${Math.min(...F)}</td></tr>
+          <tr><td>Max</td><td>${Math.max(...E)}</td><td>${Math.max(...F)}</td></tr>
+        </table></div>`,
+      q:'Hvilket hold er generelt stærkest ifølge boksplot-deskriptorerne?',
+      hint:'Kig på medianen og kvartilerne — hvem er højest?',
+      opts:[
+        'Hold 1 — højere gennemsnit og bedre Q1',
+        'Hold 2 — højere median, Q1, Q3 og max',
+        'De er ens — begge har samme median',
+        'Umuligt at afgøre fra disse tal'
+      ],
+      correct:1,
+      fb:{v:'Korrekt analyse! ✓',
+        e:`Hold 2 har: Median=${median(F)} vs ${median(E)}, Q3=${q3(F)} vs ${q3(E)}, Max=${Math.max(...F)} vs ${Math.max(...E)}. Hold 2 er stærkere på de fleste parametre.`,
+        w:'<b>Sammenlign ALTID med flere deskriptorer:</b><br>Hold 1 har et lidt lavere gennemsnit — men gennemsnittet alene er ikke nok. Medianen (${median(F)} vs ${median(E)}) og Q3 (${q3(F)} vs ${q3(E)}) viser at Hold 2 generelt scorer højere. Det er den type <b>nuanceret argumentation</b> der forventes til eksamen: brug mindst 3 deskriptorer og begrunde dig!'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🔍 Gennemsnit vs Median</div>
+        <div class="ctx-body">Hold 2 scores: <code>${F.join(', ')}</code><br>
+        Gennemsnit = <b>${r1(mean(F))}</b> · Median = <b>${median(F)}</b><br><br>
+        Datasættet er lidt skævt pga. den høje score (23).</div>`,
+      q:'Hvorfor er medianen her et bedre mål for "den typiske spiller" end gennemsnittet?',
+      opts:[
+        'Fordi medianen altid er bedst',
+        'Fordi medianen ikke påvirkes af den høje score på 23, der trækker gennemsnittet op',
+        'Fordi gennemsnittet er sværere at beregne',
+        'Der er ingen forskel — begge er lige gode'
+      ],
+      correct:1,
+      fb:{v:'Præcis begrundelse! ✓',
+        e:'Scoren 23 er markant højere end resten. Den trækker gennemsnittet (${r1(mean(F))}) op, mens medianen (${median(F)}) er uberørt.',
+        w:'<b>Nøglesætning til eksamen:</b><br>"Medianen er et bedre mål for den typiske observation i dette datasæt, fordi den er <b>robust over for ekstreme værdier</b>. Den høje enkeltobservation trækker gennemsnittet kunstigt op og giver et misvisende billede af den typiske præstation. Medianen påvirkes ikke af denne outlier."<br><br>Lær dette udenad — det er et kernesvar i statistikdelen til eksamen.'}
+    },
+    {
+      type:'num',
+      ctx:`<div class="ctx-head">📐 Bøger — Før og efter læseklub</div>
+        <div class="ctx-body">20 elever: antal bøger læst <b>inden</b> læseklub:<br>
+        <code>${sorted(B).join(', ')}</code> · Median = <b>${median(B)}</b><br><br>
+        <b>Efter</b> læseklub (samme 20 elever):<br>
+        <code>${sorted(C).join(', ')}</code> · Median = <b>${median(C)}</b></div>`,
+      q:'Hvad er stigningen i medianen fra før til efter?',
+      hint:'Stigning = median efter − median før',
+      label:'Stigning =', unit:'bøger',
+      correct:median(C)-median(B), tol:0.1,
+      fb:{v:`Stigning = ${median(C)-median(B)} bøger ✓`,
+        e:`${median(C)} − ${median(B)} = <b>${median(C)-median(B)}</b> bøger stigning i medianen.`,
+        w:'<b>Sammenlign samme gruppe to gange (parret data):</b><br>Når vi måler den <b>samme gruppe på to tidspunkter</b> (før/efter) og sammenligner medianer eller gennemsnit, ser vi om der er sket en ændring. Her steg medianen med ${median(C)-median(B)} bøger. Det antyder at læseklubben har haft en positiv effekt — men for at bekræfte dette bør vi tjekke <b>om fremgangen er generel</b> (fx ved at kigge på alle kvartiler, ikke kun medianen).'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📊 Sammenlign begge boksplot</div>
+        <div class="ctx-body">
+        <table class="dtbl">
+          <tr><th></th><th>Før (B)</th><th>Efter (C)</th></tr>
+          <tr><td>Min</td><td>${Math.min(...B)}</td><td>${Math.min(...C)}</td></tr>
+          <tr><td>Q1</td><td>${q1(B)}</td><td>${q1(C)}</td></tr>
+          <tr><td class="hi">Median</td><td class="hi">${median(B)}</td><td class="hi">${median(C)}</td></tr>
+          <tr><td>Q3</td><td>${q3(B)}</td><td>${q3(C)}</td></tr>
+          <tr><td>Max</td><td>${Math.max(...B)}</td><td>${Math.max(...C)}</td></tr>
+        </table></div>`,
+      q:'Hvad er den bedste konklusion baseret på ALLE deskriptorer?',
+      opts:[
+        'Ingen fremgang — Q1 og Max er uændrede',
+        'Fremgangen er generel: Median, Q1 og Q3 steg alle — ikke kun drevet af én outlier',
+        'Kun medianen steg — resten er uændret',
+        'Datasættene er identiske'
+      ],
+      correct:1,
+      fb:{v:'Stærk statistisk konklusion! 🏆',
+        e:`Min+1, Q1+${q1(C)-q1(B)}, Median+${median(C)-median(B)}, Q3+${q3(C)-q3(B)}, Max+${Math.max(...C)-Math.max(...B)}. Alle deskriptorer steg.`,
+        w:'<b>Faglig konklusion — sådan formulerer man det:</b><br>"Læseklubben ser ud til at have haft en positiv effekt. Alle statistiske deskriptorer steg fra første til anden måling: Q1 steg fra ${q1(B)} til ${q1(C)}, medianen fra ${median(B)} til ${median(C)}, og Q3 fra ${q3(B)} til ${q3(C)}. Det viser at fremgangen er <b>generel og ikke blot drevet af enkelte elever</b> med usædvanlig høj fremgang."<br><br>Brug altid konkrete tal med enhed i din begrundelse!'}
+    },
+  ]
+},
+
+/* ─── MISSION 5: Konklusion & argumentation ─── */
+{
+  id:4, icon:'🎤', title:'Argumentér & Konkludér', xp:300,
+  desc:'Formuler faglige konklusioner og vælg de rigtige deskriptorer',
+  tags:['Konklusion','Argumentation','Deskriptorvalg','Eksamenssprog'],
+  steps:[
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">💡 Valg af deskriptor</div>
+        <div class="ctx-body">Du skal sammenligne to grupper med datasæt der begge er <b>skæve</b> — altså med et par meget høje eller lave observationer.<br><br>
+        Hvilken deskriptor beskriver "den typiske observation" bedst i en skæv fordeling?</div>`,
+      q:'Hvad er den bedste begrundelse for at bruge medianen frem for gennemsnittet i en skæv fordeling?',
+      opts:[
+        'Medianen er nemmere at beregne',
+        'Medianen er ikke påvirket af ekstreme observationer (outliers) og giver et mere retvisende billede af den typiske observation',
+        'Gennemsnittet kan ikke bruges i skæve fordelinger',
+        'Medianen er altid større end gennemsnittet'
+      ],
+      correct:1,
+      fb:{v:'Perfekt begrundelse! ✓',
+        e:'Netop — medianen er <b>robust over for outliers</b>. Det er en nøglefærdighed til eksamen at vælge og begrunde sin deskriptor.',
+        w:'<b>Oversigt over deskriptorer og hvornår de bruges:</b><br>• <b>Gennemsnit:</b> God til symmetriske fordelinger uden outliers. Bruger alle observationer.<br>• <b>Median:</b> Bedst til skæve fordelinger. Robust over for outliers. Bruges til sammenligning.<br>• <b>Typetal:</b> God til kategoriske data eller tydelige klumper. Sjældent bedst til sammenligning.<br>• <b>Variationsbredde:</b> Simpel spredning. Upræcis da den kun bruger 2 punkter.<br>• <b>IQR:</b> Robust spredning. Bedst til sammenligning af spredning.'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🏆 Valg af diagram</div>
+        <div class="ctx-body">Du skal præsentere og sammenligne to datasæt for en klasse — og vise om der er sket en ændring over tid.<br><br>
+        Du har valget mellem: søjlediagram, trappediagram og boksplot.</div>`,
+      q:'Hvilket diagram er bedst til at sammenligne TO datasæts fordeling hurtigt og overskueligt?',
+      opts:[
+        'Søjlediagram — det viser hyppigheder for enkeltværdier',
+        'Boksplot — med to boksplot side om side kan man straks se forskelle i median, spredning og kvartiler',
+        'Trappediagram — det viser den summerede frekvens',
+        'Cirkeldiagram — det viser andele tydeligt'
+      ],
+      correct:1,
+      fb:{v:'Korrekt diagramvalg! ✓',
+        e:'To boksplot side om side giver det bedste overblik over begge fordelinger på én gang.',
+        w:'<b>Hvornår bruger man hvert diagram?</b><br>• <b>Søjlediagram:</b> Viser fordelingens form — godt til ét datasæt. Sværere at sammenligne to.<br>• <b>Trappediagram:</b> Viser kumuleret frekvens — godt til at aflæse "hvor mange er under X". Også velegnet til sammenligning.<br>• <b>Boksplot:</b> Bedst til at sammenligne to eller flere datasæt — kompakt, informativt, viser 5-talssummaryen direkte.<br><br>Til eksamen: <b>argumentér altid for dit diagramvalg!</b> "Jeg valgte boksplot fordi det muliggør en direkte visuel sammenligning af medianer og spredning."'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">📝 Nuanceret konklusion</div>
+        <div class="ctx-body">Gruppe A: Median=14, Q1=10, Q3=18, Gennemsnit=15,2<br>
+        Gruppe B: Median=16, Q1=8, Q3=22, Gennemsnit=15,0<br><br>
+        Begge grupper har næsten samme gennemsnit.<br>
+        Gruppe B har højere median men <b>større spredning</b> (IQR=14 mod 8).</div>`,
+      q:'Hvad er den fagligt stærkeste konklusion?',
+      opts:[
+        'Gruppe B er bedst — den har den højeste median',
+        'Gruppe A er bedst — det er altid gennemsnittet der tæller',
+        'Gruppe B har lidt højere median men markant større spredning — der er større forskel på det svageste og stærkeste kvartal i gruppe B. Valget af "bedste gruppe" afhænger af hvad man vægter',
+        'Man kan ikke konkludere noget med kun disse tal'
+      ],
+      correct:2,
+      fb:{v:'Excellent! Det er præcis den type nuancerede svar der giver høje karakterer! ⭐',
+        e:'Begge aspekter er vigtige: Gruppe B er lidt stærkere i midten (median) men meget mere heterogen (større IQR). Det er ikke entydigt hvem der er "bedst".',
+        w:'<b>Nuanceret argumentation er god matematik:</b><br>En god statistisk analyse anerkender at intet datasæt er entydigt bedre på alle parametre. I eksamenssituationen forventes du at:<br>1. Bruge <b>mindst 3 deskriptorer</b> i din argumentation<br>2. Nævne hvad der taler FOR og IMOD en konklusion<br>3. Afslutte med et fagligt skøn der bygger på de konkrete tal<br><br>Eksempelformulering: "Gruppe B har en lidt højere median (16 mod 14), men den større IQR (14 mod 8) viser at spredningen i gruppe B er markant større. Det tyder på at gruppe B er mere heterogen — niveauforskellene er større."'}
+    },
+    {
+      type:'mc',
+      ctx:`<div class="ctx-head">🎓 Eksamensscenarie</div>
+        <div class="ctx-body">Eksaminatoren spørger: <em>"Forklar hvad et boksplot viser, og hvad dets striber (whiskers) fortæller dig."</em></div>`,
+      q:'Vælg det mest fyldestgørende svar:',
+      opts:[
+        'Et boksplot viser gennemsnittet og standardafvigelsen',
+        'Et boksplot viser 5-talssummaryen: minimum, Q1, median, Q3 og maximum. Kassen dækker de midterste 50%. Striberne viser spredningen til de ydre observationer (min og max).',
+        'Et boksplot viser fordelingen som et søjlediagram',
+        'Et boksplot viser kun medianen og variationsbredden'
+      ],
+      correct:1,
+      fb:{v:'Perfekt eksamensvar! 🎓',
+        e:'Netop — boksplottet viser 5-talssummaryen med kassen som de midterste 50% og striberne til min/max.',
+        w:'<b>Lær dette svar udenad:</b><br>"Et boksplot visualiserer <b>5-talssummaryen</b>: minimum, Q1, medianen, Q3 og maximum. Kassen (boxen) strækker sig fra Q1 til Q3 og dækker de midterste 50% af observationerne — dens bredde er lig med IQR. Den lodrette streg inde i kassen markerer medianen. Striberne (whiskers) ud fra kassens sider strækker sig til minimum og maximum (eller til ±1,5×IQR, og punkter uden for markeres som outliers)."<br><br>Husk at sige <b>5-talssummary</b> og <b>IQR</b> — det viser faglig præcision!'}
+    },
+  ]
+},
+];
+
+/* ═══════════════════════════════════════════
+   SAVE
+═══════════════════════════════════════════ */
+const SKEY='stattrainer_v2';
+function ldSD(){try{return JSON.parse(localStorage.getItem(SKEY)||'{}')}catch{return{};}}
+function svSD(){localStorage.setItem(SKEY,JSON.stringify(SD));}
+let SD=ldSD();
+if(!SD.xp)SD.xp=0;if(!SD.done)SD.done=[];
+
+function xpLv(){
+  const x=SD.xp;
+  if(x<150)return{l:'Begynder',n:150};if(x<350)return{l:'Elev',n:350};
+  if(x<700)return{l:'Analytiker',n:700};if(x<1200)return{l:'Ekspert',n:1200};
+  return{l:'Statistik-Mester',n:null};
+}
+
+/* ═══════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════ */
+function buildHome(){
+  const lv=xpLv();
+  const tot=MISSIONS.reduce((s,m)=>s+m.xp,0);
+  const pct=Math.min(100,Math.round(SD.xp/tot*100));
+  document.getElementById('xp-fill').style.width=pct+'%';
+  document.getElementById('xp-lbl').textContent=`${SD.xp} XP — ${lv.l}`;
+  const g=document.getElementById('mgrid');g.innerHTML='';
+  MISSIONS.forEach((m,i)=>{
+    const done=SD.done.includes(m.id);
+    const locked=i>0&&!SD.done.includes(MISSIONS[i-1].id);
+    const d=document.createElement('div');
+    d.className=`mcard${done?' done':locked?' locked':''}`;
+    d.innerHTML=`<div class="mc-icon">${m.icon}</div>
+      <div class="mc-info">
+        <div class="mc-num">Mission ${i+1} · ${m.steps.length} opgaver</div>
+        <div class="mc-title">${m.title}</div>
+        <div class="mc-desc">${m.desc}</div>
+        <div class="mc-tags">${m.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="mc-right"><div class="mc-xp">+${m.xp} XP</div><div class="mc-status">${done?'✅':locked?'🔒':''}</div></div>`;
+    if(!locked)d.onclick=()=>startMission(m.id);
+    g.appendChild(d);
+  });
+}
+function goHome(){curStep=0;show('s-home');buildHome();}
+
+/* ═══════════════════════════════════════════
+   MISSION ENGINE
+═══════════════════════════════════════════ */
+let curMId=null,curStep=0,stepRes=[];
+
+function startMission(id){
+  curMId=id;curStep=0;stepRes=[];
+  const m=MISSIONS.find(x=>x.id===id);
+  document.getElementById('mtop-title').textContent=`${m.icon} ${m.title}`;
+  buildProg(m);renderStep();show('s-mission');
+}
+
+function buildProg(m){
+  const p=document.getElementById('sprog');p.innerHTML='';
+  m.steps.forEach((_,i)=>{const d=document.createElement('div');d.className='sp';d.id=`sp${i}`;p.appendChild(d);});
+  updProg();
+}
+function updProg(){
+  const m=MISSIONS.find(x=>x.id===curMId);
+  m.steps.forEach((_,i)=>{
+    const d=document.getElementById(`sp${i}`);if(!d)return;
+    d.className='sp';
+    if(i<curStep)d.classList.add('ok');
+    if(i===curStep)d.classList.add('cur');
+  });
+}
+
+function renderStep(){
+  selMC=null;
+  const m=MISSIONS.find(x=>x.id===curMId);
+  const s=m.steps[curStep];
+  const total=m.steps.length;
+  document.getElementById('mtop-ctr').textContent=`${curStep+1}/${total}`;
+  const area=document.getElementById('qarea');area.innerHTML='';
+
+  const ctxEl=document.createElement('div');ctxEl.className='ctx-card';ctxEl.innerHTML=s.ctx;area.appendChild(ctxEl);
+
+  const qqEl=document.createElement('div');qqEl.className='qq-card';
+  let inp='';
+  if(s.type==='mc'){
+    inp=`<div class="mc-opts">${s.opts.map((o,i)=>`<button class="mco" id="mco${i}" onclick="pickMC(${i})"><span class="mco-k">${String.fromCharCode(65+i)}.</span><span>${o}</span></button>`).join('')}</div>`;
+  } else {
+    inp=`<div class="nrow"><span class="nlbl">${s.label||'Svar ='}</span><input class="ninp" id="ninp" type="number" step="0.1" inputmode="decimal" placeholder="?" autocomplete="off"><span class="nlbl">${s.unit||''}</span></div>`;
+  }
+  qqEl.innerHTML=`<div class="qq-num">Opgave ${curStep+1} af ${total}</div>
+    <div class="qq-text">${s.q}</div>
+    ${s.hint?`<div class="qq-hint">💡 ${s.hint}</div>`:''}${inp}`;
+  area.appendChild(qqEl);
+
+  const fbEl=document.createElement('div');fbEl.className='fb';fbEl.id='fbel';area.appendChild(fbEl);
+
+  const br=document.createElement('div');br.className='btn-row';
+  br.innerHTML=`<button class="chkbtn" id="chkbtn" onclick="checkStep()">Tjek svar ✓</button>
+    <button class="nxtbtn" id="nxtbtn" onclick="nextStep()">${curStep<total-1?'Næste opgave →':'Afslut mission →'}</button>`;
+  area.appendChild(br);
+
+  updProg();
+  if(s.type==='num'){
+    const ni=document.getElementById('ninp');
+    setTimeout(()=>ni?.focus(),80);
+    ni?.addEventListener('keydown',e=>{if(e.key==='Enter')checkStep();});
+  }
+}
+
+let selMC=null;
+function pickMC(i){
+  if(document.getElementById('mco0')?.disabled)return;
+  selMC=i;
+  document.querySelectorAll('.mco').forEach((b,j)=>{
+    b.style.background=j===i?'rgba(0,230,118,.1)':'';
+    b.style.borderColor=j===i?'rgba(0,230,118,.4)':'';
+  });
+}
+
+function checkStep(){
+  const m=MISSIONS.find(x=>x.id===curMId);
+  const s=m.steps[curStep];
+  let ok=false;
+  if(s.type==='mc'){
+    if(selMC===null)return;
+    ok=selMC===s.correct;
+    document.querySelectorAll('.mco').forEach((b,i)=>{
+      b.disabled=true;b.style.background='';b.style.borderColor='';
+      if(i===s.correct)b.classList.add('ok');
+      else if(i===selMC&&!ok)b.classList.add('no');
+    });
+    selMC=null;
+  } else {
+    const ni=document.getElementById('ninp');
+    const v=parseFloat(ni?.value?.replace(',','.'));
+    if(isNaN(v)){ni?.classList.add('no');setTimeout(()=>ni?.classList.remove('no'),400);return;}
+    ok=Math.abs(v-s.correct)<=s.tol;
+    ni.disabled=true;
+    ni.classList.add(ok?'ok':'no');
+  }
+  stepRes.push(ok);
+  renderFB(s,ok);
+  document.getElementById('chkbtn').disabled=true;
+  document.getElementById('nxtbtn').classList.add('on');
+}
+
+function renderFB(s,ok){
+  const fb=document.getElementById('fbel');if(!fb)return;
+  fb.className='fb '+(ok?'ok':'no');
+  fb.innerHTML=`
+    <div class="fb-verdict ${ok?'ok':'no'}">${ok?'✅ '+s.fb.v:'❌ Ikke helt — men her er forklaringen:'}</div>
+    <div class="fb-exp">${s.fb.e}</div>
+    <div class="why">
+      <div class="why-h">🎓 Hvorfor gør man det sådan?</div>
+      <div class="why-b">${s.fb.w}</div>
+    </div>`;
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function nextStep(){
+  const m=MISSIONS.find(x=>x.id===curMId);
+  curStep++;
+  if(curStep>=m.steps.length){endMission();}
+  else{selMC=null;renderStep();document.querySelector('.qscroll')?.scrollTo(0,0);}
+}
+
+function endMission(){
+  const m=MISSIONS.find(x=>x.id===curMId);
+  const ok=stepRes.filter(Boolean).length,tot=stepRes.length;
+  const earned=Math.round(m.xp*(ok/tot));
+  SD.xp+=earned;
+  if(!SD.done.includes(m.id)&&ok>=Math.ceil(tot*.6))SD.done.push(m.id);
+  svSD();
+  document.getElementById('done-sc').textContent=`${ok}/${tot} korrekte · +${earned} XP`;
+  document.getElementById('done-msg').textContent=ok===tot?'Perfekt score! Du behersker dette emne fuldt ud.':ok>=Math.ceil(tot*.6)?'Godt klaret! Kig forklaringerne igennem for de spørgsmål du ikke fik.':'Bliv ved — læs forklaringerne og prøv igen.';
+  show('s-done');
+}
+
+function retryMission(){if(curMId!==null)startMission(curMId);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+buildHome();
+</script>
+</body>
+</html>
