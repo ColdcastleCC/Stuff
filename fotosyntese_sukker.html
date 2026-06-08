@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fotosyntese & Sukker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d1f0d;--bg2:#0a1a0a;--panel:#142014;--card:#1a2e1a;--border:#2a4a2a;
+  --green:#4ade80;--green2:#86efac;--green3:#166534;
+  --yellow:#fde047;--yellow2:#fbbf24;--orange:#fb923c;
+  --blue:#60a5fa;--blue2:#93c5fd;--cyan:#22d3ee;
+  --red:#f87171;--purple:#c084fc;--pink:#f472b6;
+  --white:#f0fdf4;--muted:#6b9e6b;--muted2:#4a7a4a;
+  --fh:'Nunito',sans-serif;--fm:'Space Mono',monospace;
+  --xs:clamp(10px,2.2vw,12px);--sm:clamp(12px,2.7vw,14px);--md:clamp(14px,3.2vw,16px);
+  --lg:clamp(17px,4vw,21px);--xl:clamp(21px,5vw,28px);--xxl:clamp(28px,7vw,42px);
+}
+html,body{width:100%;min-height:100%;background:var(--bg);font-family:var(--fh);color:var(--white);-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
+
+/* ══ NAVIGATION ══ */
+.nav{position:sticky;top:0;z-index:100;background:rgba(10,26,10,.95);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);padding:0 10px;display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.navbtn{flex-shrink:0;background:none;border:none;color:var(--muted);font-family:var(--fh);font-size:var(--xs);font-weight:700;padding:12px 12px;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;}
+.navbtn.on{color:var(--green);border-bottom-color:var(--green);}
+.navbtn:hover{color:var(--green2);}
+
+/* ══ SCREENS ══ */
+.scr{display:none;padding:16px 14px 60px;max-width:700px;margin:0 auto;}
+.scr.on{display:block;}
+
+/* Section headers */
+.sec-h{font-size:var(--xxl);font-weight:900;color:var(--white);margin-bottom:6px;line-height:1.1;}
+.sec-sub{font-size:var(--sm);color:var(--muted);line-height:1.65;margin-bottom:22px;}
+.chip{display:inline-block;background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25);border-radius:100px;padding:3px 12px;font-size:var(--xs);font-weight:700;margin-bottom:12px;}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px;}
+.card-h{font-size:var(--lg);font-weight:800;color:var(--green);margin-bottom:8px;}
+.card-body{font-size:var(--sm);color:var(--white);line-height:1.7;}
+.card-body b{color:var(--yellow);}
+.card-body code{font-family:var(--fm);background:rgba(74,222,128,.1);color:var(--green2);padding:1px 6px;border-radius:3px;font-size:var(--xs);}
+
+/* Equation box */
+.eq-box{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:14px 16px;font-family:var(--fm);font-size:var(--md);color:var(--white);text-align:center;margin:12px 0;line-height:1.8;}
+.eq-box .r{color:var(--red);}
+.eq-box .b{color:var(--blue);}
+.eq-box .y{color:var(--yellow);}
+.eq-box .g{color:var(--green);}
+.eq-box .arrow{color:var(--muted);font-size:1.3em;margin:0 6px;}
+
+/* SVG molecule display */
+.mol-wrap{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:12px 0;}
+.mol-wrap svg{display:block;width:100%;height:auto;}
+.mol-cap{font-size:var(--xs);color:var(--muted);text-align:center;padding:6px;font-family:var(--fm);}
+
+/* ══ FOTOSYNTESE ANIMATION ══ */
+.photo-stage{background:linear-gradient(180deg,#071a07,#0d2b0d);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;margin:16px 0;}
+#photo-cvs{display:block;width:100%;}
+
+/* ══ SUGAR TYPES GRID ══ */
+.sugar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,42vw,200px),1fr));gap:10px;margin:14px 0;}
+.sugar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .14s;text-align:center;}
+.sugar-card:hover{border-color:var(--green);background:rgba(74,222,128,.06);transform:translateY(-2px);}
+.sugar-card.selected{border-color:var(--yellow);background:rgba(253,224,71,.05);}
+.sugar-card .sc-icon{font-size:clamp(28px,7vw,38px);margin-bottom:6px;display:block;}
+.sugar-card .sc-name{font-weight:800;font-size:var(--sm);color:var(--white);margin-bottom:2px;}
+.sugar-card .sc-formula{font-family:var(--fm);font-size:var(--xs);color:var(--green);}
+.sugar-card .sc-type{font-size:var(--xs);color:var(--muted);margin-top:3px;}
+
+/* Detail panel */
+.detail-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin:14px 0;display:none;}
+.detail-panel.on{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.dp-h{font-size:var(--lg);font-weight:800;color:var(--yellow);margin-bottom:6px;}
+.dp-body{font-size:var(--sm);color:var(--white);line-height:1.7;}
+.dp-body b{color:var(--green2);}
+
+/* Tabs inside panel */
+.tab-row{display:flex;gap:6px;margin:10px 0;}
+.tab{font-size:var(--xs);font-weight:700;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:6px 12px;cursor:pointer;color:var(--muted);}
+.tab.on{background:rgba(74,222,128,.12);border-color:var(--green);color:var(--green);}
+
+/* ══ QUIZ ══ */
+.quiz-progress{background:rgba(0,0,0,.3);border-radius:100px;height:6px;margin-bottom:16px;overflow:hidden;}
+.quiz-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--yellow));border-radius:100px;transition:width .3s;}
+.quiz-meta{display:flex;justify-content:space-between;font-size:var(--xs);color:var(--muted);margin-bottom:14px;}
+.quiz-score-badge{font-family:var(--fm);font-size:var(--md);color:var(--yellow);font-weight:700;}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;}
+.qcard-num{font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-bottom:8px;}
+.qcard-q{font-size:var(--lg);font-weight:800;color:var(--white);line-height:1.4;margin-bottom:14px;}
+.qcard-img{width:100%;margin-bottom:12px;border-radius:8px;overflow:hidden;}
+.q-opts{display:flex;flex-direction:column;gap:8px;}
+.qopt{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px 15px;cursor:pointer;font-size:var(--sm);color:var(--white);text-align:left;transition:all .13s;display:flex;align-items:center;gap:10px;}
+.qopt:hover{border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.06);}
+.qopt.ok{background:rgba(74,222,128,.14);border-color:var(--green);color:var(--green2);}
+.qopt.no{background:rgba(248,113,113,.08);border-color:var(--red);color:var(--red);}
+.qopt.show-ok{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.3);}
+.qopt:disabled{cursor:default;}
+.qopt-key{font-family:var(--fm);font-size:var(--xs);color:var(--muted2);min-width:18px;}
+.qfb{border-radius:10px;padding:12px 14px;font-size:var(--sm);line-height:1.65;margin-bottom:10px;display:none;}
+.qfb.ok{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);display:block;color:var(--green2);}
+.qfb.no{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);display:block;color:#ffb0b0;}
+.qfb b{color:#fff;}
+.quiz-nxt{font-family:var(--fh);font-weight:800;font-size:var(--md);background:var(--green);color:#001a0d;border:none;border-radius:100px;padding:12px 40px;cursor:pointer;display:none;transition:all .14s;}
+.quiz-nxt.on{display:inline-block;}
+.quiz-nxt:hover{background:var(--green2);}
+
+/* Quiz results */
+.qresult{text-align:center;padding:20px 0;}
+.qres-score{font-size:var(--xxl);font-weight:900;color:var(--yellow);margin:10px 0 4px;}
+.qres-msg{font-size:var(--md);color:var(--muted);margin-bottom:20px;}
+.qres-restart{font-family:var(--fh);font-weight:800;font-size:var(--md);background:var(--green);color:#001a0d;border:none;border-radius:100px;padding:12px 36px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="navbtn on" onclick="showScr(0)">🌿 Fotosyntese</button>
+  <button class="navbtn" onclick="showScr(1)">⚗️ Glukose</button>
+  <button class="navbtn" onclick="showScr(2)">🍬 Sukkertyper</button>
+  <button class="navbtn" onclick="showScr(3)">🔬 Bindinger</button>
+  <button class="navbtn" onclick="showScr(4)">🧠 Quiz</button>
+</nav>
+
+<!-- ══ SKÆRM 0: FOTOSYNTESE ══ -->
+<div class="scr on" id="s0">
+  <div class="chip">🌿 Energiomsætning</div>
+  <h1 class="sec-h">Fotosyntese</h1>
+  <p class="sec-sub">Planter omdanner sollys, vand og kuldioxid til glukose og ilt. Det er grundlaget for næsten alt liv på Jorden.</p>
+
+  <div class="eq-box">
+    <span class="b">6 CO₂</span> + <span class="r">6 H₂O</span> + <span class="y">lys</span>
+    <span class="arrow">→</span>
+    <span class="g">C₆H₁₂O₆</span> + <span class="b">6 O₂</span>
+  </div>
+
+  <div class="photo-stage">
+    <canvas id="photo-cvs" height="300"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="card-h">🌱 Hvor sker det?</div>
+    <div class="card-body">Fotosyntesen sker i <b>kloroplaster</b> — planters "solceller". Inde i kloroplasten sidder det grønne farvestof <b>klorofyl</b>, som absorberer lys (primært rødt og blåt lys — det grønne reflekteres, og derfor ser planter grønne ud).</div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">⚡ To faser</div>
+    <div class="card-body">
+      <b>1. Lysfasen</b> — lysenergi bruges til at spalte vand (H₂O). Ilt (O₂) frigives som biprodukt. ATP og NADPH dannes.<br><br>
+      <b>2. Mørkreaktionen (Calvincyklus)</b> — ATP og NADPH bruges til at bygge glukose ud af CO₂. Sker uden direkte brug af lys.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">📐 Støkiometri</div>
+    <div class="card-body">
+      For at danne <b>1 molekyle glukose</b> (C₆H₁₂O₆) kræves:<br>
+      • <b>6 CO₂</b> molekyler (karbonkilde)<br>
+      • <b>6 H₂O</b> molekyler (hydrogenkilde)<br>
+      • <b>Lys</b> (energikilde)<br><br>
+      Der frigives <b>6 O₂</b> (fra vandspaltningen).
+    </div>
+  </div>
+</div>
+
+<!-- ══ SKÆRM 1: GLUKOSE ══ -->
+<div class="scr" id="s1">
+  <div class="chip">⚗️ C₆H₁₂O₆</div>
+  <h1 class="sec-h">Glukosets opbygning</h1>
+  <p class="sec-sub">Glukose er en monosakkard med seks karboner. Det er kroppens primære brændstof og grundbausten i mange sukkermolekyler.</p>
+
+  <div class="tab-row">
+    <button class="tab on" onclick="showGlucTab(0,this)">Åben kæde</button>
+    <button class="tab" onclick="showGlucTab(1,this)">Ring­form (α)</button>
+    <button class="tab" onclick="showGlucTab(2,this)">Ring­form (β)</button>
+  </div>
+
+  <!-- Åben kæde -->
+  <div id="gluc-0" class="mol-wrap">
+    <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg">
+      <rect width="420" height="320" fill="#0a1a0a"/>
+      <!-- Carbon backbone vertical chain -->
+      <!-- C1 aldehyde top -->
+      <line x1="210" y1="40" x2="210" y2="80" stroke="#6b9e6b" stroke-width="2"/>
+      <!-- double bond to O on C1 -->
+      <line x1="208" y1="42" x2="196" y2="28" stroke="#f87171" stroke-width="2"/>
+      <line x1="212" y1="40" x2="200" y2="26" stroke="#f87171" stroke-width="2"/>
+      <!-- C1-C6 backbone -->
+      <line x1="210" y1="80" x2="210" y2="130" stroke="#6b9e6b" stroke-width="2"/>
+      <line x1="210" y1="130" x2="210" y2="180" stroke="#6b9e6b" stroke-width="2"/>
+      <line x1="210" y1="180" x2="210" y2="230" stroke="#6b9e6b" stroke-width="2"/>
+      <line x1="210" y1="230" x2="210" y2="280" stroke="#6b9e6b" stroke-width="2"/>
+      <!-- OH groups left side: C2,C3,C4 -->
+      <line x1="210" y1="105" x2="155" y2="105" stroke="#f87171" stroke-width="2"/>
+      <line x1="210" y1="155" x2="265" y2="155" stroke="#f87171" stroke-width="2"/>
+      <line x1="210" y1="205" x2="155" y2="205" stroke="#f87171" stroke-width="2"/>
+      <!-- OH on C6 bottom -->
+      <line x1="210" y1="280" x2="155" y2="295" stroke="#f87171" stroke-width="2"/>
+      <!-- H groups right side -->
+      <line x1="210" y1="80" x2="265" y2="80" stroke="#93c5fd" stroke-width="1.5"/>
+      <line x1="210" y1="105" x2="265" y2="105" stroke="#93c5fd" stroke-width="1.5"/>
+      <line x1="210" y1="155" x2="155" y2="155" stroke="#93c5fd" stroke-width="1.5"/>
+      <line x1="210" y1="205" x2="265" y2="205" stroke="#93c5fd" stroke-width="1.5"/>
+      <line x1="210" y1="230" x2="265" y2="230" stroke="#93c5fd" stroke-width="1.5"/>
+      <line x1="210" y1="255" x2="265" y2="255" stroke="#93c5fd" stroke-width="1.5"/>
+      <!-- O labels (red) -->
+      <circle cx="192" cy="22" r="12" fill="#9b2226"/>
+      <text x="192" y="27" fill="white" font-size="11" font-family="Space Mono" text-anchor="middle">O</text>
+      <text x="183" y="18" fill="#f87171" font-size="9" font-family="Space Mono">//</text>
+      <circle cx="138" cy="105" r="12" fill="#9b2226"/>
+      <text x="138" y="110" fill="white" font-size="9" font-family="Space Mono" text-anchor="middle">OH</text>
+      <circle cx="282" cy="155" r="12" fill="#9b2226"/>
+      <text x="282" y="160" fill="white" font-size="9" font-family="Space Mono" text-anchor="middle">OH</text>
+      <circle cx="138" cy="205" r="12" fill="#9b2226"/>
+      <text x="138" y="210" fill="white" font-size="9" font-family="Space Mono" text-anchor="middle">OH</text>
+      <circle cx="138" cy="295" r="12" fill="#9b2226"/>
+      <text x="138" y="300" fill="white" font-size="9" font-family="Space Mono" text-anchor="middle">OH</text>
+      <!-- C labels (dark green) -->
+      <circle cx="210" cy="80" r="14" fill="#166534"/>
+      <text x="210" y="85" fill="white" font-size="11" font-family="Space Mono" text-anchor="middle">C1</text>
+      <circle cx="210" cy="130" r="14" fill="#166534"/>
+      <text x="210" y="135" fill="white" font-size="11" font-family="Space Mono" text-anchor="middle">C2</text>
+      <circle cx="210" cy="180" r="14" fill="#166534"/>
+      <text x="210" y="185" fill="white" font-size="11" font-family="Space Mono" text-anchor="middle">C3</text>
+      <circle cx="210" cy="230" r="14" fill="#166534"/>
+      <text x="210" y="235" fill="white" font-size="11" font-family="Space Mono" text-anchor="middle">C4</text>
+      <circle cx="210" cy="280" r="14" fill="#166534"/>
+      <text x="210" y="285" fill="white" font-size="11" font-family="Space Mono" text-anchor="middle">C5</text>
+      <!-- H labels -->
+      <text x="272" y="85" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="272" y="110" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="148" y="160" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="272" y="210" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="272" y="235" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="272" y="260" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <!-- title -->
+      <text x="210" y="15" fill="#4ade80" font-size="11" font-family="Space Mono" text-anchor="middle">D-Glukose (åben kædeform)</text>
+    </svg>
+    <div class="mol-cap">6 kulstofatomer · 12 hydrogenatomer · 6 oxygenatomer — C₆H₁₂O₆</div>
+  </div>
+
+  <!-- Alpha ringform -->
+  <div id="gluc-1" class="mol-wrap" style="display:none;">
+    <svg viewBox="0 0 420 280" xmlns="http://www.w3.org/2000/svg">
+      <rect width="420" height="280" fill="#0a1a0a"/>
+      <!-- Pyranose ring — hexagon shape -->
+      <!-- O in ring at top -->
+      <polygon points="210,50 290,90 310,170 210,220 110,170 130,90" fill="none" stroke="#6b9e6b" stroke-width="2.5"/>
+      <!-- Ring atoms -->
+      <circle cx="210" cy="50" r="14" fill="#9b2226"/>
+      <text x="210" y="55" fill="white" font-size="11" font-family="Space Mono" text-anchor="middle">O</text>
+      <circle cx="290" cy="90" r="14" fill="#166534"/>
+      <text x="290" y="95" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C1</text>
+      <circle cx="310" cy="170" r="14" fill="#166534"/>
+      <text x="310" y="175" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C2</text>
+      <circle cx="210" cy="220" r="14" fill="#166534"/>
+      <text x="210" y="225" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C3</text>
+      <circle cx="110" cy="170" r="14" fill="#166534"/>
+      <text x="110" y="175" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C4</text>
+      <circle cx="130" cy="90" r="14" fill="#166534"/>
+      <text x="130" y="95" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C5</text>
+      <!-- CH2OH on C5 -->
+      <line x1="130" y1="76" x2="100" y2="40" stroke="#6b9e6b" stroke-width="2"/>
+      <circle cx="90" cy="30" r="14" fill="#166534"/>
+      <text x="90" y="35" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">C6</text>
+      <line x1="82" y1="22" x2="60" y2="10" stroke="#f87171" stroke-width="2"/>
+      <text x="50" y="12" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <!-- OH on C1 (alpha = down) -->
+      <line x1="296" y1="104" x2="320" y2="120" stroke="#f87171" stroke-width="2"/>
+      <text x="325" y="125" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <text x="335" y="110" fill="#fde047" font-size="9" font-family="Space Mono">(α)</text>
+      <!-- OH on C2 -->
+      <line x1="320" y1="176" x2="350" y2="185" stroke="#f87171" stroke-width="2"/>
+      <text x="355" y="190" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <!-- OH on C3 -->
+      <line x1="210" y1="234" x2="210" y2="258" stroke="#f87171" stroke-width="2"/>
+      <text x="200" y="268" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <!-- OH on C4 -->
+      <line x1="96" y1="176" x2="66" y2="185" stroke="#f87171" stroke-width="2"/>
+      <text x="36" y="190" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <!-- H labels -->
+      <text x="310" y="75" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="336" y="165" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="226" y="238" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="72" y="165" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="148" y="75" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="210" y="20" fill="#4ade80" font-size="11" font-family="Space Mono" text-anchor="middle">α-D-Glukose (ringform)</text>
+    </svg>
+    <div class="mol-cap">α-form: OH på C1 peger <em>ned</em> (aksial) — som i stivelse</div>
+  </div>
+
+  <!-- Beta ringform -->
+  <div id="gluc-2" class="mol-wrap" style="display:none;">
+    <svg viewBox="0 0 420 280" xmlns="http://www.w3.org/2000/svg">
+      <rect width="420" height="280" fill="#0a1a0a"/>
+      <polygon points="210,50 290,90 310,170 210,220 110,170 130,90" fill="none" stroke="#6b9e6b" stroke-width="2.5"/>
+      <circle cx="210" cy="50" r="14" fill="#9b2226"/>
+      <text x="210" y="55" fill="white" font-size="11" font-family="Space Mono" text-anchor="middle">O</text>
+      <circle cx="290" cy="90" r="14" fill="#166534"/>
+      <text x="290" y="95" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C1</text>
+      <circle cx="310" cy="170" r="14" fill="#166534"/>
+      <text x="310" y="175" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C2</text>
+      <circle cx="210" cy="220" r="14" fill="#166534"/>
+      <text x="210" y="225" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C3</text>
+      <circle cx="110" cy="170" r="14" fill="#166534"/>
+      <text x="110" y="175" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C4</text>
+      <circle cx="130" cy="90" r="14" fill="#166534"/>
+      <text x="130" y="95" fill="white" font-size="10" font-family="Space Mono" text-anchor="middle">C5</text>
+      <!-- CH2OH -->
+      <line x1="130" y1="76" x2="100" y2="40" stroke="#6b9e6b" stroke-width="2"/>
+      <circle cx="90" cy="30" r="14" fill="#166534"/>
+      <text x="90" y="35" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">C6</text>
+      <line x1="82" y1="22" x2="60" y2="10" stroke="#f87171" stroke-width="2"/>
+      <text x="50" y="12" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <!-- OH on C1 (beta = UP) -->
+      <line x1="295" y1="78" x2="318" y2="62" stroke="#f87171" stroke-width="2"/>
+      <text x="322" y="62" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <text x="322" y="80" fill="#fde047" font-size="9" font-family="Space Mono">(β)</text>
+      <!-- OH on C2,C3,C4 same as alpha -->
+      <line x1="320" y1="176" x2="350" y2="185" stroke="#f87171" stroke-width="2"/>
+      <text x="355" y="190" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <line x1="210" y1="234" x2="210" y2="258" stroke="#f87171" stroke-width="2"/>
+      <text x="200" y="268" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <line x1="96" y1="176" x2="66" y2="185" stroke="#f87171" stroke-width="2"/>
+      <text x="36" y="190" fill="#f87171" font-size="10" font-family="Space Mono">OH</text>
+      <!-- H labels -->
+      <text x="310" y="105" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="336" y="165" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="226" y="238" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="72" y="165" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="148" y="75" fill="#93c5fd" font-size="11" font-family="Space Mono">H</text>
+      <text x="210" y="20" fill="#4ade80" font-size="11" font-family="Space Mono" text-anchor="middle">β-D-Glukose (ringform)</text>
+    </svg>
+    <div class="mol-cap">β-form: OH på C1 peger <em>op</em> (ækvatoral) — som i cellulose</div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">🔬 α vs β — stor forskel!</div>
+    <div class="card-body">
+      Det lyder som en lille detalje — om OH-gruppen på C1 peger op eller ned. Men det giver en enorm forskel i egenskaber:<br><br>
+      <b>α-glukose</b> → polymeriseres til <b>stivelse og glykogen</b> (spiralformet kæde — let at nedbryde)<br>
+      <b>β-glukose</b> → polymeriseres til <b>cellulose</b> (rettede kæder — utroligt stærkt, umuligt for de fleste dyr at nedbryde)
+    </div>
+  </div>
+</div>
+
+<!-- ══ SKÆRM 2: SUKKERTYPER ══ -->
+<div class="scr" id="s2">
+  <div class="chip">🍬 Sakkarider</div>
+  <h1 class="sec-h">Sukkertyper</h1>
+  <p class="sec-sub">Sukkerarter inddeles efter antallet af sukkermolekyler. Klik på et kort for at se detaljerne.</p>
+
+  <div class="card">
+    <div class="card-h">Monosakkarider — 1 sukkermolekyle</div>
+    <div class="card-body" style="margin-bottom:12px;">Enkle sukkere der ikke kan hydrolyseres yderligere. Sødeste og lettest opløselige.</div>
+    <div class="sugar-grid" id="mono-grid"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">Disakkarider — 2 sukkermolekyler</div>
+    <div class="card-body" style="margin-bottom:12px;">To monosakkarider bundet med en <b>glykosidbinding</b> under frigivelse af vand (kondensation).</div>
+    <div class="sugar-grid" id="di-grid"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">Polysakkarider — mange sukkermolekyler</div>
+    <div class="card-body" style="margin-bottom:12px;">Lange kæder af monosakkarider. Bruges til energilagring og strukturel støtte.</div>
+    <div class="sugar-grid" id="poly-grid"></div>
+  </div>
+
+  <div class="detail-panel" id="sugar-detail">
+    <div class="dp-h" id="sdp-h">–</div>
+    <div class="dp-body" id="sdp-body">–</div>
+    <div id="sdp-mol" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- ══ SKÆRM 3: BINDINGER ══ -->
+<div class="scr" id="s3">
+  <div class="chip">🔗 Kemiske bindinger</div>
+  <h1 class="sec-h">Glykosidbindinger</h1>
+  <p class="sec-sub">Monosakkarider kobles sammen via glykosidbindinger. Typen af binding bestemmer egenskaberne.</p>
+
+  <div class="card">
+    <div class="card-h">💧 Kondensation — sådan dannes bindingen</div>
+    <div class="card-body">
+      To monosakkarider reagerer: OH-gruppe fra det ene + H fra det andets OH-gruppe → <b>H₂O afgives</b>.<br>
+      Tilbage er en <b>O-bro</b> mellem de to sukkerenheder — glykosidbindingen.<br><br>
+      <code>Glukose–OH + HO–Glukose → Glukose–O–Glukose + H₂O</code>
+    </div>
+  </div>
+
+  <!-- Saccharose binding SVG -->
+  <div class="mol-wrap">
+    <svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="460" height="220" fill="#0a1a0a"/>
+      <!-- Left ring: glucose -->
+      <polygon points="110,50 160,70 175,130 110,165 45,130 60,70" fill="none" stroke="#4ade80" stroke-width="2"/>
+      <text x="110" y="115" fill="#86efac" font-size="9" font-family="Space Mono" text-anchor="middle">Glukose</text>
+      <text x="110" y="128" fill="#86efac" font-size="8" font-family="Space Mono" text-anchor="middle">α-D</text>
+      <!-- ring atoms -->
+      <circle cx="110" cy="50" r="10" fill="#9b2226"/>
+      <text x="110" y="54" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">O</text>
+      <circle cx="60" cy="70" r="10" fill="#166534"/>
+      <text x="60" y="74" fill="white" font-size="7" font-family="Space Mono" text-anchor="middle">C1</text>
+      <!-- Glycosidic bond -->
+      <line x1="173" y1="100" x2="220" y2="100" stroke="#fde047" stroke-width="3"/>
+      <circle cx="220" cy="100" r="12" fill="#7c3aed"/>
+      <text x="220" y="104" fill="white" font-size="9" font-family="Space Mono" text-anchor="middle">O</text>
+      <text x="220" y="122" fill="#fde047" font-size="9" font-family="Space Mono" text-anchor="middle">bro</text>
+      <line x1="232" y1="100" x2="280" y2="100" stroke="#fde047" stroke-width="3"/>
+      <!-- Right ring: fructose -->
+      <polygon points="340,50 390,75 395,135 340,165 285,135 290,75" fill="none" stroke="#fb923c" stroke-width="2"/>
+      <text x="340" y="115" fill="#fed7aa" font-size="9" font-family="Space Mono" text-anchor="middle">Fruktose</text>
+      <text x="340" y="128" fill="#fed7aa" font-size="8" font-family="Space Mono" text-anchor="middle">β-D</text>
+      <circle cx="340" cy="50" r="10" fill="#9b2226"/>
+      <text x="340" y="54" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">O</text>
+      <circle cx="390" cy="75" r="10" fill="#92400e"/>
+      <text x="390" y="79" fill="white" font-size="7" font-family="Space Mono" text-anchor="middle">C2</text>
+      <!-- Labels -->
+      <text x="230" y="195" fill="#fde047" font-size="10" font-family="Space Mono" text-anchor="middle">Saccharose (α1→β2 glykosidbinding)</text>
+      <text x="230" y="210" fill="#6b9e6b" font-size="9" font-family="Space Mono" text-anchor="middle">+ H₂O frigives ved dannelse</text>
+    </svg>
+    <div class="mol-cap">Saccharose = α-D-glukose + β-D-fruktose</div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">📋 Bindingstyper og deres betydning</div>
+    <div id="binding-table"></div>
+  </div>
+
+  <!-- Cellulose vs stivelse -->
+  <div class="card">
+    <div class="card-h">🌾 α vs β binding — gigantisk forskel</div>
+    <div class="card-body">
+      <b>Stivelse (α-1,4-binding)</b>: Kæden buger sig som en spiral → kan let pakkes og nedbrydes af enzymer → energilagring i planter<br><br>
+      <b>Cellulose (β-1,4-binding)</b>: Kæden er ret → mange kæder kan lægge sig parallelt og danne stærke fiberbundter med hydrogenbindinger → plantecellevæg<br><br>
+      Mennesker mangler enzymet <b>cellulase</b> og kan ikke nedbryde cellulose — vi siger det er <b>kostfibre</b>.
+    </div>
+  </div>
+
+  <div class="mol-wrap">
+    <svg viewBox="0 0 460 180" xmlns="http://www.w3.org/2000/svg">
+      <rect width="460" height="180" fill="#0a1a0a"/>
+      <!-- Stivelse spiral illustration -->
+      <text x="115" y="20" fill="#4ade80" font-size="11" font-family="Space Mono" text-anchor="middle">Stivelse (α)</text>
+      <!-- spiral chain of circles -->
+      <path d="M 30,80 Q 50,50 80,80 Q 110,110 140,80 Q 170,50 200,80" fill="none" stroke="#4ade80" stroke-width="3"/>
+      <circle cx="30" cy="80" r="10" fill="#166534"/><text x="30" y="84" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">G</text>
+      <circle cx="80" cy="80" r="10" fill="#166534"/><text x="80" y="84" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">G</text>
+      <circle cx="140" cy="80" r="10" fill="#166534"/><text x="140" y="84" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">G</text>
+      <circle cx="200" cy="80" r="10" fill="#166534"/><text x="200" y="84" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">G</text>
+      <text x="80" y="145" fill="#4ade80" font-size="9" font-family="Space Mono" text-anchor="middle">Spiralform → let nedbrydelig</text>
+      <!-- Cellulose straight chain -->
+      <text x="345" y="20" fill="#fb923c" font-size="11" font-family="Space Mono" text-anchor="middle">Cellulose (β)</text>
+      <line x1="255" y1="80" x2="445" y2="80" stroke="#fb923c" stroke-width="3"/>
+      <circle cx="270" cy="80" r="10" fill="#92400e"/><text x="270" y="84" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">G</text>
+      <circle cx="320" cy="80" r="10" fill="#92400e"/><text x="320" y="84" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">G</text>
+      <circle cx="370" cy="80" r="10" fill="#92400e"/><text x="370" y="84" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">G</text>
+      <circle cx="420" cy="80" r="10" fill="#92400e"/><text x="420" y="84" fill="white" font-size="8" font-family="Space Mono" text-anchor="middle">G</text>
+      <text x="345" y="145" fill="#fb923c" font-size="9" font-family="Space Mono" text-anchor="middle">Ret kæde → strukturelt stærk</text>
+    </svg>
+    <div class="mol-cap">Samme byggesten (glukose) — forskellig binding → fuldstændig forskellig funktion</div>
+  </div>
+</div>
+
+<!-- ══ SKÆRM 4: QUIZ ══ -->
+<div class="scr" id="s4">
+  <div class="chip">🧠 Test din viden</div>
+  <h1 class="sec-h">Quiz</h1>
+  <p class="sec-sub">20 spørgsmål om fotosyntese, glukose og sukkertyper.</p>
+  <div id="quiz-container"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   NAV
+══════════════════════════════════════════ */
+function showScr(n){
+  document.querySelectorAll('.scr').forEach((s,i)=>{s.classList.toggle('on',i===n);});
+  document.querySelectorAll('.navbtn').forEach((b,i)=>{b.classList.toggle('on',i===n);});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════
+   GLUKOSE TABS
+══════════════════════════════════════════ */
+function showGlucTab(n,btn){
+  [0,1,2].forEach(i=>{document.getElementById('gluc-'+i).style.display=i===n?'block':'none';});
+  document.querySelectorAll('#s1 .tab').forEach((b,i)=>{b.classList.toggle('on',i===n);});
+}
+
+/* ══════════════════════════════════════════
+   SUGAR DATA
+══════════════════════════════════════════ */
+const SUGARS={
+  mono:[
+    {icon:'🍇',name:'Glukose',formula:'C₆H₁₂O₆',type:'Aldohexose',
+     detail:`<b>Glukose</b> (druesukker) er kroppens vigtigste brændstof. Den nedbrydes i cellerne via glykolyse og citronsyrecyklus.<br><br>
+     • Findes frit i frugt og honning<br>• Blodsukkerniveauet reguleres af insulin<br>• Normal blodglukose: 4–6 mmol/L<br>• α-form → stivelse/glykogen · β-form → cellulose`,
+     mol:`<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="80" fill="#0a1a0a"/>
+       <circle cx="30" cy="40" r="18" fill="#166534"/><text x="30" y="44" fill="white" font-size="9" font-family="Space Mono" text-anchor="middle">Glu</text>
+       <text x="100" y="44" fill="#4ade80" font-size="12" font-family="Space Mono" text-anchor="middle">= 1 enhed</text>
+       <text x="100" y="65" fill="#6b9e6b" font-size="8" font-family="Space Mono" text-anchor="middle">monosakkarid</text></svg>`},
+    {icon:'🍯',name:'Fruktose',formula:'C₆H₁₂O₆',type:'Ketohexose',
+     detail:`<b>Fruktose</b> (frugtsukker) er det sødeste naturlige sukker. Det har samme molekylformel som glukose men forskellig struktur (isomer).<br><br>
+     • β-D-Fruktose er en pentagonal ring (furanose)<br>• Metaboliseres primært i leveren<br>• Højt forbrug sat i forbindelse med metabolisk syndrom<br>• Kombineres med glukose i saccharose`,
+     mol:`<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="80" fill="#0a1a0a"/>
+       <polygon points="100,15 135,35 130,60 70,60 65,35" fill="none" stroke="#fb923c" stroke-width="2"/>
+       <circle cx="100" cy="15" r="8" fill="#9b2226"/><text x="100" y="18" fill="white" font-size="7" font-family="Space Mono" text-anchor="middle">O</text>
+       <text x="100" y="75" fill="#fb923c" font-size="8" font-family="Space Mono" text-anchor="middle">Furanose ring (5-led)</text></svg>`},
+    {icon:'🍙',name:'Galaktose',formula:'C₆H₁₂O₆',type:'Aldohexose',
+     detail:`<b>Galaktose</b> er en C4-epimer af glukose (OH på C4 vender den anden vej).<br><br>
+     • Indgår i laktose (mælkesukker) som komponent<br>• Metaboliseres hurtigt til glukose i leveren<br>• Galaktosæmi: sjælden arvelig sygdom<br>• Indgår i glykolipider og glykoproteiner i cellemembraner`,
+     mol:`<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="80" fill="#0a1a0a"/>
+       <polygon points="100,10 150,35 145,65 55,65 50,35" fill="none" stroke="#c084fc" stroke-width="2"/>
+       <text x="100" y="42" fill="#c084fc" font-size="9" font-family="Space Mono" text-anchor="middle">Gal</text>
+       <text x="100" y="75" fill="#6b9e6b" font-size="8" font-family="Space Mono" text-anchor="middle">Epimer af glukose (C4)</text></svg>`},
+    {icon:'⭐',name:'Ribose',formula:'C₅H₁₀O₅',type:'Aldopentose',
+     detail:`<b>Ribose</b> er en pentose (5C) og central i livets kemi.<br><br>
+     • Indgår i RNA (ribonukleinsyre)<br>• Deoxyribose (en OH erstattet af H) → DNA<br>• Indgår i ATP (adenosintriphosphat)<br>• Nøgleenhed i NAD⁺, FAD og NADP⁺`,
+     mol:`<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="80" fill="#0a1a0a"/>
+       <polygon points="100,15 135,40 120,65 80,65 65,40" fill="none" stroke="#22d3ee" stroke-width="2"/>
+       <circle cx="100" cy="15" r="8" fill="#9b2226"/><text x="100" y="18" fill="white" font-size="7" font-family="Space Mono" text-anchor="middle">O</text>
+       <text x="100" y="75" fill="#22d3ee" font-size="8" font-family="Space Mono" text-anchor="middle">5C ring — i RNA &amp; DNA</text></svg>`},
+  ],
+  di:[
+    {icon:'🍚',name:'Saccharose',formula:'C₁₂H₂₂O₁₁',type:'Glukose + Fruktose',
+     detail:`<b>Saccharose</b> er almindeligt bordsukker. Fremstilles fra sukkerroe eller sukkerrør.<br><br>
+     • α-D-glukose + β-D-fruktose (α1→β2)<br>• Ingen fri anomerende OH → ikke reducerende sukker<br>• Hydrolyseres af enzymet sukrase til glukose+fruktose<br>• Planter transporterer sukrose i phloem`,
+     mol:`<svg viewBox="0 0 240 90" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="90" fill="#0a1a0a"/>
+       <polygon points="70,15 100,30 105,60 70,75 35,60 40,30" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+       <text x="70" y="47" fill="#86efac" font-size="8" font-family="Space Mono" text-anchor="middle">Glu</text>
+       <line x1="105" y1="44" x2="128" y2="44" stroke="#fde047" stroke-width="2.5"/>
+       <circle cx="128" cy="44" r="8" fill="#7c3aed"/><text x="128" y="47" fill="white" font-size="7" font-family="Space Mono" text-anchor="middle">O</text>
+       <line x1="136" y1="44" x2="158" y2="44" stroke="#fde047" stroke-width="2.5"/>
+       <polygon points="175,20 205,35 200,60 165,70 140,55 148,28" fill="none" stroke="#fb923c" stroke-width="1.5"/>
+       <text x="175" y="48" fill="#fed7aa" font-size="8" font-family="Space Mono" text-anchor="middle">Fru</text>
+       <text x="120" y="85" fill="#fde047" font-size="8" font-family="Space Mono" text-anchor="middle">α1→β2 glykosidbinding</text></svg>`},
+    {icon:'🥛',name:'Laktose',formula:'C₁₂H₂₂O₁₁',type:'Galaktose + Glukose',
+     detail:`<b>Laktose</b> er mælkesukker — findes i pattedyrs mælk.<br><br>
+     • β-D-galaktose + α-D-glukose (β1→4)<br>• Hydrolyseres af enzymet laktase i tyndtarmen<br>• Laktoseintolerance: manglende laktase → fermentering i tyktarmen<br>• Ca. 65% af verdens voksne befolkning er laktoseintolerante`,
+     mol:`<svg viewBox="0 0 240 90" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="90" fill="#0a1a0a"/>
+       <polygon points="70,15 100,30 105,60 70,75 35,60 40,30" fill="none" stroke="#c084fc" stroke-width="1.5"/>
+       <text x="70" y="47" fill="#e9d5ff" font-size="8" font-family="Space Mono" text-anchor="middle">Gal</text>
+       <line x1="105" y1="44" x2="128" y2="44" stroke="#fde047" stroke-width="2.5"/>
+       <circle cx="128" cy="44" r="8" fill="#7c3aed"/><text x="128" y="47" fill="white" font-size="7" font-family="Space Mono" text-anchor="middle">O</text>
+       <line x1="136" y1="44" x2="158" y2="44" stroke="#fde047" stroke-width="2.5"/>
+       <polygon points="175,15 205,30 205,65 175,75 145,65 145,30" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+       <text x="175" y="47" fill="#86efac" font-size="8" font-family="Space Mono" text-anchor="middle">Glu</text>
+       <text x="120" y="85" fill="#fde047" font-size="8" font-family="Space Mono" text-anchor="middle">β1→4 glykosidbinding</text></svg>`},
+    {icon:'🍺',name:'Maltose',formula:'C₁₂H₂₂O₁₁',type:'Glukose + Glukose',
+     detail:`<b>Maltose</b> (maltsukker) dannes ved nedbrydning af stivelse.<br><br>
+     • To α-D-glukosemolekyler (α1→4)<br>• Dannes af amylase under stivelsesnedbrydning<br>• Bruges i ølbrygning (maltning af korn)<br>• Har en fri anomerende OH → reducerende sukker`,
+     mol:`<svg viewBox="0 0 240 90" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="90" fill="#0a1a0a"/>
+       <polygon points="70,15 100,30 105,60 70,75 35,60 40,30" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+       <text x="70" y="47" fill="#86efac" font-size="8" font-family="Space Mono" text-anchor="middle">Glu</text>
+       <line x1="105" y1="44" x2="128" y2="44" stroke="#fde047" stroke-width="2.5"/>
+       <circle cx="128" cy="44" r="8" fill="#166534"/><text x="128" y="47" fill="white" font-size="7" font-family="Space Mono" text-anchor="middle">O</text>
+       <line x1="136" y1="44" x2="158" y2="44" stroke="#fde047" stroke-width="2.5"/>
+       <polygon points="175,15 205,30 205,65 175,75 145,65 145,30" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+       <text x="175" y="47" fill="#86efac" font-size="8" font-family="Space Mono" text-anchor="middle">Glu</text>
+       <text x="120" y="85" fill="#fde047" font-size="8" font-family="Space Mono" text-anchor="middle">α1→4 glykosidbinding</text></svg>`},
+  ],
+  poly:[
+    {icon:'🌾',name:'Stivelse',formula:'(C₆H₁₀O₅)ₙ',type:'Amylose + Amylopektin',
+     detail:`<b>Stivelse</b> er planternes energilager. Består af to komponenter:<br><br>
+     • <b>Amylose</b> (~20%): lineær α1→4 kæde, danner spiral<br>• <b>Amylopektin</b> (~80%): forgrenede kæder (α1→4 + α1→6 forgrenede)<br>• Iod-test: iod farver stivelse mørkeblå-sort pga. spiralstruktur<br>• Hydrolyseres af amylase i spyttet`,
+     mol:`<svg viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="100" fill="#0a1a0a"/>
+       <path d="M 20,50 Q 40,25 70,50 Q 100,75 130,50 Q 160,25 190,50 Q 220,75 250,50 Q 270,35 280,50" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+       ${[20,70,130,190,250].map(x=>`<circle cx="${x}" cy="50" r="10" fill="#166534"/><text x="${x}" y="54" fill="white" font-size="7" font-family="Space Mono" text-anchor="middle">α</text>`).join('')}
+       <text x="150" y="90" fill="#4ade80" font-size="9" font-family="Space Mono" text-anchor="middle">Stivelse — spiralformet α-kæde</text></svg>`},
+    {icon:'💪',name:'Glykogen',formula:'(C₆H₁₀O₅)ₙ',type:'Forgrenede α-glukosekæder',
+     detail:`<b>Glykogen</b> er dyrenes og menneskers energilager — lagres i lever og muskler.<br><br>
+     • Meget forgrenet (α1→4 + α1→6 ca. hvert 8-10. C)<br>• Hurtigere tilgængelig end stivelse pga. mange frie ender<br>• Lever: ~100g → blodsukkerkontrol<br>• Muskler: ~400g → direkte brændstof<br>• Nedbrydning kontrolleres af glukagon og adrenalin`,
+     mol:`<svg viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="110" fill="#0a1a0a"/>
+       <line x1="20" y1="55" x2="260" y2="55" stroke="#fbbf24" stroke-width="2"/>
+       <line x1="80" y1="55" x2="80" y2="25" stroke="#fbbf24" stroke-width="2"/>
+       <line x1="100" y1="25" x2="140" y2="25" stroke="#fbbf24" stroke-width="2"/>
+       <line x1="160" y1="55" x2="160" y2="25" stroke="#fbbf24" stroke-width="2"/>
+       <line x1="180" y1="25" x2="220" y2="25" stroke="#fbbf24" stroke-width="2"/>
+       ${[20,60,100,140,180,220,260].map(x=>`<circle cx="${x}" cy="55" r="9" fill="#92400e"/>`).join('')}
+       ${[80,120,160,200,240].map(x=>`<circle cx="${x}" cy="25" r="9" fill="#92400e"/>`).join('')}
+       <text x="140" y="90" fill="#fbbf24" font-size="9" font-family="Space Mono" text-anchor="middle">Glykogen — kraftig forgrening</text></svg>`},
+    {icon:'🪵',name:'Cellulose',formula:'(C₆H₁₀O₅)ₙ',type:'Lineære β-glukosekæder',
+     detail:`<b>Cellulose</b> er verdens mest udbredte organiske molekyle — plantecellevæggenes rygrad.<br><br>
+     • Lineære β1→4 kæder<br>• Parallelle kæder holdes af hydrogenbindinger → stærke fibre<br>• Mennesker mangler cellulase → kostfibre<br>• Termitter og drøvtyggere har symbiotiske bakterier med cellulase<br>• Bruges til papir, bomuld, tekstil`,
+     mol:`<svg viewBox="0 0 300 90" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="90" fill="#0a1a0a"/>
+       ${[0,1,2].map(r=>`<line x1="20" y1="${20+r*20}" x2="270" y2="${20+r*20}" stroke="${r===1?'#fb923c':'rgba(251,146,60,0.3)'}\" stroke-width="${r===1?2.5:1.5}"/>
+       ${[20,70,120,170,220,265].map(x=>`<circle cx="${x}" cy="${20+r*20}" r="${r===1?9:7}" fill="${r===1?'#92400e':'rgba(146,64,14,0.5)'}"/>`).join('')}`).join('')}
+       <text x="18" y="90" fill="#fb923c" font-size="8" font-family="Space Mono">← hydrogenbindinger holder kæderne parallel →</text></svg>`},
+    {icon:'🦑',name:'Kitin',formula:'(C₈H₁₃O₅N)ₙ',type:'N-acetylglukosamin',
+     detail:`<b>Kitin</b> er et modificeret polysakkarid — glukose med en acetylaminogruppe (NHCOCH₃).<br><br>
+     • Strukturelt ligner cellulose (β1→4 bindinger)<br>• Bygger skeletwæg hos insekter, edderkopper og krabber<br>• Cellevæg hos svampe<br>• Næst-hyppigste naturlige polymer efter cellulose<br>• Undersøges medicinsk (bl.a. til sårbehandling)`,
+     mol:`<svg viewBox="0 0 300 90" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="90" fill="#0a1a0a"/>
+       <line x1="20" y1="45" x2="270" y2="45" stroke="#22d3ee" stroke-width="2.5"/>
+       ${[20,75,130,185,240].map(x=>`<circle cx="${x}" cy="45" r="11" fill="#164e63"/>
+         <text x="${x}" y="42" fill="#67e8f9" font-size="7" font-family="Space Mono" text-anchor="middle">GlcN</text>
+         <text x="${x}" y="52" fill="#22d3ee" font-size="6" font-family="Space Mono" text-anchor="middle">Ac</text>`).join('')}
+       <text x="145" y="78" fill="#22d3ee" font-size="9" font-family="Space Mono" text-anchor="middle">Kitin — N-acetylglukosamin β1→4</text></svg>`},
+  ]
+};
+
+/* Build sugar grids */
+function buildSugarGrids(){
+  ['mono','di','poly'].forEach(t=>{
+    const grid=document.getElementById(t+'-grid');
+    SUGARS[t].forEach((s,i)=>{
+      const d=document.createElement('div');
+      d.className='sugar-card';
+      d.innerHTML=`<span class="sc-icon">${s.icon}</span>
+        <div class="sc-name">${s.name}</div>
+        <div class="sc-formula">${s.formula}</div>
+        <div class="sc-type">${s.type}</div>`;
+      d.onclick=()=>showSugar(s,d);
+      grid.appendChild(d);
+    });
+  });
+}
+
+function showSugar(s,cardEl){
+  document.querySelectorAll('.sugar-card').forEach(c=>c.classList.remove('selected'));
+  cardEl.classList.add('selected');
+  const dp=document.getElementById('sugar-detail');
+  document.getElementById('sdp-h').textContent=s.icon+' '+s.name+' · '+s.formula;
+  document.getElementById('sdp-body').innerHTML=s.detail;
+  document.getElementById('sdp-mol').innerHTML=s.mol||'';
+  dp.classList.add('on');
+  dp.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* Binding table */
+function buildBindingTable(){
+  const data=[
+    ['α1→4','Stivelse, glykogen','Spiralagtig/forgrenet','Amylase (fordøjelse)'],
+    ['β1→4','Cellulose, kitin','Ret og stærk','Cellulase (mangler i mennesker)'],
+    ['α1→6','Forgrenede punkter i glykogen','Forgreningspunkt','Debranching enzym'],
+    ['α1→β2','Saccharose','Kompakt, ikke reducerende','Sukrase (tyndtarm)'],
+    ['β1→4','Laktose','Ret kæde','Laktase (tyndtarm)'],
+    ['α1→4','Maltose','Lineær','Maltase'],
+  ];
+  const tbl=document.getElementById('binding-table');
+  tbl.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:var(--xs)">
+    <tr style="border-bottom:1px solid var(--border)">
+      <th style="color:var(--green);padding:6px;text-align:left">Binding</th>
+      <th style="color:var(--green);padding:6px;text-align:left">Sukker</th>
+      <th style="color:var(--green);padding:6px;text-align:left">Struktur</th>
+      <th style="color:var(--green);padding:6px;text-align:left">Enzym</th>
+    </tr>
+    ${data.map(row=>`<tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+      ${row.map((c,i)=>`<td style="padding:6px 6px;color:${i===0?'var(--yellow)':'var(--white)'};">${c}</td>`).join('')}
+    </tr>`).join('')}
+  </table>`;
+}
+
+/* ══════════════════════════════════════════
+   FOTOSYNTESE ANIMATION
+══════════════════════════════════════════ */
+(function photoAnim(){
+  const cvs=document.getElementById('photo-cvs');
+  if(!cvs)return;
+  let W=cvs.offsetWidth||360;cvs.width=W;cvs.height=280;
+  let t=0;
+
+  // Particles: CO2 (blue), H2O (red) moving into leaf, O2 (cyan) + glucose (green) out
+  const particles=[];
+  function addParticle(type){
+    const side=type==='input'?'left':'right';
+    particles.push({
+      type,side,
+      x:side==='left'?-20:W+20,
+      y:60+Math.random()*160,
+      vx:side==='left'?(2+Math.random()*1.5):(-(2+Math.random()*1.5)),
+      label:type==='co2'?'CO₂':type==='h2o'?'H₂O':type==='o2'?'O₂':'C₆H₁₂O₆',
+      color:type==='co2'?'#60a5fa':type==='h2o'?'#f87171':type==='o2'?'#22d3ee':'#4ade80',
+      age:0,alpha:1
+    });
+  }
+
+  let frameCount=0;
+  function frame(){
+    requestAnimationFrame(frame);
+    t+=0.016;frameCount++;
+    W=cvs.offsetWidth||360;cvs.width=W;
+    const ctx=cvs.getContext('2d');
+    ctx.clearRect(0,0,W,280);
+
+    // Sky gradient
+    const sky=ctx.createLinearGradient(0,0,0,280);
+    sky.addColorStop(0,'#051505');sky.addColorStop(1,'#0a2a0a');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,W,280);
+
+    // Sun rays
+    ctx.save();ctx.translate(W/2,0);
+    for(let i=0;i<8;i++){
+      const a=i*Math.PI/4+t*0.3;
+      ctx.strokeStyle=`rgba(253,224,71,${0.1+0.05*Math.sin(t+i)})`;
+      ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);
+      ctx.lineTo(Math.cos(a)*120,Math.sin(a)*120);ctx.stroke();
+    }
+    ctx.restore();
+
+    // Sun
+    ctx.beginPath();ctx.arc(W/2,0,28,0,Math.PI*2);
+    ctx.fillStyle=`rgba(253,224,71,${0.8+0.1*Math.sin(t*2)})`;ctx.fill();
+    ctx.fillStyle='#fde047';ctx.font='bold 11px Space Mono';ctx.textAlign='center';
+    ctx.fillText('☀ Lys',W/2,5);
+
+    // Leaf shape
+    const lx=W/2,ly=155;
+    ctx.beginPath();
+    ctx.ellipse(lx,ly,55,38,Math.PI/8,0,Math.PI*2);
+    ctx.fillStyle=`rgba(22,101,52,${0.85+0.05*Math.sin(t)})`;ctx.fill();
+    ctx.strokeStyle='#4ade80';ctx.lineWidth=1.5;ctx.stroke();
+    // Leaf vein
+    ctx.beginPath();ctx.moveTo(lx-42,ly+10);ctx.lineTo(lx+42,ly-10);
+    ctx.strokeStyle='rgba(74,222,128,.5)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='rgba(74,222,128,.9)';ctx.font='bold 10px Nunito';ctx.textAlign='center';
+    ctx.fillText('🌿 Klorop.', lx, ly+4);
+
+    // Labels
+    ctx.fillStyle='#60a5fa';ctx.font='bold 9px Space Mono';ctx.textAlign='left';
+    ctx.fillText('CO₂', 8, 55);
+    ctx.fillStyle='#f87171';ctx.fillText('H₂O', 8, 70);
+    ctx.fillStyle='rgba(74,222,128,.6)';ctx.fillText('+ Lys', 8, 85);
+    ctx.fillStyle='#22d3ee';ctx.textAlign='right';ctx.fillText('O₂', W-8, 55);
+    ctx.fillStyle='#4ade80';ctx.fillText('Glukose', W-8, 70);
+
+    // Arrow hints
+    ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(80,140);ctx.lineTo(lx-60,ly);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(W-80,140);ctx.lineTo(lx+60,ly);ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Spawn particles
+    if(frameCount%40===0) addParticle('co2');
+    if(frameCount%55===0) addParticle('h2o');
+    if(frameCount%48===0){
+      const p={type:'o2',side:'right',x:lx,y:ly,vx:2+Math.random(),vy:-1-Math.random(),
+        label:'O₂',color:'#22d3ee',age:0,alpha:1};
+      particles.push(p);
+    }
+    if(frameCount%90===0){
+      const p={type:'gluc',side:'right',x:lx,y:ly,vx:1.5+Math.random(),vy:0.5+Math.random(),
+        label:'C₆H₁₂O₆',color:'#4ade80',age:0,alpha:1};
+      particles.push(p);
+    }
+
+    // Update + draw particles
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];
+      p.x+=p.vx;p.age++;
+      if(p.vy!==undefined) p.y+=p.vy;
+      p.alpha=Math.max(0,1-p.age/90);
+      if(p.alpha<=0){particles.splice(i,1);continue;}
+
+      const r=p.label.length>4?16:12;
+      ctx.globalAlpha=p.alpha;
+      ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);
+      ctx.fillStyle=p.color+'33';ctx.fill();
+      ctx.strokeStyle=p.color;ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle=p.color;ctx.font=`bold ${p.label.length>4?7:9}px Space Mono`;
+      ctx.textAlign='center';ctx.fillText(p.label,p.x,p.y+3);
+      ctx.globalAlpha=1;
+    }
+
+    // Equation at bottom
+    ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,252,W,28);
+    ctx.font='bold 9px Space Mono';ctx.textAlign='center';
+    ctx.fillStyle='#60a5fa';ctx.fillText('6CO₂',W/2-110,268);
+    ctx.fillStyle='#6b9e6b';ctx.fillText('+',W/2-82,268);
+    ctx.fillStyle='#f87171';ctx.fillText('6H₂O',W/2-60,268);
+    ctx.fillStyle='#6b9e6b';ctx.fillText('+',W/2-28,268);
+    ctx.fillStyle='#fde047';ctx.fillText('lys',W/2-8,268);
+    ctx.fillStyle='#6b9e6b';ctx.fillText('→',W/2+18,268);
+    ctx.fillStyle='#4ade80';ctx.fillText('C₆H₁₂O₆',W/2+58,268);
+    ctx.fillStyle='#6b9e6b';ctx.fillText('+',W/2+100,268);
+    ctx.fillStyle='#22d3ee';ctx.fillText('6O₂',W/2+120,268);
+  }
+  requestAnimationFrame(frame);
+  addEventListener('resize',()=>{W=cvs.offsetWidth||360;});
+})();
+
+/* ══════════════════════════════════════════
+   QUIZ
+══════════════════════════════════════════ */
+const QUIZ_QS=[
+  {q:'Hvad er den kemiske formel for glukose?',opts:['C₆H₁₂O₆','C₁₂H₂₂O₁₁','C₆H₁₀O₅','CO₂'],c:0,
+   fb:'Glukose er en hexose med 6 kulstofatomer, 12 hydrogen og 6 oxygen: <b>C₆H₁₂O₆</b>.'},
+  {q:'Hvilke stoffer er reaktanter (startstoffer) i fotosyntesen?',opts:['O₂ og glukose','CO₂ og H₂O','ATP og NADPH','O₂ og CO₂'],c:1,
+   fb:'<b>CO₂ og H₂O</b> er reaktanterne — de forbruges. Glukose og O₂ er produkterne.'},
+  {q:'Hvor i plantecellen sker fotosyntesen?',opts:['Mitokondrier','Cellevæg','Kloroplaster','Ribosomer'],c:2,
+   fb:'Fotosyntesen sker i <b>kloroplasten</b>, der indeholder det grønne farvestof klorofyl.'},
+  {q:'Hvad er forskellen på α- og β-glukose?',opts:['De har forskellig molekylformel','OH-gruppen på C1 peger forskellig retning','Antallet af kulstofatomer er forskelligt','α er ringform, β er kædeform'],c:1,
+   fb:'α og β er <b>anomerer</b>: OH på C1 peger ned (α) eller op (β). Samme formel, forskellig geometri.'},
+  {q:'Hvilken type sukker er saccharose?',opts:['Monosakkarid','Disakkarid','Trisakkarid','Polysakkarid'],c:1,
+   fb:'Saccharose er et <b>disakkarid</b> = 2 monosakkarider (glukose + fruktose) bundet med glykosidbinding.'},
+  {q:'Hvad danner α-glukose når det polymeriseres?',opts:['Cellulose','Kitin','Stivelse og glykogen','DNA'],c:2,
+   fb:'α-glukose danner <b>stivelse</b> (i planter) og <b>glykogen</b> (i dyr/mennesker) via α1→4 bindinger.'},
+  {q:'Hvilken kemisk reaktion frigiver vand og danner glykosidbindinger?',opts:['Hydrolyse','Kondensation','Oxidation','Fermentering'],c:1,
+   fb:'<b>Kondensation</b> (dehydreringssyntese): to molekyler reagerer med frigivelse af H₂O og danner en ny binding.'},
+  {q:'Hvad er laktose sammensat af?',opts:['2 × glukose','Glukose + galaktose','Glukose + fruktose','2 × fruktose'],c:1,
+   fb:'Laktose = <b>β-D-galaktose + α-D-glukose</b> (β1→4 binding).'},
+  {q:'Hvorfor kan mennesker ikke nedbryde cellulose?',opts:['Cellulose er for sødt','Cellulose er giftigt','Vi mangler enzymet cellulase','Cellulose opløses ikke i vand'],c:2,
+   fb:'Mennesker mangler <b>cellulase</b>, der kan hydrolysere β1→4 bindingerne. Termitter og drøvtyggere har hjælp fra symbiotiske bakterier.'},
+  {q:'Hvad kaldes de to faser i fotosyntesen?',opts:['Oxidation og reduktion','Lysfasen og mørkreaktionen (Calvincyklus)','Glykolyse og citronsyrecyklus','Anabolisme og katabolisme'],c:1,
+   fb:'<b>Lysfasen</b>: lysenergi → ATP + NADPH + O₂. <b>Mørkreaktionen</b> (Calvincyklus): CO₂ fikseres til glukose via ATP og NADPH.'},
+  {q:'Hvad er ribose?',opts:['En hexose i cellevæggen','En pentose i RNA og ATP','Et disakkarid i mælk','En aminosyre'],c:1,
+   fb:'Ribose er en <b>5-carbon pentose</b> (C₅H₁₀O₅) der er essentiel i RNA, ATP, NAD⁺ og andre biologiske molekyler.'},
+  {q:'Hvad sker med O₂ i fotosyntesen?',opts:['Det forbruges som reaktant','Det dannes ved spaltning af CO₂','Det frigives ved fotolytisk vandspaltning','Det lagres i glukosen'],c:2,
+   fb:'O₂ frigives som biprodukt af <b>vandspaltning</b> (fotolytisk) i lysfasen: 2H₂O → 4H⁺ + 4e⁻ + O₂'},
+  {q:'Hvad kendetegner polysakkarider?',opts:['De består af 2 sukkermolekyler','De kan ikke hydrolyseres','De består af mange monosakkaridenheder','De er altid vandopløselige'],c:2,
+   fb:'Polysakkarider er <b>lange kæder af monosakkarider</b> (n kan være tusindvis). Eksempler: stivelse, cellulose, glykogen.'},
+  {q:'Hvad bruges glykogen til i kroppen?',opts:['Bygning af cellevægge','Kortvarig energilagring i lever og muskler','Dannelse af DNA','Transport af ilt'],c:1,
+   fb:'<b>Glykogen</b> er kroppens kortvarige kulhydratreserve — lagres i lever (~100g) og muskler (~400g) og nedbrydes hurtigt til glukose.'},
+  {q:'Kitin ligner strukturelt cellulose, men hvad er forskellen?',opts:['Kitin har α-bindinger','Kitin indeholder nitrogen i sin sukkerbausten','Kitin er opbygget af galaktose','Kitin har kun 4 kulstofatomer'],c:1,
+   fb:'Kitin er bygget af <b>N-acetylglukosamin</b> (glukose + en acetylaminogruppe, NHCOCH₃). Det er β1→4 bundet som cellulose.'},
+  {q:'Hvad er en glykosidbinding?',opts:['En binding mellem to aminosyrer','En O-bro der forbinder to sukkerenheder','En fosfatbinding i ATP','En hydrogenbinding i DNA'],c:1,
+   fb:'En <b>glykosidbinding</b> er en kovalent O-bro (acetalbinding) der dannes ved kondensation mellem to sukkers hydroxylgrupper.'},
+  {q:'Hvilken test bruges til at påvise stivelse, og hvad er farven?',opts:['Fehlings test — rød bunddfald','Iod-test — mørkeblå/sort','Biurettest — lilla','Benedict test — grønt'],c:1,
+   fb:'<b>Iod-test</b>: iod (I₂KI) diffunderer ind i stivelsens spiralstruktur og giver en karakteristisk <b>mørkeblå til sort</b> farve.'},
+  {q:'Hvad er fotosyntesens samlede reaktion?',opts:['C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O','6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂','6CO₂ + 6O₂ → C₆H₁₂O₆ + H₂O','CO₂ + H₂O → CH₂O + O₂'],c:1,
+   fb:'Den korrekte ligning: <b>6CO₂ + 6H₂O + lys → C₆H₁₂O₆ + 6O₂</b>. CO₂ og H₂O forbruges, glukose og O₂ dannes.'},
+  {q:'Maltose dannes ved hydrolyse af stivelse. Hvad er maltose sammensat af?',opts:['Glukose + Galaktose','2 × Fruktose','2 × α-D-Glukose (α1→4)','Glukose + Ribose'],c:2,
+   fb:'Maltose = <b>2 × α-D-glukose</b> forbundet med α1→4 glykosidbinding. Dannes af amylase ved stivelsesnedbrydning.'},
+  {q:'Hvad betyder det at saccharose er et "ikke-reducerende sukker"?',opts:['Det kan ikke opløses i vand','Begge anomerende OH-grupper er bundet — ingen fri anomerende gruppe','Det indeholder ikke oxygen','Det kan ikke hydrolyseres'],c:1,
+   fb:'I saccharose er begge anomerende OH-grupper (C1 i glukose og C2 i fruktose) bundet. Ingen fri anomerende gruppe → <b>ikke-reducerende</b>. Positive i Fehlings test kræver fri anomerende OH.'},
+];
+
+let qIdx=0,qScore=0,qAnswered=false;
+
+function initQuiz(){
+  qIdx=0;qScore=0;qAnswered=false;
+  renderQuizQ();
+}
+
+function renderQuizQ(){
+  const container=document.getElementById('quiz-container');
+  if(qIdx>=QUIZ_QS.length){
+    const pct=Math.round(qScore/QUIZ_QS.length*100);
+    const msg=pct>=90?'🏆 Ekspert!':pct>=70?'🥇 Flot!':pct>=50?'🥈 Godt forsøg':'🥉 Prøv igen';
+    container.innerHTML=`<div class="qresult">
+      <div style="font-size:4rem">${pct>=90?'🏆':pct>=70?'⭐':pct>=50?'😊':'💪'}</div>
+      <div class="qres-score">${qScore} / ${QUIZ_QS.length}</div>
+      <div style="font-size:var(--xl);font-weight:900;color:var(--yellow);margin-bottom:4px">${msg}</div>
+      <div class="qres-msg">${pct}% korrekte</div>
+      <button class="qres-restart" onclick="initQuiz()">↺ Prøv igen</button>
+    </div>`;
+    return;
+  }
+  qAnswered=false;
+  const q=QUIZ_QS[qIdx];
+  const pct=Math.round(qIdx/QUIZ_QS.length*100);
+  // Shuffle options
+  const order=[0,1,2,3].sort(()=>Math.random()-.5);
+  container.innerHTML=`
+    <div class="quiz-progress"><div class="quiz-fill" style="width:${pct}%"></div></div>
+    <div class="quiz-meta">
+      <span>Spørgsmål ${qIdx+1} af ${QUIZ_QS.length}</span>
+      <span class="quiz-score-badge">⭐ ${qScore} point</span>
+    </div>
+    <div class="qcard">
+      <div class="qcard-num">Q${qIdx+1}</div>
+      <div class="qcard-q">${q.q}</div>
+      <div class="q-opts">
+        ${order.map(oi=>`<button class="qopt" onclick="pickQ(${oi})" data-i="${oi}">
+          <span class="qopt-key">${String.fromCharCode(65+order.indexOf(oi))}.</span>
+          ${q.opts[oi]}
+        </button>`).join('')}
+      </div>
+    </div>
+    <div class="qfb" id="qfb"></div>
+    <button class="quiz-nxt" id="quiz-nxt" onclick="nextQuizQ()">Næste spørgsmål →</button>`;
+}
+
+function pickQ(i){
+  if(qAnswered)return;
+  qAnswered=true;
+  const q=QUIZ_QS[qIdx];const ok=i===q.c;
+  if(ok) qScore++;
+  document.querySelectorAll('.qopt').forEach(btn=>{
+    btn.disabled=true;
+    const bi=parseInt(btn.dataset.i);
+    if(bi===q.c) btn.classList.add('ok');
+    else if(bi===i&&!ok) btn.classList.add('no');
+  });
+  const fb=document.getElementById('qfb');
+  fb.className='qfb '+(ok?'ok':'no');
+  fb.innerHTML=(ok?'✅ <b>Rigtigt!</b> ':'❌ <b>Forkert.</b> ')+q.fb;
+  const nxt=document.getElementById('quiz-nxt');
+  nxt.textContent=qIdx<QUIZ_QS.length-1?'Næste spørgsmål →':'Se resultat →';
+  nxt.classList.add('on');
+}
+
+function nextQuizQ(){qIdx++;renderQuizQ();}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+buildSugarGrids();
+buildBindingTable();
+initQuiz();
+</script>
+</body>
+</html>
