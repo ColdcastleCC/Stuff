@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stråling — 8. klasse fysik</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f1a;
+  --bg2:#111827;
+  --bg3:#1a2236;
+  --card:#162032;
+  --border:#243047;
+  --border2:#2e3d58;
+  --alfa:#22c55e;
+  --alfa2:#16a34a;
+  --alfadim:rgba(34,197,94,.12);
+  --beta:#f97316;
+  --beta2:#ea6b0e;
+  --betadim:rgba(249,115,22,.12);
+  --gamma:#a855f7;
+  --gamma2:#9333ea;
+  --gammadim:rgba(168,85,247,.12);
+  --white:#f0f4ff;
+  --muted:#8899bb;
+  --muted2:#4a5a7a;
+  --fh:'Orbitron',monospace;
+  --fb:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:var(--fb);line-height:1.7;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(11,15,26,.92);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);display:flex;align-items:center;gap:0;padding:0 20px;height:52px}
+.nav-brand{font-family:var(--fh);font-size:13px;font-weight:700;color:var(--alfa);letter-spacing:.1em;margin-right:auto}
+.nav-links{display:flex;gap:0}
+.nav-links a{font-size:12px;color:var(--muted);text-decoration:none;padding:0 14px;height:52px;display:flex;align-items:center;border-bottom:2px solid transparent;transition:all .2s;letter-spacing:.04em}
+.nav-links a:hover{color:var(--white)}
+.nav-links a.active{color:var(--white);border-bottom-color:var(--alfa)}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px 60px;text-align:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0}
+#atom-canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero-content{position:relative;z-index:1}
+.hero-eyebrow{font-family:var(--fh);font-size:11px;letter-spacing:.25em;color:var(--alfa);text-transform:uppercase;margin-bottom:20px;opacity:.9}
+.hero-h{font-family:var(--fh);font-size:clamp(32px,7vw,72px);font-weight:900;line-height:1.05;margin-bottom:20px;letter-spacing:-.01em}
+.hero-h .glow{color:var(--alfa);text-shadow:0 0 40px rgba(34,197,94,.5)}
+.hero-sub{font-size:clamp(14px,2.5vw,18px);color:var(--muted);max-width:560px;margin:0 auto 40px;line-height:1.7}
+.hero-btn{display:inline-block;background:var(--alfa);color:#021a0a;font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:.08em;padding:14px 36px;border-radius:4px;text-decoration:none;transition:all .18s}
+.hero-btn:hover{background:var(--alfa2);transform:translateY(-2px)}
+.hero-badges{display:flex;gap:12px;justify-content:center;margin-top:32px;flex-wrap:wrap}
+.badge{font-family:var(--fh);font-size:10px;letter-spacing:.12em;padding:6px 16px;border-radius:100px;font-weight:700}
+.badge-a{background:var(--alfadim);color:var(--alfa);border:1px solid rgba(34,197,94,.3)}
+.badge-b{background:var(--betadim);color:var(--beta);border:1px solid rgba(249,115,22,.3)}
+.badge-g{background:var(--gammadim);color:var(--gamma);border:1px solid rgba(168,85,247,.3)}
+
+/* ── SECTIONS ── */
+section{padding:80px 20px}
+.container{max-width:900px;margin:0 auto}
+.sec-eyebrow{font-family:var(--fh);font-size:10px;letter-spacing:.2em;color:var(--muted2);text-transform:uppercase;margin-bottom:10px}
+.sec-h{font-family:var(--fh);font-size:clamp(22px,4vw,36px);font-weight:700;margin-bottom:12px;line-height:1.15}
+.sec-sub{font-size:15px;color:var(--muted);max-width:620px;line-height:1.75;margin-bottom:50px}
+.divider{border:none;border-top:1px solid var(--border);margin:0}
+
+/* ── INTRO CARDS ── */
+.intro-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-bottom:50px}
+.intro-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:24px;position:relative;overflow:hidden}
+.intro-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.intro-card.nukleon::before{background:var(--alfa)}
+.intro-card.instabil::before{background:var(--beta)}
+.intro-card.halv::before{background:var(--gamma)}
+.intro-card-icon{font-size:28px;margin-bottom:12px}
+.intro-card h3{font-family:var(--fh);font-size:14px;font-weight:700;margin-bottom:8px;letter-spacing:.05em}
+.intro-card p{font-size:13px;color:var(--muted);line-height:1.65}
+
+/* ── STRÅLING TABS ── */
+.tabs{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+.tab{font-family:var(--fh);font-size:11px;letter-spacing:.1em;padding:10px 22px;border-radius:4px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--muted);transition:all .15s;font-weight:700}
+.tab:hover{color:var(--white);border-color:var(--border)}
+.tab.ta.on{background:var(--alfadim);border-color:var(--alfa);color:var(--alfa)}
+.tab.tb.on{background:var(--betadim);border-color:var(--beta);color:var(--beta)}
+.tab.tg.on{background:var(--gammadim);border-color:var(--gamma);color:var(--gamma)}
+.tab-panel{display:none}
+.tab-panel.on{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media(max-width:640px){.tab-panel.on{grid-template-columns:1fr}}
+.tp-info{}
+.tp-info h2{font-family:var(--fh);font-size:clamp(18px,3.5vw,28px);font-weight:700;margin-bottom:4px;line-height:1.2}
+.tp-info .formula{font-family:'Orbitron',monospace;font-size:13px;color:var(--muted);margin-bottom:16px;letter-spacing:.08em}
+.tp-info p{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:14px}
+.prop-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.prop{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.prop-label{font-family:var(--fh);font-size:10px;letter-spacing:.1em;padding:2px 8px;border-radius:3px;flex-shrink:0;margin-top:2px;font-weight:700}
+.prop-label.alfa{background:var(--alfadim);color:var(--alfa)}
+.prop-label.beta{background:var(--betadim);color:var(--beta)}
+.prop-label.gamma{background:var(--gammadim);color:var(--gamma)}
+.prop-val{color:var(--muted);line-height:1.55}
+.tp-vis{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;overflow:hidden}
+.tp-vis svg{display:block;width:100%;height:auto}
+
+/* ── PENETRATION ── */
+.pen-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 20px}
+.pen-diagram{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-top:32px}
+.pen-diagram svg{display:block;width:100%;height:auto}
+
+/* ── BRUG / FARE ── */
+.use-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.use-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:20px 22px}
+.use-card h4{font-family:var(--fh);font-size:12px;letter-spacing:.1em;margin-bottom:8px;font-weight:700}
+.use-card.green h4{color:var(--alfa)}
+.use-card.orange h4{color:var(--beta)}
+.use-card.purple h4{color:var(--gamma)}
+.use-card.red h4{color:#f87171}
+.use-card ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.use-card li{font-size:13px;color:var(--muted);padding-left:14px;position:relative;line-height:1.5}
+.use-card li::before{content:'→';position:absolute;left:0;color:var(--muted2)}
+
+/* ── QUIZ ── */
+.quiz-section{background:var(--bg2);border-top:1px solid var(--border);padding:80px 20px}
+.quiz-wrap{max-width:700px;margin:0 auto}
+.q-prog{display:flex;gap:4px;margin-bottom:28px}
+.q-dot{flex:1;height:4px;border-radius:2px;background:var(--border2);transition:background .3s}
+.q-dot.done{background:var(--alfa)}
+.q-dot.cur{background:rgba(34,197,94,.4)}
+.q-meta{display:flex;justify-content:space-between;font-family:var(--fh);font-size:11px;color:var(--muted2);letter-spacing:.08em;margin-bottom:20px}
+.q-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:28px}
+.q-num{font-family:var(--fh);font-size:10px;letter-spacing:.15em;color:var(--muted2);margin-bottom:10px;text-transform:uppercase}
+.q-text{font-size:17px;font-weight:500;color:var(--white);line-height:1.5;margin-bottom:22px}
+.q-opts{display:flex;flex-direction:column;gap:10px}
+.q-opt{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:14px 18px;cursor:pointer;font-size:14px;color:var(--muted);text-align:left;transition:all .14s;font-family:var(--fb)}
+.q-opt:hover:not(:disabled){border-color:var(--border);color:var(--white)}
+.q-opt.ok{background:rgba(34,197,94,.1);border-color:var(--alfa);color:var(--alfa)}
+.q-opt.no{background:rgba(248,113,113,.08);border-color:#f87171;color:#f87171}
+.q-opt:disabled{cursor:default}
+.q-fb{border-radius:8px;padding:14px 18px;font-size:14px;line-height:1.65;margin-top:14px;display:none}
+.q-fb.ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:#86efac;display:block}
+.q-fb.no{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);color:#fca5a5;display:block}
+.q-fb b{color:var(--white)}
+.q-nxt{margin-top:16px;font-family:var(--fh);font-size:12px;letter-spacing:.1em;background:var(--alfa);color:#021a0a;border:none;border-radius:4px;padding:12px 32px;cursor:pointer;display:none;font-weight:700;transition:all .14s}
+.q-nxt.on{display:inline-block}
+.q-nxt:hover{background:var(--alfa2)}
+.q-result{text-align:center;padding:20px 0}
+.q-result .trophy{font-size:56px;margin-bottom:12px}
+.q-result .score-big{font-family:var(--fh);font-size:clamp(36px,9vw,60px);font-weight:900;color:var(--alfa);line-height:1;margin-bottom:8px}
+.q-result .score-msg{font-size:16px;color:var(--muted);margin-bottom:24px}
+.q-restart{font-family:var(--fh);font-size:12px;letter-spacing:.1em;background:transparent;color:var(--alfa);border:1px solid var(--alfa);border-radius:4px;padding:12px 32px;cursor:pointer;font-weight:700;transition:all .14s}
+.q-restart:hover{background:var(--alfadim)}
+
+/* ── FOOTER ── */
+footer{padding:32px 20px;text-align:center;border-top:1px solid var(--border);font-family:var(--fh);font-size:10px;letter-spacing:.12em;color:var(--muted2)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">☢ STRÅLING</div>
+  <div class="nav-links">
+    <a href="#intro">Intro</a>
+    <a href="#typer">Typer</a>
+    <a href="#penetration">Afskærmning</a>
+    <a href="#brug">Anvendelse</a>
+    <a href="#quiz">Quiz</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"><canvas id="atom-canvas"></canvas></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">8. klasse · Fysik</div>
+    <h1 class="hero-h">Radio<span class="glow">aktivitet</span><br>& Stråling</h1>
+    <p class="hero-sub">Når atomkerner er ustabile, sender de energi ud som stråling. Lær om alfa-, beta- og gammastråling — hvad de er, hvad de kan, og hvornår de er farlige.</p>
+    <a href="#intro" class="hero-btn">Start her →</a>
+    <div class="hero-badges">
+      <span class="badge badge-a">α Alfastråling</span>
+      <span class="badge badge-b">β Betastråling</span>
+      <span class="badge badge-g">γ Gammastråling</span>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- INTRO -->
+<section id="intro">
+  <div class="container">
+    <div class="sec-eyebrow">Grundlæggende begreber</div>
+    <h2 class="sec-h">Hvad er radioaktivitet?</h2>
+    <p class="sec-sub">Radioaktivitet opstår når atomkernens indre er ustabil. Kernen "falder fra hinanden" og udsender energi og/eller partikler for at nå en mere stabil tilstand. Det kalder vi radioaktivt henfald.</p>
+    <div class="intro-grid">
+      <div class="intro-card nukleon">
+        <div class="intro-card-icon">⚛️</div>
+        <h3>Atomer & kerner</h3>
+        <p>Et atom består af en kerne med <b>protoner</b> og <b>neutroner</b>, samt elektroner uden om. Det er kernens sammensætning der afgør om atomet er stabilt eller radioaktivt. Ustabile kerner har for mange eller for få neutroner.</p>
+      </div>
+      <div class="intro-card instabil">
+        <div class="intro-card-icon">💥</div>
+        <h3>Ustabile isotoper</h3>
+        <p>Grundstoffer kan have varianter med forskelligt antal neutroner — kaldet <b>isotoper</b>. Nogle isotoper er stabile (fx kulstof-12), mens andre er ustabile og radioaktive (fx kulstof-14, uran-238). Ustabile kerner henfalder spontant.</p>
+      </div>
+      <div class="intro-card halv">
+        <div class="intro-card-icon">⏳</div>
+        <h3>Halveringstid</h3>
+        <p>Halveringstiden er den tid det tager for halvdelen af et radioaktivt stof at henfalde. Den kan variere fra brøkdele af et sekund til milliarder af år. Kulstof-14 har en halveringstid på ca. <b>5730 år</b> — brugt til at datere gamle fund.</p>
+      </div>
+    </div>
+
+    <!-- MINI ATOM SVG -->
+    <div style="background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:12px">
+      <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg">
+        <rect width="900" height="260" fill="#162032"/>
+        <!-- Kerne -->
+        <circle cx="200" cy="130" r="36" fill="#1e3a2f" stroke="#22c55e" stroke-width="1.5"/>
+        <!-- Protoner og neutroner i kerne -->
+        <circle cx="188" cy="120" r="10" fill="#22c55e" opacity=".9"/>
+        <circle cx="210" cy="118" r="10" fill="#22c55e" opacity=".9"/>
+        <circle cx="195" cy="137" r="10" fill="#3b82f6" opacity=".7"/>
+        <circle cx="213" cy="140" r="10" fill="#3b82f6" opacity=".7"/>
+        <circle cx="184" cy="142" r="10" fill="#22c55e" opacity=".8"/>
+        <!-- Legenda kerne -->
+        <circle cx="270" cy="118" r="7" fill="#22c55e" opacity=".9"/>
+        <text x="282" y="123" font-family="Inter" font-size="12" fill="#8899bb">Proton</text>
+        <circle cx="270" cy="138" r="7" fill="#3b82f6" opacity=".7"/>
+        <text x="282" y="143" font-family="Inter" font-size="12" fill="#8899bb">Neutron</text>
+        <text x="200" y="196" text-anchor="middle" font-family="Inter" font-size="12" fill="#22c55e">Atomkerne</text>
+
+        <!-- Elektroner i baner -->
+        <ellipse cx="450" cy="130" rx="100" ry="55" fill="none" stroke="#243047" stroke-width="1" stroke-dasharray="3,3"/>
+        <ellipse cx="450" cy="130" rx="150" ry="75" fill="none" stroke="#243047" stroke-width="1" stroke-dasharray="3,3"/>
+        <circle cx="550" cy="130" r="6" fill="#fbbf24"/>
+        <circle cx="450" cy="55" r="6" fill="#fbbf24"/>
+        <circle cx="323" cy="98" r="6" fill="#fbbf24"/>
+        <text x="450" y="222" text-anchor="middle" font-family="Inter" font-size="12" fill="#8899bb">Elektroner i baner</text>
+
+        <!-- USTABILT EKSEMPEL -->
+        <rect x="590" y="60" width="270" height="140" rx="10" fill="#1a2236" stroke="#2e3d58" stroke-width="1"/>
+        <text x="725" y="84" text-anchor="middle" font-family="Orbitron,monospace" font-size="12" fill="#8899bb" letter-spacing=".08em">USTABILT ATOM</text>
+        <text x="725" y="106" text-anchor="middle" font-family="Orbitron,monospace" font-size="18" font-weight="700" fill="#f97316">Henfald!</text>
+        <text x="725" y="128" text-anchor="middle" font-family="Inter" font-size="12" fill="#8899bb">Kerne udsender stråling</text>
+        <text x="725" y="144" text-anchor="middle" font-family="Inter" font-size="12" fill="#8899bb">for at blive stabil</text>
+        <text x="625" y="172" font-family="Orbitron,monospace" font-size="10" fill="#22c55e" letter-spacing=".06em">α  β  γ</text>
+        <text x="680" y="172" font-family="Inter" font-size="11" fill="#4a5a7a">— tre slags stråling</text>
+      </svg>
+    </div>
+    <p style="font-size:12px;color:var(--muted2);text-align:center;margin-bottom:0">Et forenklet atommodell — ikke i skala</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- STRÅLING TYPER -->
+<section id="typer" style="background:var(--bg2)">
+  <div class="container">
+    <div class="sec-eyebrow">De tre stråletyper</div>
+    <h2 class="sec-h">Alfa, Beta & Gamma</h2>
+    <p class="sec-sub">Radioaktive stoffer kan udsende tre meget forskellige typer stråling. Klik på en type for at se detaljerne.</p>
+
+    <div class="tabs">
+      <button class="tab ta on" onclick="showTab('a')">α Alfastråling</button>
+      <button class="tab tb" onclick="showTab('b')">β Betastråling</button>
+      <button class="tab tg" onclick="showTab('g')">γ Gammastråling</button>
+    </div>
+
+    <!-- ALFA -->
+    <div class="tab-panel on" id="tp-a">
+      <div class="tp-info">
+        <h2 style="color:var(--alfa)">Alfa­stråling</h2>
+        <div class="formula">Heliumkerne: ²₄He (2p + 2n)</div>
+        <p>Alfastråling består af <b>alfapartikler</b> — de er identiske med en heliumkerne: to protoner og to neutroner bundet sammen. Det er den <b>tungeste og langsomste</b> type stråling.</p>
+        <p>Når en kerne udsender en alfapartikel, mister den 2 protoner og 2 neutroner — grundstoffet ændrer sig!</p>
+        <div class="prop-list">
+          <div class="prop"><span class="prop-label alfa">LADNING</span><span class="prop-val">Positiv (+2) — afbøjes af elektriske og magnetiske felter</span></div>
+          <div class="prop"><span class="prop-label alfa">RÆKKEVIDDE</span><span class="prop-val">Få cm i luft — stoppes af et stykke papir eller hud</span></div>
+          <div class="prop"><span class="prop-label alfa">IONISERING</span><span class="prop-val">Meget høj — farlig hvis alfakilden indtages/indåndes</span></div>
+          <div class="prop"><span class="prop-label alfa">EKSEMPEL</span><span class="prop-val">Polonium-210, uran-238, radium-226</span></div>
+        </div>
+      </div>
+      <div class="tp-vis">
+        <svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="280" fill="#0d1a10"/>
+          <text x="200" y="28" text-anchor="middle" font-family="Orbitron,monospace" font-size="12" fill="#22c55e" letter-spacing=".1em">ALFAPARTIKEL</text>
+          <!-- Heliumkerne stor -->
+          <circle cx="200" cy="130" r="52" fill="#14321e" stroke="#22c55e" stroke-width="2"/>
+          <!-- 2 protoner (grøn) -->
+          <circle cx="183" cy="118" r="18" fill="#22c55e" opacity=".9"/>
+          <text x="183" y="123" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#021a0a">p⁺</text>
+          <circle cx="218" cy="118" r="18" fill="#22c55e" opacity=".9"/>
+          <text x="218" y="123" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#021a0a">p⁺</text>
+          <!-- 2 neutroner (grå) -->
+          <circle cx="183" cy="148" r="18" fill="#4a5a7a" opacity=".9"/>
+          <text x="183" y="153" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#e2e8f0">n</text>
+          <circle cx="218" cy="148" r="18" fill="#4a5a7a" opacity=".9"/>
+          <text x="218" y="153" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#e2e8f0">n</text>
+          <!-- Labels -->
+          <text x="200" y="210" text-anchor="middle" font-family="Inter" font-size="13" fill="#86efac">2 protoner + 2 neutroner</text>
+          <text x="200" y="228" text-anchor="middle" font-family="Inter" font-size="12" fill="#4a5a7a">Masse: 4 u · Ladning: +2</text>
+          <!-- Pile ud -->
+          <text x="200" y="256" text-anchor="middle" font-family="Orbitron,monospace" font-size="10" fill="#22c55e" letter-spacing=".08em">= ⁴₂He HELIUMKERNE</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- BETA -->
+    <div class="tab-panel" id="tp-b">
+      <div class="tp-info">
+        <h2 style="color:var(--beta)">Beta­stråling</h2>
+        <div class="formula" style="color:var(--muted)">Elektron: ⁰₋₁e (fra kerne)</div>
+        <p>Betastråling består af <b>elektroner</b> der skubbes ud fra kernen med høj fart. Det sker fordi en <b>neutron omdannes til en proton</b> inde i kernen — og elektronen frigives.</p>
+        <p>Betapartiklen er meget lettere end alfapartiklen og bevæger sig hurtigere — op til 90% af lysets hastighed!</p>
+        <div class="prop-list">
+          <div class="prop"><span class="prop-label beta">LADNING</span><span class="prop-val">Negativ (−1) — afbøjes af elektriske og magnetiske felter</span></div>
+          <div class="prop"><span class="prop-label beta">RÆKKEVIDDE</span><span class="prop-val">Meter i luft — stoppes af tyndt aluminium (få mm)</span></div>
+          <div class="prop"><span class="prop-label beta">IONISERING</span><span class="prop-val">Moderat — kan trænge ind i hud og overfladiske væv</span></div>
+          <div class="prop"><span class="prop-label beta">EKSEMPEL</span><span class="prop-val">Kulstof-14, strontium-90, tritium</span></div>
+        </div>
+      </div>
+      <div class="tp-vis">
+        <svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="280" fill="#1a130a"/>
+          <text x="200" y="28" text-anchor="middle" font-family="Orbitron,monospace" font-size="12" fill="#f97316" letter-spacing=".1em">BETAPARTIKEL</text>
+          <!-- Neutron → proton transformation -->
+          <rect x="40" y="60" width="140" height="60" rx="8" fill="#1e1a14" stroke="#854d0e" stroke-width="1.5"/>
+          <text x="110" y="86" text-anchor="middle" font-family="Inter" font-size="13" fill="#4a5a7a">Neutron</text>
+          <text x="110" y="104" text-anchor="middle" font-family="Orbitron,monospace" font-size="16" fill="#4a5a7a">n</text>
+          <!-- Pil -->
+          <text x="200" y="93" text-anchor="middle" font-size="22" fill="#f97316">→</text>
+          <!-- Proton -->
+          <rect x="220" y="60" width="140" height="60" rx="8" fill="#1e1a14" stroke="#f97316" stroke-width="1.5"/>
+          <text x="290" y="86" text-anchor="middle" font-family="Inter" font-size="13" fill="#fed7aa">Proton</text>
+          <text x="290" y="104" text-anchor="middle" font-family="Orbitron,monospace" font-size="16" fill="#f97316">p⁺</text>
+          <!-- Plus elektron -->
+          <text x="200" y="152" text-anchor="middle" font-family="Inter" font-size="13" fill="#8899bb">+ elektron frigives med høj energi</text>
+          <!-- Elektron visualisering -->
+          <circle cx="200" cy="195" r="24" fill="#431407" stroke="#f97316" stroke-width="2"/>
+          <text x="200" y="191" text-anchor="middle" font-family="Inter" font-size="16" font-weight="700" fill="#f97316">e⁻</text>
+          <text x="200" y="207" text-anchor="middle" font-family="Inter" font-size="10" fill="#fed7aa">elektron</text>
+          <text x="200" y="242" text-anchor="middle" font-family="Inter" font-size="12" fill="#8899bb">Masse: 0,00055 u · Ladning: −1</text>
+          <text x="200" y="260" text-anchor="middle" font-family="Inter" font-size="11" fill="#854d0e">Hastighed op til 90% af lysets hastighed</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- GAMMA -->
+    <div class="tab-panel" id="tp-g">
+      <div class="tp-info">
+        <h2 style="color:var(--gamma)">Gamma­stråling</h2>
+        <div class="formula" style="color:var(--muted)">Fotoner: γ (elektromagnetisk bølge)</div>
+        <p>Gammastråling er <b>ikke partikler</b> — det er elektromagnetisk stråling, ligesom røntgenstråler og synligt lys, bare med langt højere energi. Den udsendes ofte efter alfa- eller betahenfald når kernen stadig har overskydende energi.</p>
+        <p>Gammakvanter bevæger sig med <b>lysets hastighed</b> og kan trænge dybt ind i materiale — selv beton og bly bremser det kun delvist.</p>
+        <div class="prop-list">
+          <div class="prop"><span class="prop-label gamma">LADNING</span><span class="prop-val">Ingen ladning — afbøjes IKKE af elektriske/magnetiske felter</span></div>
+          <div class="prop"><span class="prop-label gamma">RÆKKEVIDDE</span><span class="prop-val">Km i luft — kræver tykt bly eller beton for at stoppes</span></div>
+          <div class="prop"><span class="prop-label gamma">IONISERING</span><span class="prop-val">Lav pr. passage — men trænger dybt ind i kroppen</span></div>
+          <div class="prop"><span class="prop-label gamma">EKSEMPEL</span><span class="prop-val">Cobalt-60, cesium-137, jod-131</span></div>
+        </div>
+      </div>
+      <div class="tp-vis">
+        <svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="280" fill="#110a1a"/>
+          <text x="200" y="28" text-anchor="middle" font-family="Orbitron,monospace" font-size="12" fill="#a855f7" letter-spacing=".1em">GAMMAKVANT</text>
+          <!-- Bølge -->
+          <path d="M 30 130 Q 55 90 80 130 Q 105 170 130 130 Q 155 90 180 130 Q 205 170 230 130 Q 255 90 280 130 Q 305 170 330 130 Q 355 90 370 130" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
+          <text x="200" y="175" text-anchor="middle" font-family="Inter" font-size="13" fill="#c084fc">Elektromagnetisk bølge</text>
+          <text x="200" y="193" text-anchor="middle" font-family="Inter" font-size="12" fill="#4a5a7a">Ingen masse · Ingen ladning</text>
+          <!-- Lysets hastighed -->
+          <rect x="70" y="212" width="260" height="30" rx="5" fill="#1a0f2e" stroke="#7c3aed" stroke-width="1"/>
+          <text x="200" y="231" text-anchor="middle" font-family="Orbitron,monospace" font-size="12" fill="#a855f7">c = 300.000 km/s</text>
+          <text x="200" y="260" text-anchor="middle" font-family="Inter" font-size="11" fill="#6b21a8">Bevæger sig med lysets hastighed</text>
+          <!-- Pile -->
+          <text x="380" y="134" font-size="18" fill="#a855f7">→</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PENETRATION / AFSKÆRMNING -->
+<section id="penetration" class="pen-section">
+  <div class="container">
+    <div class="sec-eyebrow">Beskyttelse & afskærmning</div>
+    <h2 class="sec-h">Hvad stopper de?</h2>
+    <p class="sec-sub">De tre stråletyper har meget forskellig evne til at trænge igennem materiale. Det afgør hvad vi kan bruge som beskyttelse.</p>
+    <div class="pen-diagram">
+      <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <rect width="900" height="320" fill="#111827"/>
+        <!-- Baggrundslabels -->
+        <text x="30" y="24" font-family="Orbitron,monospace" font-size="10" fill="#4a5a7a" letter-spacing=".1em">KILDE</text>
+        <text x="195" y="24" font-family="Orbitron,monospace" font-size="10" fill="#4a5a7a" letter-spacing=".06em">PAPIR</text>
+        <text x="340" y="24" font-family="Orbitron,monospace" font-size="10" fill="#4a5a7a" letter-spacing=".06em">ALUMINIUM</text>
+        <text x="520" y="24" font-family="Orbitron,monospace" font-size="10" fill="#4a5a7a" letter-spacing=".06em">BLY / BETON</text>
+
+        <!-- Materialer som lodrette blokke -->
+        <!-- Papir -->
+        <rect x="180" y="32" width="28" height="264" rx="2" fill="#2a2010" stroke="#854d0e" stroke-width="1" opacity=".9"/>
+        <text x="194" y="310" text-anchor="middle" font-family="Inter" font-size="10" fill="#854d0e">papir</text>
+        <!-- Aluminium -->
+        <rect x="330" y="32" width="40" height="264" rx="2" fill="#1a2040" stroke="#3b5299" stroke-width="1" opacity=".9"/>
+        <text x="350" y="310" text-anchor="middle" font-family="Inter" font-size="10" fill="#3b5299">Al 3mm</text>
+        <!-- Bly -->
+        <rect x="500" y="32" width="60" height="264" rx="2" fill="#1a1a1a" stroke="#6b7280" stroke-width="1" opacity=".9"/>
+        <text x="530" y="310" text-anchor="middle" font-family="Inter" font-size="10" fill="#6b7280">bly/beton</text>
+
+        <!-- ALFA: stoppes af papir -->
+        <text x="20" y="88" font-family="Orbitron,monospace" font-size="11" fill="#22c55e" letter-spacing=".06em">α</text>
+        <text x="45" y="88" font-family="Inter" font-size="12" fill="#4a5a7a">Alfa</text>
+        <!-- Linje alfa: kort pil der stoppes ved papiret -->
+        <line x1="95" y1="82" x2="178" y2="82" stroke="#22c55e" stroke-width="2.5" marker-end="url(#stop-a)"/>
+        <rect x="183" y="72" width="4" height="20" rx="1" fill="#22c55e" opacity=".8"/>
+        <text x="210" y="86" font-family="Inter" font-size="11" fill="#22c55e">✗ Stoppes</text>
+
+        <!-- BETA: passerer papir, stoppes af Al -->
+        <text x="20" y="158" font-family="Orbitron,monospace" font-size="11" fill="#f97316" letter-spacing=".06em">β</text>
+        <text x="45" y="158" font-family="Inter" font-size="12" fill="#4a5a7a">Beta</text>
+        <line x1="95" y1="152" x2="178" y2="152" stroke="#f97316" stroke-width="2" stroke-dasharray="4,3"/>
+        <line x1="210" y1="152" x2="328" y2="152" stroke="#f97316" stroke-width="2.5" marker-end="url(#stop-b)"/>
+        <rect x="333" y="142" width="4" height="20" rx="1" fill="#f97316" opacity=".8"/>
+        <text x="378" y="156" font-family="Inter" font-size="11" fill="#4a5a7a">Passerer papir</text>
+        <text x="378" y="172" font-family="Inter" font-size="11" fill="#f97316">✗ Stoppes af Al</text>
+
+        <!-- GAMMA: passerer alt, kun dæmpet af bly -->
+        <text x="20" y="228" font-family="Orbitron,monospace" font-size="11" fill="#a855f7" letter-spacing=".06em">γ</text>
+        <text x="45" y="228" font-family="Inter" font-size="12" fill="#4a5a7a">Gamma</text>
+        <line x1="95" y1="222" x2="178" y2="222" stroke="#a855f7" stroke-width="2" stroke-dasharray="4,3"/>
+        <line x1="210" y1="222" x2="328" y2="222" stroke="#a855f7" stroke-width="2" stroke-dasharray="4,3" opacity=".8"/>
+        <line x1="373" y1="222" x2="498" y2="222" stroke="#a855f7" stroke-width="2" stroke-dasharray="4,3" opacity=".7"/>
+        <line x1="562" y1="222" x2="700" y2="222" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="4,3" opacity=".4"/>
+        <text x="570" y="214" font-family="Inter" font-size="11" fill="#a855f7">∿ Dæmpes</text>
+        <text x="570" y="230" font-family="Inter" font-size="11" fill="#4a5a7a">Kræver mange cm bly</text>
+
+        <!-- Defs for stop markers -->
+        <defs>
+          <marker id="stop-a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+            <circle cx="5" cy="5" r="4" fill="#22c55e"/>
+          </marker>
+          <marker id="stop-b" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+            <circle cx="5" cy="5" r="4" fill="#f97316"/>
+          </marker>
+        </defs>
+
+        <!-- Human silhouet -->
+        <ellipse cx="780" cy="90" rx="18" ry="18" fill="#162032" stroke="#243047" stroke-width="1.5"/>
+        <rect x="768" y="110" width="24" height="50" rx="6" fill="#162032" stroke="#243047" stroke-width="1.5"/>
+        <line x1="762" y1="118" x2="745" y2="148" stroke="#243047" stroke-width="2" stroke-linecap="round"/>
+        <line x1="798" y1="118" x2="815" y2="148" stroke="#243047" stroke-width="2" stroke-linecap="round"/>
+        <line x1="772" y1="160" x2="762" y2="200" stroke="#243047" stroke-width="2" stroke-linecap="round"/>
+        <line x1="788" y1="160" x2="798" y2="200" stroke="#243047" stroke-width="2" stroke-linecap="round"/>
+        <text x="780" y="220" text-anchor="middle" font-family="Inter" font-size="11" fill="#4a5a7a">Menneske</text>
+      </svg>
+    </div>
+
+    <!-- Sammenligning tabel (CSS) -->
+    <div style="margin-top:24px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;min-width:500px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border2)">
+            <th style="padding:12px 16px;text-align:left;font-family:Orbitron,monospace;font-size:10px;letter-spacing:.12em;color:var(--muted2);font-weight:700">TYPE</th>
+            <th style="padding:12px 16px;text-align:left;font-family:Orbitron,monospace;font-size:10px;letter-spacing:.12em;color:var(--muted2);font-weight:700">PARTIKEL/BØLGE</th>
+            <th style="padding:12px 16px;text-align:left;font-family:Orbitron,monospace;font-size:10px;letter-spacing:.12em;color:var(--muted2);font-weight:700">AFSKÆRMNING</th>
+            <th style="padding:12px 16px;text-align:left;font-family:Orbitron,monospace;font-size:10px;letter-spacing:.12em;color:var(--muted2);font-weight:700">IONISERINGSEVNE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:12px 16px;font-family:Orbitron,monospace;color:var(--alfa);font-weight:700;font-size:13px">α Alfa</td>
+            <td style="padding:12px 16px;color:var(--muted)">Heliumkerne (2p+2n)</td>
+            <td style="padding:12px 16px;color:var(--muted)">Papir, hud</td>
+            <td style="padding:12px 16px"><span style="color:var(--alfa);font-weight:600">Meget høj</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:12px 16px;font-family:Orbitron,monospace;color:var(--beta);font-weight:700;font-size:13px">β Beta</td>
+            <td style="padding:12px 16px;color:var(--muted)">Elektron (hurtig)</td>
+            <td style="padding:12px 16px;color:var(--muted)">Aluminium (mm)</td>
+            <td style="padding:12px 16px"><span style="color:var(--beta);font-weight:600">Moderat</span></td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;font-family:Orbitron,monospace;color:var(--gamma);font-weight:700;font-size:13px">γ Gamma</td>
+            <td style="padding:12px 16px;color:var(--muted)">Elektromagnetisk bølge</td>
+            <td style="padding:12px 16px;color:var(--muted)">Tykt bly / beton</td>
+            <td style="padding:12px 16px"><span style="color:var(--gamma);font-weight:600">Lav (per passage)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- BRUG & FARE -->
+<section id="brug">
+  <div class="container">
+    <div class="sec-eyebrow">Virkelighed</div>
+    <h2 class="sec-h">Anvendelse & farer</h2>
+    <p class="sec-sub">Stråling er ikke kun farlig — det er et uundværligt redskab i medicin, energiproduktion og videnskab. Det handler om dosis og kontrol.</p>
+    <div class="use-grid">
+      <div class="use-card green">
+        <h4>Medicin</h4>
+        <ul>
+          <li>PET- og CT-skanninger</li>
+          <li>Kræftbehandling (stråling dræber tumorer)</li>
+          <li>Sterilisering af kirurgisk udstyr</li>
+          <li>Radioaktiv datering (kulstof-14)</li>
+        </ul>
+      </div>
+      <div class="use-card orange">
+        <h4>Energi & industri</h4>
+        <ul>
+          <li>Atomkraftværker (kernespaltning)</li>
+          <li>Røgalarmer (americium-241)</li>
+          <li>Tykkelsesmåling i fabrikker</li>
+          <li>Levnedsmiddelbestråling</li>
+        </ul>
+      </div>
+      <div class="use-card purple">
+        <h4>Videnskab & forskning</h4>
+        <ul>
+          <li>Partikelfysik (CERN)</li>
+          <li>Arkeologi (datering af fund)</li>
+          <li>Geologi (aldersbestemmelse)</li>
+          <li>Astrofysik og stjerneforskning</li>
+        </ul>
+      </div>
+      <div class="use-card red">
+        <h4>Farer ved høj dosis</h4>
+        <ul>
+          <li>Strålingssyge ved akut eksponering</li>
+          <li>Forhøjet kræftrisiko på lang sigt</li>
+          <li>Genetiske skader (DNA-brud)</li>
+          <li>Tschernobyl og Fukushima som eksempler</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Strålingsskala SVG -->
+    <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-top:28px">
+      <svg viewBox="0 0 900 120" xmlns="http://www.w3.org/2000/svg">
+        <rect width="900" height="120" fill="#162032"/>
+        <text x="30" y="28" font-family="Orbitron,monospace" font-size="10" fill="#4a5a7a" letter-spacing=".1em">STRÅLINGSDOSIS — FRA HARMLØS TIL FARLIG</text>
+        <!-- Gradient bar -->
+        <defs>
+          <linearGradient id="dg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#22c55e"/>
+            <stop offset="40%" stop-color="#fbbf24"/>
+            <stop offset="75%" stop-color="#f97316"/>
+            <stop offset="100%" stop-color="#ef4444"/>
+          </linearGradient>
+        </defs>
+        <rect x="30" y="44" width="840" height="16" rx="8" fill="url(#dg)"/>
+        <!-- Tick marks -->
+        <line x1="30" y1="64" x2="30" y2="74" stroke="#8899bb" stroke-width="1"/>
+        <text x="30" y="84" text-anchor="middle" font-family="Inter" font-size="10" fill="#8899bb">Baggrunds-</text>
+        <text x="30" y="96" text-anchor="middle" font-family="Inter" font-size="10" fill="#8899bb">stråling</text>
+        <line x1="230" y1="64" x2="230" y2="74" stroke="#8899bb" stroke-width="1"/>
+        <text x="230" y="84" text-anchor="middle" font-family="Inter" font-size="10" fill="#8899bb">Røntgen</text>
+        <text x="230" y="96" text-anchor="middle" font-family="Inter" font-size="10" fill="#8899bb">scanning</text>
+        <line x1="490" y1="64" x2="490" y2="74" stroke="#8899bb" stroke-width="1"/>
+        <text x="490" y="84" text-anchor="middle" font-family="Inter" font-size="10" fill="#8899bb">CT-skanning</text>
+        <line x1="710" y1="64" x2="710" y2="74" stroke="#8899bb" stroke-width="1"/>
+        <text x="710" y="84" text-anchor="middle" font-family="Inter" font-size="10" fill="#f97316">Strålings-</text>
+        <text x="710" y="96" text-anchor="middle" font-family="Inter" font-size="10" fill="#f97316">syge</text>
+        <line x1="870" y1="64" x2="870" y2="74" stroke="#8899bb" stroke-width="1"/>
+        <text x="870" y="84" text-anchor="middle" font-family="Inter" font-size="10" fill="#ef4444">Dødelig</text>
+        <text x="870" y="96" text-anchor="middle" font-family="Inter" font-size="10" fill="#ef4444">dosis</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- QUIZ -->
+<div class="quiz-section" id="quiz">
+  <div class="quiz-wrap">
+    <div class="sec-eyebrow" style="text-align:center">Test dig selv</div>
+    <h2 class="sec-h" style="text-align:center;margin-bottom:8px">Strålings-quiz</h2>
+    <p style="text-align:center;font-size:14px;color:var(--muted);margin-bottom:32px">15 spørgsmål om radioaktivitet og stråling</p>
+    <div class="q-prog" id="q-prog"></div>
+    <div class="q-meta" id="q-meta"></div>
+    <div class="q-card" id="q-card"></div>
+  </div>
+</div>
+
+<footer>
+  ☢ STRÅLING &amp; RADIOAKTIVITET · 8. KLASSE FYSIK · UNDERVISNINGSMATERIALE
+</footer>
+
+<script>
+/* ── ATOM CANVAS ANIMATION ── */
+(function(){
+  const c=document.getElementById('atom-canvas');
+  if(!c)return;
+  let W=c.offsetWidth,H=c.offsetHeight;
+  c.width=W;c.height=H;
+  const ctx=c.getContext('2d');
+  let t=0;
+  // Electrons
+  const electrons=[
+    {a:0,r:120,speed:.008,col:'#22c55e'},
+    {a:Math.PI*.6,r:160,speed:.006,col:'#f97316'},
+    {a:Math.PI*1.2,r:200,speed:.004,col:'#a855f7'},
+    {a:Math.PI*.3,r:90,speed:.012,col:'#22c55e'},
+    {a:Math.PI,r:140,speed:.009,col:'#60a5fa'},
+  ];
+  function frame(){
+    requestAnimationFrame(frame);
+    t+=.016;
+    W=c.offsetWidth;H=c.offsetHeight;
+    c.width=W;c.height=H;
+    ctx.clearRect(0,0,W,H);
+    const cx=W/2,cy=H/2;
+    // Orbit rings
+    [90,120,140,160,200].forEach((r,i)=>{
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(36,48,71,${.5-i*.05})`;ctx.lineWidth=1;ctx.stroke();
+    });
+    // Nucleus pulse
+    const pulse=1+.06*Math.sin(t*2);
+    ctx.beginPath();ctx.arc(cx,cy,28*pulse,0,Math.PI*2);
+    ctx.fillStyle='rgba(34,197,94,.08)';ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,18*pulse,0,Math.PI*2);
+    ctx.fillStyle='rgba(34,197,94,.18)';ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,10*pulse,0,Math.PI*2);
+    ctx.fillStyle='rgba(34,197,94,.55)';ctx.fill();
+    // Electrons
+    electrons.forEach(e=>{
+      e.a+=e.speed;
+      const ex=cx+Math.cos(e.a)*e.r;
+      const ey=cy+Math.sin(e.a*1.3)*e.r*.6;
+      ctx.beginPath();ctx.arc(ex,ey,5,0,Math.PI*2);
+      ctx.fillStyle=e.col;ctx.fill();
+      ctx.beginPath();ctx.arc(ex,ey,9,0,Math.PI*2);
+      ctx.fillStyle=e.col.replace(')',',0.18)').replace('rgb','rgba');
+      ctx.fill();
+    });
+    // Radiation lines
+    [0,Math.PI*.67,Math.PI*1.33].forEach((a,i)=>{
+      const col=['#22c55e','#f97316','#a855f7'][i];
+      const len=80+20*Math.sin(t*1.5+i*2);
+      const ox=cx+Math.cos(a+t*.3)*30;
+      const oy=cy+Math.sin(a+t*.3)*30;
+      ctx.beginPath();
+      ctx.moveTo(ox,oy);
+      ctx.lineTo(ox+Math.cos(a+t*.3)*len,oy+Math.sin(a+t*.3)*len);
+      ctx.strokeStyle=col+'66';ctx.lineWidth=1.5;
+      ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+    });
+  }
+  requestAnimationFrame(frame);
+  addEventListener('resize',()=>{W=c.offsetWidth;H=c.offsetHeight;});
+})();
+
+/* ── TAB LOGIC ── */
+function showTab(id){
+  ['a','b','g'].forEach(t=>{
+    document.getElementById('tp-'+t).classList.toggle('on',t===id);
+  });
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.classList.remove('on');
+    if(btn.classList.contains('t'+id)) btn.classList.add('on');
+  });
+}
+
+/* ── NAV ACTIVE ── */
+const secs=document.querySelectorAll('section,[id]');
+const navAs=document.querySelectorAll('.nav-links a');
+addEventListener('scroll',()=>{
+  let cur='';
+  document.querySelectorAll('#intro,#typer,#penetration,#brug,#quiz').forEach(s=>{
+    if(window.scrollY>=s.offsetTop-100) cur=s.id;
+  });
+  navAs.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+});
+
+/* ── QUIZ ── */
+const QS=[
+  {q:'Hvad er radioaktivitet?',
+   opts:['Lys fra et radioapparat','Ustabile atomkerner der udsender energi/partikler for at blive stabile','En type elektricitet','Kemisk reaktion med ilt'],
+   c:1,fb:'<b>Radioaktivitet</b> sker når en atomkerne er ustabil og henfalder — den udsender energi og/eller partikler for at nå en mere stabil tilstand.'},
+  {q:'Hvad består en alfapartikel af?',
+   opts:['2 elektroner og 2 neutroner','1 proton og 1 neutron','2 protoner og 2 neutroner','4 elektroner'],
+   c:2,fb:'En <b>alfapartikel</b> er identisk med en heliumkerne: <b>2 protoner + 2 neutroner</b>. Den er den tungeste og langsomste stråling.'},
+  {q:'Hvad er en betapartikel?',
+   opts:['En hurtig proton','En heliumkerne','En elektron skudt ud fra kernen','En elektromagnetisk bølge'],
+   c:2,fb:'En <b>betapartikel</b> er en <b>elektron</b> der frigives når en neutron omdannes til en proton inde i atomkernen.'},
+  {q:'Hvad er gammastråling?',
+   opts:['Tunge partikler med positiv ladning','Elektroner med meget høj energi','Elektromagnetisk stråling — fotoner uden masse eller ladning','Protoner fra kernen'],
+   c:2,fb:'<b>Gammastråling</b> er <b>elektromagnetisk stråling</b> — ligesom lys og røntgen, men med langt højere energi. Den har ingen masse og ingen ladning.'},
+  {q:'Hvad stopper alfastråling?',
+   opts:['Ingenting — den trænger igennem alt','Et stykke papir eller hud','Tykt aluminium','Mange centimeter bly'],
+   c:1,fb:'Alfastråling er kraftig men har <b>kort rækkevidde</b>. Et stykke papir eller din hud er nok til at stoppe den — men den er farlig hvis kilden kommer ind i kroppen.'},
+  {q:'Hvilken stråling kræver aluminium (mm) for at stoppes?',
+   opts:['Alfastråling','Betastråling','Gammastråling','Alle tre'],
+   c:1,fb:'<b>Betastråling</b> passerer papir men stoppes af et par millimeter aluminium (eller plast/glas).'},
+  {q:'Hvad er halveringstid?',
+   opts:['Tid til halvdelen af et radioaktivt stof er henfaldet','Halvdelen af energien i et atom','Den tid atomer bruges i kroppen','Tid stråling bruger på at nå halvvejs'],
+   c:0,fb:'<b>Halveringstid</b> er den tid det tager for præcis halvdelen af et radioaktivt stof at henfalde til et andet grundstof.'},
+  {q:'Hvilken ladning har en alfapartikel?',
+   opts:['Negativ (−2)','Ingen ladning','Positiv (+2)','Positiv (+1)'],
+   c:2,fb:'En alfapartikel har <b>+2 ladning</b> fordi den indeholder 2 protoner. Den afbøjes af elektriske og magnetiske felter.'},
+  {q:'Hvad sker der med grundstoffet når det udsender en alfapartikel?',
+   opts:['Ingenting ændres','Det mister 2 protoner og 2 neutroner — bliver til et nyt grundstof','Det mister kun energi','Det får flere elektroner'],
+   c:1,fb:'Når et atom udsender en alfapartikel <b>mister det 2 protoner og 2 neutroner</b> — og ændrer sig til et andet grundstof med atomnummer 2 lavere!'},
+  {q:'Hvad bruges radioaktivitet til i medicin?',
+   opts:['Kun til at skræmme patienter','Til kræftbehandling, skanninger og sterilisering','Det bruges aldrig i medicin','Til at fremstille medicin kemisk'],
+   c:1,fb:'Radioaktivitet bruges i medicin til <b>kræftbehandling</b> (stråling dræber tumorceller), <b>PET/CT-skanninger</b> og sterilisering af kirurgisk udstyr.'},
+  {q:'Hvilken stråling bevæger sig med lysets hastighed?',
+   opts:['Alfastråling','Betastråling','Gammastråling','Alle tre'],
+   c:2,fb:'<b>Gammastråling</b> er elektromagnetisk stråling og bevæger sig med lysets hastighed (ca. 300.000 km/s). Alfa og beta er partikler og bevæger sig langsommere.'},
+  {q:'Hvad er en isotop?',
+   opts:['Et atom med forskellig antal elektroner','En variant af et grundstof med forskelligt antal neutroner','Et radioaktivt mineral','Et kunstigt skabt grundstof'],
+   c:1,fb:'<b>Isotoper</b> er varianter af et grundstof med samme antal protoner men forskelligt antal neutroner. Fx er kulstof-12 og kulstof-14 begge kulstof, men C-14 er radioaktivt.'},
+  {q:'Hvorfor er alfastråling farlig hvis kilden er inde i kroppen?',
+   opts:['Fordi den bevæger sig hurtigt','Fordi den har høj ioniseringsevne og afleverer al sin energi lokalt i vævet','Fordi den er usynlig','Den er slet ikke farlig inde i kroppen'],
+   c:1,fb:'Selvom alfastråling stoppes af hud udefra, er den ekstremt farlig hvis kilden <b>indåndes eller sluges</b> — dens høje ioniseringsevne skader celler direkte i organerne.'},
+  {q:'Hvilket materiale bruges til at afskærme gammastråling bedst?',
+   opts:['Papir','Aluminium','Tykt bly eller beton','Træ'],
+   c:2,fb:'<b>Tykt bly eller beton</b> bruges til at dæmpe gammastråling. Det kræver mange centimeter bly at reducere gammastråling markant.'},
+  {q:'Hvad er kulstof-14 brugt til i videnskaben?',
+   opts:['Til at fremstille energi','Til radioaktiv datering af gamle fund (arkæologi)','Til behandling af knogleskader','Til at fremstille plastik'],
+   c:1,fb:'Kulstof-14 har en <b>halveringstid på ca. 5730 år</b> og bruges til at datere organisk materiale op til ca. 50.000 år gammelt — en teknik kaldet <b>kulstof-14-datering</b>.'},
+];
+
+let qi=0,score=0;
+function initQuiz(){qi=0;score=0;renderQ();}
+function renderQ(){
+  const n=QS.length;
+  // Progress
+  document.getElementById('q-prog').innerHTML=QS.map((_,i)=>`<div class="q-dot${i<qi?' done':i===qi?' cur':''}"></div>`).join('');
+  if(qi>=n){
+    const pct=Math.round(score/n*100);
+    const t=pct>=80?'🏆 Fremragende!':pct>=60?'⭐ Godt klaret!':pct>=40?'💪 Bliv ved!':'📚 Læs kapitlet igen';
+    document.getElementById('q-meta').innerHTML='';
+    document.getElementById('q-card').innerHTML=`<div class="q-result">
+      <div class="trophy">${pct>=80?'🏆':pct>=60?'⭐':'💪'}</div>
+      <div class="score-big">${score}/${n}</div>
+      <div class="score-msg">${t} — ${pct}% korrekte</div>
+      <button class="q-restart" onclick="initQuiz()">↺ Prøv igen</button>
+    </div>`;
+    return;
+  }
+  document.getElementById('q-meta').innerHTML=`<span>Spørgsmål ${qi+1} af ${n}</span><span>Score: ${score} point</span>`;
+  const q=QS[qi];
+  const shuffled=[...q.opts.map((o,i)=>({o,i}))].sort(()=>Math.random()-.5);
+  document.getElementById('q-card').innerHTML=`
+    <div class="q-num">Spørgsmål ${qi+1}</div>
+    <div class="q-text">${q.q}</div>
+    <div class="q-opts">${shuffled.map(({o,i})=>`<button class="q-opt" onclick="pick(${i})">${o}</button>`).join('')}</div>
+    <div class="q-fb" id="qfb"></div>
+    <button class="q-nxt" id="qnxt" onclick="next()">Næste →</button>`;
+}
+function pick(idx){
+  const q=QS[qi];const ok=idx===q.c;
+  if(ok)score++;
+  document.querySelectorAll('.q-opt').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===q.opts[idx]) b.classList.add(ok?'ok':'no');
+    if(b.textContent===q.opts[q.c]&&!ok) b.classList.add('ok');
+  });
+  const fb=document.getElementById('qfb');
+  fb.className='q-fb '+(ok?'ok':'no');
+  fb.innerHTML=(ok?'✅ <b>Rigtigt!</b> ':'❌ <b>Forkert.</b> ')+q.fb;
+  const nxt=document.getElementById('qnxt');
+  nxt.classList.add('on');
+  nxt.textContent=qi<QS.length-1?'Næste spørgsmål →':'Se resultat →';
+}
+function next(){qi++;renderQ();}
+initQuiz();
+</script>
+</body>
+</html>
